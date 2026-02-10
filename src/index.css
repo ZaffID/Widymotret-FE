@@ -1,0 +1,32 @@
+@import 'tailwindcss';
+
+/* Carousel fade-in animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Testimonial fade animation */
+@keyframes fadeInOut {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.testi-item {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.testi-item.animate {
+  animation: fadeInOut 0.5s ease-in-out;
+}

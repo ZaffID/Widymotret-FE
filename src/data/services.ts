@@ -145,7 +145,7 @@ export const servicesData: Service[] = [
     slug: 'event',
     title: 'Event Photoshoot',
     description: 'Dokumentasi acara spesial Anda dengan konsep yang menarik dan memorable.',
-    image: '/public/adawedding-design.png',
+    image: '/birthday party pl.jpg',
     packages: [
       {
         name: 'Birthday Party',

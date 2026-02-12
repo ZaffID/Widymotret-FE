@@ -1,0 +1,220 @@
+.editable-text-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.editable-text-label {
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  text-transform: capitalize;
+}
+
+/* Display Mode */
+.editable-text-display-mode {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.editable-text-display-mode:hover {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+.editable-text-content {
+  flex: 1;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.editable-text-single-line {
+  margin: 0;
+  font-family: 'Switzer', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2937;
+  word-break: break-word;
+}
+
+.editable-text-multiline {
+  margin: 0;
+  font-family: 'Switzer', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1f2937;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Edit Button */
+.editable-text-edit-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+  padding: 0;
+}
+
+.editable-text-edit-btn:hover {
+  background-color: #2563eb;
+  transform: scale(1.05);
+}
+
+.editable-text-edit-btn:active {
+  transform: scale(0.95);
+}
+
+/* Edit Mode */
+.editable-text-edit-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editable-text-input,
+.editable-text-textarea {
+  font-family: 'Switzer', sans-serif;
+  font-size: 14px;
+  padding: 10px 12px;
+  border: 2px solid #3b82f6;
+  border-radius: 6px;
+  outline: none;
+  transition: all 0.2s ease;
+  color: #1f2937;
+  background-color: white;
+}
+
+.editable-text-input:focus,
+.editable-text-textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editable-text-input:disabled,
+.editable-text-textarea:disabled {
+  background-color: #f3f4f6;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.editable-text-textarea {
+  min-height: 100px;
+  resize: vertical;
+  max-height: 300px;
+}
+
+/* Error Message */
+.editable-text-error {
+  padding: 8px 12px;
+  background-color: #fee2e2;
+  border-left: 4px solid #ef4444;
+  border-radius: 4px;
+  font-family: 'Switzer', sans-serif;
+  font-size: 13px;
+  color: #dc2626;
+  animation: slideInDown 0.2s ease;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Actions */
+.editable-text-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.editable-text-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-save {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background-color: #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-save:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.btn-cancel {
+  background-color: #6b7280;
+  color: white;
+}
+
+.btn-cancel:hover:not(:disabled) {
+  background-color: #4b5563;
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.btn-cancel:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.editable-text-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .editable-text-display-mode {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .editable-text-edit-btn {
+    width: 100%;
+  }
+
+  .editable-text-actions {
+    flex-direction: column;
+  }
+
+  .editable-text-btn {
+    width: 100%;
+  }
+}

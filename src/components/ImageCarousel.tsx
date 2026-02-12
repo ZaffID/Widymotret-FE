@@ -173,10 +173,6 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
         ))}
       </div>
 
-      {/* Hint text - only show on first view, fade out after a few seconds */}
-      <div class="absolute top-1/2 transform -translate-y-1/2 left-0 right-0 text-center text-white/30 text-sm pointer-events-none">
-        <p class="animate-pulse">← Gunakan arrow keys atau drag →</p>
-      </div>
     </div>
   );
 };

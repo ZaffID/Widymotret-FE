@@ -1,10 +1,11 @@
-import { Component, createSignal, For, createMemo, createEffect, Show } from 'solid-js';
+import { Component, createSignal, For, createMemo, createEffect, Show, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import PriceList from '../components/PriceList';
 import ImageCarousel from '../components/ImageCarousel';
 import Footer from '../components/Footer';
 import { servicesData } from '../data/services';
+import { contentStore } from '../stores/contentStore';
 import { AiTwotonePhone, AiTwotoneMail, AiTwotoneCheckCircle } from 'solid-icons/ai';
 import { IoLocationOutline } from 'solid-icons/io';
 import { BsInstagram } from 'solid-icons/bs';
@@ -15,6 +16,23 @@ const Home: Component = () => {
   const [isPriceListOpen, setIsPriceListOpen] = createSignal(false);
   const [serviceCarouselIndex, setServiceCarouselIndex] = createSignal(0);
   const [isBookingModalOpen, setIsBookingModalOpen] = createSignal(false);
+
+  // Helper: fetch dari contentStore, fallback ke mock data
+  const t = (section: string, field: string, fallback: string): string =>
+    contentStore.getField(section, field) || fallback;
+
+  onMount(async () => {
+    await Promise.all([
+      contentStore.loadSection('hero'),
+      contentStore.loadSection('introduction'),
+      contentStore.loadSection('services'),
+      contentStore.loadSection('booking'),
+      contentStore.loadSection('testimonials'),
+      contentStore.loadSection('settings'),
+      contentStore.loadSection('home'),
+      contentStore.loadSection('featured'),
+    ]);
+  });
   
   const landscapeImages = [
     '/landscape/landscape (1).png',
@@ -133,10 +151,10 @@ const Home: Component = () => {
         </div>
         <div class="relative z-10 text-center px-6 max-w-4xl">
           <h1 class="text-5xl md:text-6xl text-white drop-shadow-lg mb-6">
-            Setiap Momen Punya Cerita
+            {t('hero', 'title', 'Setiap Momen Punya Cerita')}
           </h1>
           <p class="text-lg md:text-xl text-white drop-shadow-md leading-relaxed">
-            Kami mengabadikan momen melalui foto dan video dengan pendekatan yang sederhana, rapi, dan penuh perhatian pada detail.
+            {t('hero', 'subtitle', 'Kami mengabadikan momen melalui foto dan video dengan pendekatan yang sederhana, rapi, dan penuh perhatian pada detail.')}
           </p>
         </div>
       </section>
@@ -145,80 +163,18 @@ const Home: Component = () => {
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-4xl text-center">
           <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-8">
-            Halo, Anda sudah menemukan kami!
+            {t('introduction', 'heading', 'Halo, Anda sudah menemukan kami!')}
           </h2>
           <p class="text-lg text-gray-700 leading-relaxed mb-6">
-            Di antara perjalanan waktu dan berbagai pertemuan yang tak terduga, akhirnya kita dipertemukan di momen ini. Kami senang karya kami bisa menarik perhatian Anda.
+            {t('introduction', 'description1', 'Di antara perjalanan waktu dan berbagai pertemuan yang tak terduga, akhirnya kita dipertemukan di momen ini. Kami senang karya kami bisa menarik perhatian Anda.')}
           </p>
           <p class="text-lg text-gray-700 leading-relaxed">
-            Melalui kecintaan kami pada fotografi dan videografi, kami berusaha menangkap setiap detail, rasa, dan emosi dari momen berharga, agar setiap kenangan penting dapat tersimpan dengan indah dan bermakna.
+            {t('introduction', 'description2', 'Melalui kecintaan kami pada fotografi dan videografi, kami berusaha menangkap setiap detail, rasa, dan emosi dari momen berharga, agar setiap kenangan penting dapat tersimpan dengan indah dan bermakna.')}
           </p>
           <div class="mt-12 border-t border-gray-300 w-70 mx-auto"></div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" class="py-20 px-6 bg-white">
-        <div class="container mx-auto max-w-6xl">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            {/* Text Section */}
-            <div>
-              <h2 class="text-4xl md:text-5xl text-gray-800 mb-8">
-                Widymotret
-              </h2>
-              <p class="text-base md:text-lg text-gray-700 leading-relaxed mb-6">
-                Widymotret adalah studio fotografi yang berdiri sejak 2021 dan melayani berbagai kebutuhan pemotretan.
-              </p>
-              <p class="text-base md:text-lg text-gray-700 leading-relaxed">
-                Kami menyesuaikan gaya foto sesuai keinginan klien, mulai dari natural, elegan, hingga cinematic, dengan fokus pada kenyamanan dan hasil yang rapi serta berkesan.
-              </p>
-            </div>
-
-            {/* Photo Grid Section */}
-            <div class="grid grid-cols-2 gap-4">
-              {/* Left column */}
-              <div class="flex flex-col gap-4">
-                {/* Left top - Square */}
-                <div class="overflow-hidden rounded-lg h-48">
-                  <img
-                    src="/portrait/portrait (1).png"
-                    alt="Widymotret Gallery 1"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                {/* Left bottom - Portrait */}
-                <div class="overflow-hidden rounded-lg flex-1 min-h-64">
-                  <img
-                    src="/portrait/portrait (3).png"
-                    alt="Widymotret Gallery 3"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-
-              {/* Right column */}
-              <div class="flex flex-col gap-4">
-                {/* Right top - Portrait */}
-                <div class="overflow-hidden rounded-lg flex-1 min-h-64">
-                  <img
-                    src="/portrait/portrait (2).png"
-                    alt="Widymotret Gallery 2"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-                {/* Right bottom - Square */}
-                <div class="overflow-hidden rounded-lg h-48">
-                  <img
-                    src="/portrait/portrait (4).png"
-                    alt="Widymotret Gallery 4"
-                    class="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Services Section */}
       <section class="py-20 px-6 bg-white">
@@ -227,10 +183,10 @@ const Home: Component = () => {
             {/* Left Side - Text */}
             <div class="w-full md:w-2/5">
               <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">
-                Services
+                {t('services', 'title', 'Services')}
               </h2>
               <p class="text-lg text-gray-600">
-                untuk merencanakan dan mengatur acara spesial Anda
+                {t('services', 'subtitle', 'untuk merencanakan dan mengatur acara spesial Anda')}
               </p>
             </div>
 
@@ -309,35 +265,36 @@ const Home: Component = () => {
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">Alur Booking</h2>
-            <p class="text-lg text-gray-600">Mulai dari konsultasi, pemilihan paket, hingga hari H — semua kami siapkan dengan profesional.</p>
+            <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">{t('booking', 'title', 'Alur Booking')}</h2>
+            <p class="text-lg text-gray-600">{t('booking', 'subtitle', 'Mulai dari konsultasi, pemilihan paket, hingga hari H — semua kami siapkan dengan profesional.')}</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
-              <h3 class="text-xl text-[#464C43] mb-2">Konsultasi & Cek Tanggal</h3>
-              <p class="text-gray-600 text-sm">Klien menghubungi kami melalui WhatsApp untuk konsultasi awal dan memastikan ketersediaan tanggal acara.</p>
-            </div>
-            <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
-              <h3 class="text-xl text-[#464C43] mb-2">Pilih Paket Fotografi</h3>
-              <p class="text-gray-600 text-sm">Klien memilih paket yang sesuai kebutuhan, konsep, dan budget yang diinginkan.</p>
-            </div>
-            <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
-              <h3 class="text-xl text-[#464C43] mb-2">Konfirmasi & Pembayaran DP</h3>
-              <p class="text-gray-600 text-sm">Setelah paket disepakati, klien melakukan pembayaran DP untuk mengamankan jadwal.</p>
-            </div>
-            <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
-              <h3 class="text-xl text-[#464C43] mb-2">Persiapan & Briefing</h3>
-              <p class="text-gray-600 text-sm">Kami melakukan briefing detail terkait rundown acara, konsep foto, lokasi, dan kebutuhan teknis lainnya.</p>
-            </div>
-            <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
-              <h3 class="text-xl text-[#464C43] mb-2">Hari Pernikahan (Shooting Day)</h3>
-              <p class="text-gray-600 text-sm">Tim fotografer hadir tepat waktu dan mengabadikan setiap momen penting secara profesional.</p>
-            </div>
-            <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
-              <h3 class="text-xl text-[#464C43] mb-2">Editing & Penyerahan Hasil</h3>
-              <p class="text-gray-600 text-sm">Proses editing dilakukan sesuai standar kualitas studio, lalu hasil diserahkan sesuai paket yang dipilih.</p>
-            </div>
+            <For each={Array.from({ length: 6 })}>
+              {(_, idx) => {
+                const stepNum = idx() + 1;
+                const titleField = `step${stepNum}_title`;
+                const descField = `step${stepNum}_description`;
+                const bookingSteps = [
+                  { title: 'Konsultasi & Cek Tanggal', desc: 'Klien menghubungi kami melalui WhatsApp untuk konsultasi awal dan memastikan ketersediaan tanggal acara.' },
+                  { title: 'Pilih Paket Fotografi', desc: 'Klien memilih paket yang sesuai kebutuhan, konsep, dan budget yang diinginkan.' },
+                  { title: 'Konfirmasi & Pembayaran DP', desc: 'Setelah paket disepakati, klien melakukan pembayaran DP untuk mengamankan jadwal.' },
+                  { title: 'Persiapan & Briefing', desc: 'Kami melakukan briefing detail terkait rundown acara, konsep foto, lokasi, dan kebutuhan teknis lainnya.' },
+                  { title: 'Hari Pernikahan (Shooting Day)', desc: 'Tim fotografer hadir tepat waktu dan mengabadikan setiap momen penting secara profesional.' },
+                  { title: 'Editing & Penyerahan Hasil', desc: 'Proses editing dilakukan sesuai standar kualitas studio, lalu hasil diserahkan sesuai paket yang dipilih.' },
+                ];
+                return (
+                  <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
+                    <h3 class="text-xl text-[#464C43] mb-2">
+                      {t('booking', titleField, bookingSteps[idx()].title)}
+                    </h3>
+                    <p class="text-gray-600 text-sm">
+                      {t('booking', descField, bookingSteps[idx()].desc)}
+                    </p>
+                  </div>
+                );
+              }}
+            </For>
           </div>
 
           <div class="mt-8 border-t border-gray-300 w-80 mx-auto"></div>
@@ -465,8 +422,9 @@ const Home: Component = () => {
 
             <div class="max-w-4xl mx-auto text-center text-white px-6">
               <div class="testi-item" classList={{ 'animate': testiAnimate() }}>
-                <p class="text-lg md:text-xl italic mb-6">"{testimonials[testiIndex()].quote}"</p>
-                <p class="font-semibold">- {testimonials[testiIndex()].author}</p>
+                <p class="text-lg md:text-xl italic mb-6">"{t('testimonials', `quote${testiIndex() + 1}`, testimonials[testiIndex()].quote)}"
+                </p>
+                <p class="font-semibold">- {t('testimonials', `author${testiIndex() + 1}`, testimonials[testiIndex()].author)}</p>
               </div>
             </div>
 
@@ -497,7 +455,7 @@ const Home: Component = () => {
                   <AiTwotonePhone class="w-6 h-6 text-[#464C43] flex-shrink-0 mt-1" />
                   <div>
                     <p class="text-sm text-gray-500 uppercase tracking-wider">PHONE</p>
-                    <p class="text-gray-800 font-medium">+62895351115777</p>
+                    <p class="text-gray-800 font-medium">{t('settings', 'phone', '+62895351115777')}</p>
                   </div>
                 </div>
                 
@@ -505,7 +463,7 @@ const Home: Component = () => {
                   <AiTwotoneMail class="w-6 h-6 text-[#464C43] flex-shrink-0 mt-1" />
                   <div>
                     <p class="text-sm text-gray-500 uppercase tracking-wider">EMAIL</p>
-                    <p class="text-gray-800 font-medium">widymotret@gmail.com</p>
+                    <p class="text-gray-800 font-medium">{t('settings', 'email', 'widymotret@gmail.com')}</p>
                   </div>
                 </div>
                 
@@ -513,15 +471,15 @@ const Home: Component = () => {
                   <IoLocationOutline class="w-6 h-6 text-[#464C43] flex-shrink-0 mt-1" />
                   <div>
                     <p class="text-sm text-gray-500 uppercase tracking-wider">LOCATION</p>
-                    <p class="text-gray-800 font-medium">Jl. Raya Pernasidi No.3, Banyumas, Jawa Tengah</p>
+                    <p class="text-gray-800 font-medium">{t('settings', 'address', 'Jl. Raya Pernasidi No.3, Banyumas, Jawa Tengah')}</p>
                   </div>
                 </div>
                 
                 <div class="flex gap-4">
                   <BsInstagram class="w-6 h-6 text-[#464C43] flex-shrink-0 mt-1" />
-                  <div>
+                  <div> 
                     <p class="text-sm text-gray-500 uppercase tracking-wider">INSTAGRAM</p>
-                    <p class="text-gray-800 font-medium">@widymotretstudio</p>
+                    <p class="text-gray-800 font-medium">{t('settings', 'instagram', '@widymotretstudio')}</p>
                   </div>
                 </div>
               </div>
@@ -538,13 +496,13 @@ const Home: Component = () => {
       {/* CTA Booking Section */}
       <section class="py-20 px-6 bg-gradient-to-r from-[#464C43] to-[#576250]">
         <div class="container mx-auto max-w-4xl text-center">
-          <h2 class="text-4xl md:text-5xl text-white mb-4">Siap Mengabadikan Momen Spesial Anda?</h2>
-          <p class="text-white/90 text-lg mb-8">Hubungi kami sekarang dan jadwalkan sesi pemotretan Anda</p>
+          <h2 class="text-4xl md:text-5xl text-white mb-4">{t('home', 'cta_heading', 'Siap Mengabadikan Momen Spesial Anda?')}</h2>
+          <p class="text-white/90 text-lg mb-8">{t('home', 'cta_subheading', 'Hubungi kami sekarang dan jadwalkan sesi pemotretan Anda')}</p>
           <button
             onClick={() => setIsBookingModalOpen(true)}
             class="px-10 py-4 bg-white text-[#464C43] rounded-xl font-bold text-lg hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
           >
-            Booking Sekarang
+            {t('home', 'cta_button', 'Booking Sekarang')}
           </button>
         </div>
       </section>

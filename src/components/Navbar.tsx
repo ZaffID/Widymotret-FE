@@ -66,8 +66,8 @@ const Navbar: Component<NavbarProps> = (props) => {
         </button>
         <div class="flex gap-8 text-white items-center">
           <button onClick={() => navigate('/')} class="hover:opacity-80 transition">Home</button>
-          <button onClick={() => navigate('/#about')} class="hover:opacity-80 transition">Tentang</button>
-          <button onClick={() => navigate('/#portfolio')} class="hover:opacity-80 transition">Portfolio</button>
+          <button onClick={() => navigate('/about')} class="hover:opacity-80 transition">Tentang</button>
+          <button onClick={() => navigate('/portfolio')} class="hover:opacity-80 transition">Portfolio</button>
           
           {/* Pricelist with Dropdown */}
           <div 

@@ -1,9 +1,8 @@
 import { createSignal, createRoot } from 'solid-js';
 
 interface Admin {
-  id: string;
-  email: string;
-  name: string;
+  id: number;
+  username: string; // ini sebenarnya email, tapi tetap username untuk backward compatibility
 }
 
 interface AuthState {
@@ -12,21 +11,14 @@ interface AuthState {
   token: string | null;
 }
 
-// Mock admin credentials (untuk development, nanti diganti dengan API call)
-// Email: admin@example.com
-// Password: 123456
-const MOCK_ADMIN = {
-  id: '1',
-  email: 'admin@example.com',
-  name: 'Admin Widymotret',
-};
-
-// Simple password verification (mock - di production gunakan backend API dengan bcrypt)
-const verifyPassword = (password: string): boolean => {
-  // Untuk development, cek password langsung
-  // Di production, ini akan menjadi API call ke backend yang melakukan bcrypt.compare()
-  return password === '123456';
-};
+interface LoginResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    token: string;
+    admin: Admin;
+  };
+}
 
 function createAuthStore() {
   // Initialize from localStorage
@@ -41,43 +33,43 @@ function createAuthStore() {
 
   const [state, setState] = createSignal<AuthState>(initialState);
 
-  // Login function
+  // Login function - calls real backend
   const login = async (email: string, password: string): Promise<{ success: boolean; message: string }> => {
     try {
-      // Simulasi API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Validasi email
-      if (email !== MOCK_ADMIN.email) {
-        return { success: false, message: 'Email atau password salah' };
-      }
-
-      // Validasi password (mock - di production akan menggunakan bcrypt di backend)
-      if (!verifyPassword(password)) {
-        return { success: false, message: 'Email atau password salah' };
-      }
-
-      // Generate mock token (di production akan dari backend)
-      const token = btoa(`${MOCK_ADMIN.id}:${Date.now()}`);
-      const adminData: Admin = {
-        id: MOCK_ADMIN.id,
-        email: MOCK_ADMIN.email,
-        name: MOCK_ADMIN.name,
-      };
-
-      // Save to localStorage
-      localStorage.setItem('adminToken', token);
-      localStorage.setItem('adminData', JSON.stringify(adminData));
-
-      // Update state
-      setState({
-        isAuthenticated: true,
-        admin: adminData,
-        token: token,
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      return { success: true, message: 'Login berhasil' };
+      if (!response.ok) {
+        return { success: false, message: 'Login gagal. Periksa email dan password.' };
+      }
+
+      const data: LoginResponse = await response.json();
+
+      if (data.success && data.data) {
+        const { token, admin } = data.data;
+
+        // Save to localStorage
+        localStorage.setItem('adminToken', token);
+        localStorage.setItem('adminData', JSON.stringify(admin));
+
+        // Update state
+        setState({
+          isAuthenticated: true,
+          admin,
+          token,
+        });
+
+        return { success: true, message: 'Login berhasil' };
+      } else {
+        return { success: false, message: data.message || 'Login gagal' };
+      }
     } catch (error) {
+      console.error('Login error:', error);
       return { success: false, message: 'Terjadi kesalahan. Silakan coba lagi.' };
     }
   };

@@ -1,18 +1,69 @@
-import { Component, createSignal, createMemo, For, Show } from 'solid-js';
+import { Component, createSignal, createMemo, For, Show, createEffect } from 'solid-js';
+import { useSearchParams } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ContactModal from '../components/ContactModal';
 import { GalleryModal } from '../components/portfolio/GalleryModal';
 import { portfolioCategories, portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
+import { useScrollRevealGroup } from '../hooks/useScrollReveal';
+import '../styles/scroll-reveal.css';
 import './Portfolio.css';
 
 const Portfolio: Component = () => {
+  const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = createSignal<'portrait' | 'event' | 'editorial' | 'retouching'>('portrait');
   const [selectedImageIndex, setSelectedImageIndex] = createSignal<number | null>(null);
   const [isModalOpen, setIsModalOpen] = createSignal(false);
+  const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
+
+  // Scroll reveal ref for image grid
+  const portfolioGridRef = useScrollRevealGroup({ threshold: 0.3, itemDelay: 80 });
+
+  // Read category from query parameter
+  createEffect(() => {
+    const category = searchParams.category as 'portrait' | 'event' | 'editorial' | 'retouching' | undefined;
+    if (category && ['portrait', 'event', 'editorial', 'retouching'].includes(category)) {
+      setActiveCategory(category);
+    }
+  });
 
   // Get images for active category
   const currentImages = createMemo(() => {
     return getImagesByCategory(activeCategory());
+  });
+
+  // Reset animation when category changes
+  createEffect(() => {
+    currentImages(); // Dependency on images
+    
+    // Reset animation state untuk items baru
+    queueMicrotask(() => {
+      const items = document.querySelectorAll('.scroll-reveal-item');
+      items.forEach(item => {
+        item.classList.remove('reveal-visible');
+        item.classList.add('scroll-reveal-hidden');
+      });
+      console.log('[Portfolio] Animation reset for new category');
+      
+      // Manually trigger animation if container is visible
+      const container = document.querySelector('.grid[class*="gap-6"]');
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (isVisible) {
+          // Container visible - manually animate
+          console.log('[Portfolio] Container visible, trigger animation manually');
+          items.forEach((item: any, index: number) => {
+            const delay = index * 80;
+            item.style.setProperty('--reveal-delay', `${delay}ms`);
+            item.style.setProperty('--reveal-duration', '800ms');
+            item.classList.remove('scroll-reveal-hidden');
+            item.classList.add('reveal-visible');
+          });
+        }
+      }
+    });
   });
 
   const handleImageClick = (index: number) => {
@@ -79,11 +130,11 @@ const Portfolio: Component = () => {
       {/* Image Grid */}
       <section class="py-16 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" ref={portfolioGridRef}>
             <For each={currentImages()}>
               {(image, index) => (
                 <div 
-                  class="group relative overflow-hidden rounded-lg cursor-pointer aspect-square bg-gray-100"
+                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full h-80 bg-gray-100 scroll-reveal-item scroll-reveal-hidden"
                   onClick={() => handleImageClick(index())}
                 >
                   {/* Image */}
@@ -167,7 +218,10 @@ const Portfolio: Component = () => {
           <p class="text-xl text-white/80 mb-8">
             Mari kita ciptakan momen istimewa Anda bersama tim Widymotret
           </p>
-          <button class="px-8 py-4 bg-white text-[#464C43] rounded-lg font-bold hover:bg-gray-100 transition-colors">
+          <button 
+            onClick={() => setIsContactModalOpen(true)}
+            class="px-8 py-4 bg-white text-[#464C43] rounded-lg font-bold hover:bg-gray-100 transition-colors"
+          >
             Hubungi Kami
           </button>
         </div>
@@ -182,6 +236,12 @@ const Portfolio: Component = () => {
           onClose={handleCloseModal}
         />
       </Show>
+
+      {/* Contact Modal */}
+      <ContactModal 
+        isOpen={isContactModalOpen} 
+        onClose={() => setIsContactModalOpen(false)} 
+      />
 
       <Footer />
     </div>

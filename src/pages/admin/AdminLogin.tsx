@@ -83,7 +83,7 @@ const AdminLogin: Component = () => {
       <div class="w-full max-w-md">
         {/* Logo/Brand */}
         <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-white mb-2">WIDYMOTRET</h1>
+          <img src="/LOGO/BIGGER WM NEW PUTIH.png" alt="Widymotret" class="h-12 mx-auto mb-4 drop-shadow-lg" />
           <p class="text-white/70">Admin Panel</p>
         </div>
 

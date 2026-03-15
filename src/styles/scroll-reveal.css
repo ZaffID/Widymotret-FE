@@ -1,0 +1,79 @@
+/* ─── Scroll Reveal Animation Styles ─── */
+
+/* Default CSS variables (can be overridden via JS) */
+:root {
+  --reveal-duration: 800ms;
+  --reveal-delay: 0ms;
+  --reveal-distance: 40px;
+  --reveal-easing: cubic-bezier(0.34, 1.56, 0.64, 1); /* Smooth easing with slight bounce */
+}
+
+/* Base class - element starts visible, prepares for animation */
+.scroll-reveal {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--reveal-duration) var(--reveal-easing) var(--reveal-delay),
+              transform var(--reveal-duration) var(--reveal-easing) var(--reveal-delay);
+  will-change: opacity, transform;
+}
+
+/* Hidden state - applied before element enters viewport */
+.scroll-reveal.scroll-reveal-hidden {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance));
+}
+
+/* Visible state - animate in */
+.scroll-reveal.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* For grouped items (cards, list items, etc.) */
+.scroll-reveal-item {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity var(--reveal-duration) var(--reveal-easing) var(--reveal-delay),
+              transform var(--reveal-duration) var(--reveal-easing) var(--reveal-delay);
+  will-change: opacity, transform;
+}
+
+/* Hidden state for grouped items */
+.scroll-reveal-item.scroll-reveal-hidden {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance));
+}
+
+.scroll-reveal-item.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Variant: Slide from left */
+.scroll-reveal.slide-left {
+  transform: translateX(-var(--reveal-distance)) translateY(0);
+}
+
+.scroll-reveal.slide-left.reveal-visible {
+  transform: translateX(0) translateY(0);
+}
+
+/* Variant: Slide from right */
+.scroll-reveal.slide-right {
+  transform: translateX(var(--reveal-distance)) translateY(0);
+}
+
+.scroll-reveal.slide-right.reveal-visible {
+  transform: translateX(0) translateY(0);
+}
+
+/* ─── Fade-only variant (no slide) ─── */
+.scroll-reveal.fade-only {
+  transform: none;
+  opacity: 0;
+}
+
+.scroll-reveal.fade-only.reveal-visible {
+  opacity: 1;
+  transform: none;
+}

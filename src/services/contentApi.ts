@@ -1,8 +1,8 @@
 import { authStore } from '../stores/authStore';
 import { ApiResponse, EditableContent, BatchContentUpdate } from '../types/content';
 
-// Use relative URL so requests go through Vite proxy (avoids CORS issues)
-const API_BASE = '/api';
+// Use full URL with env variable for both dev (via Vite proxy) and production (via Vercel)
+const API_BASE = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api`;
 
 /**
  * Helper: build Authorization header when token exists

@@ -101,7 +101,8 @@ const ServiceDetail: Component = () => {
     setIsLoading(true);
     setLoadError(false);
     try {
-      const res = await fetch('/api/packages');
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const res = await fetch(`${apiUrl}/api/packages`);
       if (!res.ok) throw new Error('API request failed');
 
       const data = await res.json();

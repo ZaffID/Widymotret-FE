@@ -23,7 +23,8 @@ const Portfolio: Component = () => {
     setIsLoading(true);
     try {
       // Try fetch from BE - if fails, show warning
-      const res = await fetch('/api/packages', { method: 'HEAD' });
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const res = await fetch(`${apiUrl}/api/packages`, { method: 'HEAD' });
       if (!res.ok) throw new Error('BE unavailable');
       setLoadError(false);
     } catch (err) {

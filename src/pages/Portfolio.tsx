@@ -1,4 +1,4 @@
-import { Component, createSignal, createMemo, For, Show, createEffect } from 'solid-js';
+import { Component, createSignal, createMemo, For, Show, createEffect, onMount } from 'solid-js';
 import { useSearchParams } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -15,6 +15,24 @@ const Portfolio: Component = () => {
   const [selectedImageIndex, setSelectedImageIndex] = createSignal<number | null>(null);
   const [isModalOpen, setIsModalOpen] = createSignal(false);
   const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
+  const [loadError, setLoadError] = createSignal(false);
+  const [isLoading, setIsLoading] = createSignal(true);
+
+  // Check BE health on mount
+  onMount(async () => {
+    setIsLoading(true);
+    try {
+      // Try fetch from BE - if fails, show warning
+      const res = await fetch('/api/packages', { method: 'HEAD' });
+      if (!res.ok) throw new Error('BE unavailable');
+      setLoadError(false);
+    } catch (err) {
+      console.error('Backend unavailable:', err);
+      setLoadError(true);
+    } finally {
+      setIsLoading(false);
+    }
+  });
 
   // Scroll reveal ref for image grid
   const portfolioGridRef = useScrollRevealGroup({ threshold: 0.3, itemDelay: 80 });
@@ -130,7 +148,50 @@ const Portfolio: Component = () => {
       {/* Image Grid */}
       <section class="py-16 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" ref={portfolioGridRef}>
+          {/* Warning Banner - Server Error */}
+          <Show when={loadError()}>
+            <div class="mb-8 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg max-w-2xl mx-auto">
+              <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 pt-0.5">
+                  <svg class="w-6 h-6 text-yellow-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.981-1.742 2.981H4.42c-1.53 0-2.492-1.647-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-yellow-800 mb-1">Galeri Sementara Tidak Tersedia</h3>
+                  <p class="text-yellow-700 text-sm mb-3">Server sedang dalam pemeliharaan. Silakan coba lagi dalam beberapa saat atau hubungi kami melalui WhatsApp untuk informasi lebih lanjut.</p>
+                  <a 
+                    href="https://wa.me/62895351115777?text=Halo,%20saya%20ingin%20melihat%20portfolio%20terbaru"
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition text-sm font-medium"
+                  >
+                    Hubungi via WhatsApp
+                  </a>
+                </div>
+              </div>
+            </div>
+          </Show>
+
+          {/* Warning Banner - No Images for Category */}
+          <Show when={!loadError() && currentImages().length === 0}>
+            <div class="mb-8 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg max-w-2xl mx-auto">
+              <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 pt-0.5">
+                  <svg class="w-6 h-6 text-yellow-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.981-1.742 2.981H4.42c-1.53 0-2.492-1.647-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold text-yellow-800 mb-1">Tidak Ada Foto</h3>
+                  <p class="text-yellow-700 text-sm">Kategori ini belum memiliki foto. Silakan pilih kategori lain atau hubungi kami untuk info lebih lanjut.</p>
+                </div>
+              </div>
+            </div>
+          </Show>
+
+          <Show when={!loadError()}>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" ref={portfolioGridRef}>
             <For each={currentImages()}>
               {(image, index) => (
                 <div 
@@ -166,14 +227,9 @@ const Portfolio: Component = () => {
                 </div>
               )}
             </For>
-          </div>
-
-          {/* Empty State */}
-          <Show when={currentImages().length === 0}>
-            <div class="text-center py-12">
-              <p class="text-gray-500 text-lg">Belum ada foto di kategori ini.</p>
             </div>
           </Show>
+
         </div>
       </section>
 

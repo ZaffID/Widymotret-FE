@@ -65,6 +65,7 @@ const ServiceDetail: Component = () => {
   const [isDetailVisible, setIsDetailVisible] = createSignal(false);
   const [galleryIndex, setGalleryIndex] = createSignal(0);
   const [isLoading, setIsLoading] = createSignal(true);
+  const [loadError, setLoadError] = createSignal(false);
 
   const fallbackImages = [
     '/landscape/landscape (1).png',
@@ -98,6 +99,7 @@ const ServiceDetail: Component = () => {
     if (!slug) return;
 
     setIsLoading(true);
+    setLoadError(false);
     try {
       const res = await fetch('/api/packages');
       if (!res.ok) throw new Error('API request failed');
@@ -110,6 +112,8 @@ const ServiceDetail: Component = () => {
       }
     } catch (err) {
       console.error('Failed to load packages:', err);
+      setPackages([]);
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
@@ -201,6 +205,31 @@ const ServiceDetail: Component = () => {
                 <h2 class="text-3xl md:text-4xl text-[#464C43] mb-3">Pilih Paket</h2>
                 <p class="text-gray-500">Klik untuk melihat detail dan benefit</p>
               </div>
+
+              {/* Warning Banner - Unavailable */}
+              <Show when={loadError() || (packages().length === 0 && !isLoading())}>
+                <div class="mb-8 p-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-lg max-w-2xl mx-auto">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 pt-0.5">
+                      <svg class="w-6 h-6 text-yellow-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.981-1.742 2.981H4.42c-1.53 0-2.492-1.647-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold text-yellow-800 mb-1">Layanan Sementara Tidak Tersedia</h3>
+                      <p class="text-yellow-700 text-sm mb-3">Server sedang dalam pemeliharaan. Silakan coba lagi dalam beberapa saat atau hubungi kami melalui WhatsApp untuk informasi lebih lanjut.</p>
+                      <a 
+                        href="https://wa.me/62895351115777?text=Halo,%20saya%20ingin%20menanyakan%20tentang%20paket%20layanan%20fotografi"
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="inline-block px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition text-sm font-medium"
+                      >
+                        Hubungi via WhatsApp
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </Show>
 
               {/* Image Cards Grid */}
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" ref={packagesGridRef}>
@@ -444,9 +473,12 @@ const ServiceDetail: Component = () => {
           <section class="py-12 px-6 bg-[#FAFAFA] text-center">
             <button 
               onClick={() => navigate('/')}
-              class="text-[#464C43] hover:text-[#576250] transition font-medium"
+              class="px-6 py-3 bg-[#464C43] text-white rounded-lg hover:bg-[#576250] transition font-medium inline-flex items-center gap-2"
             >
-              ← Kembali ke Beranda
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Kembali ke Beranda
             </button>
           </section>
         </div>

@@ -23,7 +23,7 @@ const Portfolio: Component = () => {
     setIsLoading(true);
     try {
       // Try fetch from BE - if fails, show warning
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
       const res = await fetch(`${apiUrl}/api/packages`, { method: 'HEAD' });
       if (!res.ok) throw new Error('BE unavailable');
       setLoadError(false);

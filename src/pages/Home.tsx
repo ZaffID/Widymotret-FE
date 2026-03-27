@@ -12,6 +12,7 @@ import '../styles/scroll-reveal.css';
 import { AiTwotonePhone, AiTwotoneMail, AiTwotoneCheckCircle } from 'solid-icons/ai';
 import { IoLocationOutline } from 'solid-icons/io';
 import { BsInstagram } from 'solid-icons/bs';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 
 const Home: Component = () => {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ const Home: Component = () => {
     contentStore.getField(section, field) || fallback;
 
   const serviceImage = (slug: string, fallback: string): string =>
-    contentStore.getField('service', `${slug}_image`) || fallback;
+    resolveMediaUrl(contentStore.getField('service', `${slug}_image`) || fallback);
 
   const serviceTitle = (slug: string, fallback: string): string =>
     contentStore.getField('service', `${slug}_title`) || fallback;
@@ -62,10 +63,10 @@ const Home: Component = () => {
   ];
 
   const homeCarouselImages = createMemo(() => [
-    contentStore.getField('hero', 'carousel_0') || defaultCarouselImages[0],
-    contentStore.getField('hero', 'carousel_1') || defaultCarouselImages[1],
-    contentStore.getField('hero', 'carousel_2') || defaultCarouselImages[2],
-    contentStore.getField('hero', 'carousel_3') || defaultCarouselImages[3],
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_0') || defaultCarouselImages[0]),
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_1') || defaultCarouselImages[1]),
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_2') || defaultCarouselImages[2]),
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_3') || defaultCarouselImages[3]),
   ]);
   
   const defaultPortraitImages = [
@@ -77,11 +78,11 @@ const Home: Component = () => {
   ];
 
   const portraitImages = createMemo(() => [
-    contentStore.getField('featured', 'portrait_0') || defaultPortraitImages[0],
-    contentStore.getField('featured', 'portrait_1') || defaultPortraitImages[1],
-    contentStore.getField('featured', 'portrait_2') || defaultPortraitImages[2],
-    contentStore.getField('featured', 'portrait_3') || defaultPortraitImages[3],
-    contentStore.getField('featured', 'portrait_4') || defaultPortraitImages[4],
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_0') || defaultPortraitImages[0]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_1') || defaultPortraitImages[1]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_2') || defaultPortraitImages[2]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_3') || defaultPortraitImages[3]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_4') || defaultPortraitImages[4]),
   ]);
 
   const defaultPortfolioImages = [
@@ -94,7 +95,7 @@ const Home: Component = () => {
   const portfolioImages = createMemo(() => 
     defaultPortfolioImages.map((item, idx) => ({
       ...item,
-      image: contentStore.getField('home', `portfolio_grid_${idx}`) || item.image,
+      image: resolveMediaUrl(contentStore.getField('home', `portfolio_grid_${idx}`) || item.image),
       category: contentStore.getField('home', `portfolio_grid_category_${idx}`) || item.category
     }))
   );

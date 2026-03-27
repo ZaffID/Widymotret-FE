@@ -51,6 +51,7 @@ const Home: Component = () => {
       contentStore.loadSection('home'),
       contentStore.loadSection('featured'),
       contentStore.loadSection('service'),
+      contentStore.loadSection('portfolio'),
     ]);
   });
 
@@ -92,10 +93,21 @@ const Home: Component = () => {
     { image: '/portrait/portrait (2).png', category: 'Image Retouching and Editing', slug: 'retouching', name: 'Professional Editing Results' },
   ];
 
+  const portfolioPrimaryFieldBySlug: Record<string, string> = {
+    portrait: 'portrait_p1',
+    event: 'event_e1',
+    editorial: 'editorial_ed1',
+    retouching: 'retouching_r1',
+  };
+
   const portfolioImages = createMemo(() => 
     defaultPortfolioImages.map((item, idx) => ({
       ...item,
-      image: resolveMediaUrl(contentStore.getField('home', `portfolio_grid_${idx}`) || item.image),
+      image: resolveMediaUrl(
+        contentStore.getField('portfolio', portfolioPrimaryFieldBySlug[item.slug]) ||
+        contentStore.getField('home', `portfolio_grid_${idx}`) ||
+        item.image
+      ),
       category: contentStore.getField('home', `portfolio_grid_category_${idx}`) || item.category
     }))
   );

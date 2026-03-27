@@ -1,4 +1,4 @@
-import { createSignal, Show } from 'solid-js';
+import { createEffect, createSignal, Show } from 'solid-js';
 import { BiRegularPencil } from 'solid-icons/bi';
 import { updateContent } from '../../services/contentApi';
 import './EditableText.css';
@@ -16,8 +16,20 @@ interface EditableTextProps {
 export const EditableText = (props: EditableTextProps) => {
   const [isEditing, setIsEditing] = createSignal(false);
   const [currentValue, setCurrentValue] = createSignal(props.value);
+  const [lastPropValue, setLastPropValue] = createSignal(props.value || '');
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
+
+  // Keep local draft synced with async store updates when not editing.
+  createEffect(() => {
+    const next = props.value || '';
+    if (next !== lastPropValue()) {
+      setLastPropValue(next);
+      if (!isEditing()) {
+        setCurrentValue(next);
+      }
+    }
+  });
 
   const handleEdit = () => {
     setError(null);

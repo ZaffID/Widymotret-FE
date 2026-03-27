@@ -394,14 +394,14 @@ const AdminHome: Component = () => {
             {/* User Menu */}
             <div class="flex items-center gap-2 md:gap-4 ml-auto">
               <div class="text-right hidden sm:block">
-                <p class="text-xs md:text-sm font-medium">{admin()?.name || 'Admin'}</p>
-                <p class="text-xs text-white/70">{admin()?.email}</p>
+                <p class="text-xs md:text-sm font-medium">{admin()?.username || 'Admin'}</p>
+                <p class="text-xs text-white/70">Administrator</p>
               </div>
               
               {/* Avatar */}
               <div class="w-8 md:w-10 h-8 md:h-10 rounded-full bg-[#576250] flex items-center justify-center flex-shrink-0">
                 <span class="text-sm md:text-lg font-bold">
-                  {admin()?.name?.charAt(0) || 'A'}
+                  {admin()?.username?.charAt(0)?.toUpperCase() || 'A'}
                 </span>
               </div>
 

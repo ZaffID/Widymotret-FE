@@ -4,6 +4,10 @@ import { authStore } from '../../stores/authStore';
 import { contentStore } from '../../stores/contentStore';
 import { EditableText } from '../../components/admin/EditableText';
 import { servicesData } from '../../data/services';
+import { FaSolidArrowLeftLong } from 'solid-icons/fa';
+import { AiFillCamera } from 'solid-icons/ai';
+import { FaSolidTrashAlt } from 'solid-icons/fa';
+import { FaSolidLightbulb } from 'solid-icons/fa';
 
 const AdminPortfolio: Component = () => {
   const navigate = useNavigate();
@@ -35,39 +39,40 @@ const AdminPortfolio: Component = () => {
     <div class="min-h-screen bg-gray-100">
       {/* Admin Navbar */}
       <nav class="bg-[#464C43] text-white shadow-lg">
-        <div class="container mx-auto px-6 py-4">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
+        <div class="container mx-auto px-4 md:px-6 py-4">
+          <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 md:gap-3 min-w-0 flex-shrink-0">
               <button
                 onClick={() => navigate('/admin/home')}
-                class="mr-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded transition text-sm"
+                class="flex items-center gap-1 md:gap-2 px-2 md:px-4 py-1 md:py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-all duration-200 flex-shrink-0"
               >
-                ← Back to Admin Home
+                <FaSolidArrowLeftLong size={16} class="md:size-18" />
+                <span class="hidden md:inline text-sm">Kembali</span>
               </button>
-              <span class="text-xl font-bold">WIDYMOTRET</span>
-              <span class="text-sm text-white/70 border-l border-white/30 pl-3">Portfolio Admin</span>
+              <span class="hidden md:inline text-lg md:text-xl font-bold">WIDYMOTRET</span>
+              <span class="text-xs md:text-sm text-white/70 border-l border-white/30 pl-3 hidden md:block">Portfolio Admin</span>
             </div>
 
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 md:gap-4 ml-auto">
               <div class="text-right hidden sm:block">
-                <p class="text-sm font-medium">{admin()?.name || 'Admin'}</p>
-                <p class="text-xs text-white/70">{admin()?.email}</p>
+                <p class="text-xs md:text-sm font-medium">{admin()?.username || 'Admin'}</p>
+                <p class="text-xs text-white/70">Administrator</p>
               </div>
               
-              <div class="w-10 h-10 rounded-full bg-[#576250] flex items-center justify-center">
-                <span class="text-lg font-bold">
-                  {admin()?.name?.charAt(0) || 'A'}
+              <div class="w-8 md:w-10 h-8 md:h-10 rounded-full bg-[#576250] flex items-center justify-center flex-shrink-0">
+                <span class="text-sm md:text-lg font-bold">
+                  {admin()?.username?.charAt(0) || 'A'}
                 </span>
               </div>
 
               <button
                 onClick={handleLogout}
-                class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 rounded-lg transition-all duration-200 flex items-center gap-2"
+                class="px-2 md:px-4 py-1 md:py-2 bg-red-500/20 hover:bg-red-500/30 text-red-200 rounded-lg transition-all duration-200 flex items-center gap-1 md:gap-2 flex-shrink-0"
               >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-4 md:w-5 h-4 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                <span class="hidden sm:inline">Logout</span>
+                <span class="hidden sm:inline text-xs md:text-sm">Logout</span>
               </button>
             </div>
           </div>
@@ -117,7 +122,7 @@ const AdminPortfolio: Component = () => {
         <Show when={currentService()}>
           {(service) => (
             <div>
-              <h2 class="text-2xl font-bold text-gray-800 mb-8">📸 {service().title} - Portfolio</h2>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillCamera class="inline mr-2" size={28} />{service().title} - Portfolio</h2>
 
               {/* Portfolio Items Grid */}
               <div class="space-y-6">
@@ -180,10 +185,11 @@ const AdminPortfolio: Component = () => {
                           <div class="pt-2 border-t border-gray-200 flex justify-between items-center">
                             <span class="text-sm text-gray-500">Item #{idx() + 1}</span>
                             <button
-                              class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all text-sm font-medium"
+                              class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all text-sm font-medium flex items-center gap-2"
                               onClick={() => handleSave(`Portfolio item would be deleted`)}
                             >
-                              🗑️ Delete Item
+                              <FaSolidTrashAlt size={16} />
+                              Delete Item
                             </button>
                           </div>
                         </div>

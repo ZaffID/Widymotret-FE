@@ -1,4 +1,4 @@
-import { Component, createSignal, createEffect, onCleanup } from 'solid-js';
+import { Component, createSignal, createEffect, createMemo, onCleanup, For } from 'solid-js';
 
 interface ImageCarouselProps {
   images: string[];
@@ -12,17 +12,29 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
   const [isDragging, setIsDragging] = createSignal(false);
   const [dragStart, setDragStart] = createSignal(0);
   const [dragOffset, setDragOffset] = createSignal(0);
+  const [isAnimating, setIsAnimating] = createSignal(false);
 
   const interval = props.autoPlayInterval || 5000;
-  const images = props.images;
+  const images = createMemo(() => props.images || []);
+
+  // Helper function to change image with debounce
+  const changeImage = (newIndex: number) => {
+    if (images().length === 0) return;
+    if (isAnimating()) return;
+    setIsAnimating(true);
+    setCurrentIndex(newIndex);
+    props.onImageChange?.(newIndex);
+    setTimeout(() => setIsAnimating(false), 700); // Match transition duration
+  };
 
   // Auto-play effect
   createEffect(() => {
     if (!isAutoPlay()) return;
+    if (images().length === 0) return;
 
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-      props.onImageChange?.((currentIndex() + 1) % images.length);
+      setCurrentIndex((prev) => (prev + 1) % images().length);
+      props.onImageChange?.((currentIndex() + 1) % images().length);
     }, interval);
 
     onCleanup(() => clearInterval(timer));
@@ -30,22 +42,22 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
 
   // Go to specific image
   const goToImage = (index: number) => {
-    setCurrentIndex(index);
+    if (isAnimating()) return;
+    changeImage(index);
     setIsAutoPlay(true);
-    props.onImageChange?.(index);
   };
 
   // Next/Prev with keyboard
   createEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (images().length === 0) return;
+      if (isAnimating()) return;
       if (e.key === 'ArrowRight') {
-        setCurrentIndex((prev) => (prev + 1) % images.length);
+        changeImage((currentIndex() + 1) % images().length);
         setIsAutoPlay(true);
-        props.onImageChange?.((currentIndex() + 1) % images.length);
       } else if (e.key === 'ArrowLeft') {
-        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+        changeImage((currentIndex() - 1 + images().length) % images().length);
         setIsAutoPlay(true);
-        props.onImageChange?.((currentIndex() - 1 + images.length) % images.length);
       }
     };
 
@@ -67,19 +79,18 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
 
   const handleMouseUp = () => {
     if (!isDragging()) return;
+    if (images().length === 0) return;
 
     const offset = dragOffset();
     const threshold = 50; // minimum drag distance
 
-    if (Math.abs(offset) > threshold) {
+    if (Math.abs(offset) > threshold && !isAnimating()) {
       if (offset > 0) {
         // Dragged right - show previous image
-        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-        props.onImageChange?.((currentIndex() - 1 + images.length) % images.length);
+        changeImage((currentIndex() - 1 + images().length) % images().length);
       } else {
         // Dragged left - show next image
-        setCurrentIndex((prev) => (prev + 1) % images.length);
-        props.onImageChange?.((currentIndex() + 1) % images.length);
+        changeImage((currentIndex() + 1) % images().length);
       }
     }
 
@@ -102,17 +113,16 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
 
   const handleTouchEnd = () => {
     if (!isDragging()) return;
+    if (images().length === 0) return;
 
     const offset = dragOffset();
     const threshold = 50;
 
-    if (Math.abs(offset) > threshold) {
+    if (Math.abs(offset) > threshold && !isAnimating()) {
       if (offset > 0) {
-        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-        props.onImageChange?.((currentIndex() - 1 + images.length) % images.length);
+        changeImage((currentIndex() - 1 + images().length) % images().length);
       } else {
-        setCurrentIndex((prev) => (prev + 1) % images.length);
-        props.onImageChange?.((currentIndex() + 1) % images.length);
+        changeImage((currentIndex() + 1) % images().length);
       }
     }
 
@@ -120,6 +130,19 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
     setDragOffset(0);
     setIsAutoPlay(true);
   };
+
+  // Keep index valid when image list changes after async content load
+  createEffect(() => {
+    const length = images().length;
+    if (length === 0) {
+      setCurrentIndex(0);
+      return;
+    }
+
+    if (currentIndex() >= length) {
+      setCurrentIndex(0);
+    }
+  });
 
   return (
     <div
@@ -137,22 +160,24 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
     >
       {/* Images */}
       <div class="relative w-full h-full">
-        {images.map((image, index) => (
+        <For each={images()}>
+          {(image, index) => (
           <div
             class="absolute inset-0 transition-opacity duration-700 ease-in-out"
             style={{
-              opacity: currentIndex() === index ? 1 : 0,
-              'pointer-events': currentIndex() === index ? 'auto' : 'none',
+              opacity: currentIndex() === index() ? 1 : 0,
+              'pointer-events': currentIndex() === index() ? 'auto' : 'none',
             }}
           >
             <img
               src={image}
-              alt={`Carousel image ${index + 1}`}
+              alt={`Carousel image ${index() + 1}`}
               class="w-full h-full object-cover"
               draggable={false}
             />
           </div>
-        ))}
+          )}
+        </For>
       </div>
 
       {/* Dark overlay */}
@@ -160,17 +185,19 @@ const ImageCarousel: Component<ImageCarouselProps> = (props) => {
 
       {/* Navigation dots - bottom center */}
       <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
-        {images.map((_, index) => (
+        <For each={images()}>
+          {(_, index) => (
           <button
-            onClick={() => goToImage(index)}
+            onClick={() => goToImage(index())}
             class={`transition-all duration-300 rounded-full ${
-              currentIndex() === index
+              currentIndex() === index()
                 ? 'bg-white w-3 h-3'
                 : 'bg-white/50 w-2 h-2 hover:bg-white/75'
             }`}
-            aria-label={`Go to image ${index + 1}`}
+            aria-label={`Go to image ${index() + 1}`}
           />
-        ))}
+          )}
+        </For>
       </div>
 
     </div>

@@ -2,6 +2,7 @@ import { createSignal, createEffect, Show, createMemo } from 'solid-js';
 import { BiRegularPencil } from 'solid-icons/bi';
 import { FaSolidTrashAlt } from 'solid-icons/fa';
 import { updateContent, uploadImage } from '../../services/contentApi';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
 
 interface EditableImageProps {
   label: string;
@@ -25,6 +26,7 @@ export const EditableImage = (props: EditableImageProps) => {
   const [isSaving, setIsSaving] = createSignal(false);
   // FIXED: Generate fileInputId once, not every render
   const fileInputId = createMemo(() => `file-input-${props.section}-${props.field}-${Math.random().toString(36).substr(2, 9)}`);
+  const previewSrc = createMemo(() => resolveMediaUrl(currentValue()));
 
   // Keep local preview in sync with store updates from parent after save/load.
   createEffect(() => {
@@ -138,7 +140,7 @@ export const EditableImage = (props: EditableImageProps) => {
             }
           >
             <img
-              src={currentValue()}
+              src={previewSrc()}
               alt={props.label}
               class="w-full h-full object-cover"
               onError={() => setImgError(true)}

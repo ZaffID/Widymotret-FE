@@ -5,6 +5,8 @@ import Footer from '../components/Footer';
 import ContactModal from '../components/ContactModal';
 import { GalleryModal } from '../components/portfolio/GalleryModal';
 import { portfolioCategories, portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
+import { contentStore } from '../stores/contentStore';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 import { useScrollRevealGroup } from '../hooks/useScrollReveal';
 import '../styles/scroll-reveal.css';
 import './Portfolio.css';
@@ -26,6 +28,9 @@ const Portfolio: Component = () => {
       const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
       const res = await fetch(`${apiUrl}/api/packages`, { method: 'HEAD' });
       if (!res.ok) throw new Error('BE unavailable');
+
+      // Load portfolio section values saved from admin panel
+      await contentStore.loadSection('portfolio');
       setLoadError(false);
     } catch (err) {
       console.error('Backend unavailable:', err);
@@ -48,7 +53,15 @@ const Portfolio: Component = () => {
 
   // Get images for active category
   const currentImages = createMemo(() => {
-    return getImagesByCategory(activeCategory());
+    const category = activeCategory();
+    return getImagesByCategory(category).map((img) => {
+      const fieldName = `${category}_${img.id}`;
+      const savedValue = contentStore.getField('portfolio', fieldName);
+      return {
+        ...img,
+        url: resolveMediaUrl(savedValue || img.url),
+      } as PortfolioImage;
+    });
   });
 
   // Reset animation when category changes

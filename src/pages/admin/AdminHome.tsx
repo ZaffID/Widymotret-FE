@@ -697,6 +697,33 @@ const AdminHome: Component = () => {
               <div class="mb-10 pb-10 border-b-2 border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800 mb-4"><RiWeatherSparkling2Fill class="inline mr-2" size={20} />Potret Unggulan (Featured Shots)</h3>
                 <p class="text-sm text-gray-500 mb-4">Foto portrait yang ditampilkan di carousel. Bisa ditambah/hapus.</p>
+
+                <EditableText
+                  label="Judul Section"
+                  value={contentStore.getField('featured', 'title')}
+                  section="featured"
+                  field="title"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('featured', 'title', value);
+                    handleSave('Judul Potret Unggulan berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+
+                <EditableText
+                  label="Subtitle Section"
+                  value={contentStore.getField('featured', 'subtitle')}
+                  section="featured"
+                  field="subtitle"
+                  multiline={true}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('featured', 'subtitle', value);
+                    handleSave('Subtitle Potret Unggulan berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <For each={Array.from({length: 5}, (_, i) => i)}>
                     {(idx) => {

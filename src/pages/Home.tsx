@@ -404,8 +404,8 @@ const Home: Component = () => {
       <section class="py-20 md:py-28 px-4 md:px-6 bg-white">
         <div class="container mx-auto max-w-5xl">
           <div class="text-center mb-12 md:mb-16">
-            <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4">Potret Unggulan</h2>
-            <p class="text-base md:text-lg text-gray-600">Sekilas pandang dari beberapa karya terbaik kami.</p>
+            <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4">{t('featured', 'title', 'Potret Unggulan')}</h2>
+            <p class="text-base md:text-lg text-gray-600">{t('featured', 'subtitle', 'Sekilas pandang dari beberapa karya terbaik kami.')}</p>
           </div>
           <div class="relative mt-2 md:mt-4">
             <div class="flex items-center justify-center gap-2 md:gap-4">

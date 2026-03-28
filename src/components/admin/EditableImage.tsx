@@ -38,11 +38,11 @@ export const EditableImage = (props: EditableImageProps) => {
     }
   });
 
-  const handleSave = async () => {
-    const newValue = currentValue().trim();
+  const persistValue = async (rawValue: string, closeEditor = true) => {
+    const newValue = rawValue.trim();
     if (!newValue) {
       props.onError?.('URL tidak boleh kosong');
-      return;
+      return false;
     }
     
     console.log(`[DEBUG EditableImage] Saving: section=${props.section}, field=${props.field}, value=${newValue}`);
@@ -55,22 +55,29 @@ export const EditableImage = (props: EditableImageProps) => {
       
       if (response.success) {
         console.log(`[DEBUG EditableImage] Save successful`);
-        setIsEditing(false);
+        if (closeEditor) setIsEditing(false);
         setLastPropValue(newValue);
         setImgError(false);
         props.onSave?.(newValue);
+        return true;
       } else {
         const errorMsg = response.message || 'Gagal menyimpan gambar';
         console.log(`[DEBUG EditableImage] Save failed: ${errorMsg}`);
         props.onError?.(errorMsg);
+        return false;
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Gagal menyimpan';
       console.log(`[DEBUG EditableImage] Save exception: ${errorMsg}`);
       props.onError?.(errorMsg);
+      return false;
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleSave = async () => {
+    await persistValue(currentValue(), true);
   };
 
   const handleCancel = () => {
@@ -109,6 +116,9 @@ export const EditableImage = (props: EditableImageProps) => {
         console.log(`[DEBUG EditableImage] Setting currentValue to: ${response.data.url}`);
         setCurrentValue(response.data.url);
         setImgError(false);
+
+        // Auto-save uploaded file path so users don't lose changes by missing manual save.
+        await persistValue(response.data.url, false);
       } else {
         const errorMsg = response.message || 'Gagal upload gambar';
         console.log(`[DEBUG EditableImage] Upload failed: ${errorMsg}`);

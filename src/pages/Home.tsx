@@ -112,23 +112,27 @@ const Home: Component = () => {
     }))
   );
 
-  const testimonials = [
-    {
-      quote: 'Cara kalian menangkap momen hari kami sungguh luar biasa. Setiap foto adalah harta karun.',
-      author: 'Racheal and Tim',
-      avatar: '/portrait/portrait (1).png',
-    },
-    {
-      quote: 'Profesional, sabar, dan sangat berbakat.',
-      author: 'Agency Lead, Numa Studio',
-      avatar: '/portrait/portrait (2).png',
-    },
-    {
-      quote: 'Portrait saya selalu terlihat menakjubkan ketika ditangani oleh kalian.',
-      author: 'Mary Jane',
-      avatar: '/portrait/portrait (3).png',
-    },
-  ];
+  const testimonials = createMemo(() => {
+    const testi: Array<{ quote: string; author: string; avatar: string }> = [];
+    for (let i = 1; i <= 7; i++) {
+      const quote = contentStore.getField('testimonials', `quote${i}`);
+      const author = contentStore.getField('testimonials', `author${i}`);
+      if (quote && author) {
+        testi.push({
+          quote,
+          author,
+          avatar: `/portrait/portrait (${i}).png`,
+        });
+      }
+    }
+    return testi.length > 0 ? testi : [
+      {
+        quote: 'Cara kalian menangkap momen hari kami sungguh luar biasa. Setiap foto adalah harta karun.',
+        author: 'Racheal and Tim',
+        avatar: '/portrait/portrait (1).png',
+      },
+    ];
+  });
 
   // Single testimonial carousel state
   const [testiIndex, setTestiIndex] = createSignal(0);

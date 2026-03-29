@@ -141,8 +141,8 @@ const Home: Component = () => {
   const [isAnimatingPortrait, setIsAnimatingPortrait] = createSignal(false);
   let serviceScrollContainer!: HTMLDivElement;
   
-  const nextTesti = () => setTestiIndex((p) => (p + 1) % testimonials.length);
-  const prevTesti = () => setTestiIndex((p) => (p - 1 + testimonials.length) % testimonials.length);
+  const nextTesti = () => setTestiIndex((p) => (p + 1) % testimonials().length);
+  const prevTesti = () => setTestiIndex((p) => (p - 1 + testimonials().length) % testimonials().length);
 
   // Handle portfolio click - show info on first click (mobile), navigate on second click
   const handlePortfolioClick = (slug: string) => {

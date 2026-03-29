@@ -24,8 +24,8 @@ export const EditableImage = (props: EditableImageProps) => {
   const [imgError, setImgError] = createSignal(false);
   const [isUploading, setIsUploading] = createSignal(false);
   const [isSaving, setIsSaving] = createSignal(false);
-  // FIXED: Generate fileInputId once, not every render
-  const fileInputId = createMemo(() => `file-input-${props.section}-${props.field}-${Math.random().toString(36).substr(2, 9)}`);
+  // Generate file input ID once - stable ID for file input reference
+  const fileInputId = `file-input-${props.section}-${props.field}-${Math.random().toString(36).substr(2, 9)}`;
   const previewSrc = createMemo(() => resolveMediaUrl(currentValue()));
 
   // Keep local preview in sync with store updates from parent after save/load.
@@ -199,14 +199,14 @@ export const EditableImage = (props: EditableImageProps) => {
             <div>
               <input
                 type="file"
-                id={fileInputId()}
+                id={fileInputId}
                 accept="image/*"
                 onChange={handleFileSelect}
                 disabled={isUploading()}
                 class="hidden"
               />
               <button
-                onClick={() => document.getElementById(fileInputId())?.click()}
+                onClick={() => document.getElementById(fileInputId)?.click()}
                 disabled={isUploading()}
                 class="w-full px-3 py-2 border border-dashed border-gray-300 rounded-md text-sm font-medium text-gray-600 hover:border-[#576250] hover:text-[#576250] transition disabled:opacity-50 flex items-center justify-center gap-2"
               >

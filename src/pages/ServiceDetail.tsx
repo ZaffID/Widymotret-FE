@@ -2,6 +2,7 @@ import { Component, For, Show, createSignal, createEffect, onMount } from 'solid
 import { useParams, useNavigate } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import ScrollToTop from '../components/ScrollToTop';
 import { servicesData } from '../data/services';
 import { contentStore } from '../stores/contentStore';
 import { useScrollReveal, useScrollRevealGroup } from '../hooks/useScrollReveal';
@@ -488,6 +489,9 @@ const ServiceDetail: Component = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop showThreshold={400} />
     </div>
   );
 };

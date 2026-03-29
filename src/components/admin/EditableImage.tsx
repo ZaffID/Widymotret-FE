@@ -94,13 +94,14 @@ export const EditableImage = (props: EditableImageProps) => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      props.onError?.('Hanya file gambar yang diperbolehkan');
+      props.onError?.('❌ File harus berupa gambar (JPG, PNG, WebP, dll)');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      props.onError?.('Ukuran file maksimal 5MB');
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+      props.onError?.(`❌ File terlalu besar: ${sizeMB}MB (maksimal 5MB)`);
       return;
     }
 

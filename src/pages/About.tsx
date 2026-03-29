@@ -3,6 +3,7 @@ import { useNavigate } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ContactModal from '../components/ContactModal';
+import ScrollToTop from '../components/ScrollToTop';
 import { aboutData } from '../data/about';
 import { contentStore } from '../stores/contentStore';
 import { useScrollReveal } from '../hooks/useScrollReveal';
@@ -234,6 +235,9 @@ const About: Component = () => {
       />
 
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop showThreshold={300} />
     </div>
   );
 };

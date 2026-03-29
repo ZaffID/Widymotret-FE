@@ -3,6 +3,7 @@ import { useSearchParams } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import ContactModal from '../components/ContactModal';
+import ScrollToTop from '../components/ScrollToTop';
 import { GalleryModal } from '../components/portfolio/GalleryModal';
 import { portfolioCategories, portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
 import { contentStore } from '../stores/contentStore';
@@ -314,6 +315,9 @@ const Portfolio: Component = () => {
       />
 
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop showThreshold={400} />
     </div>
   );
 };

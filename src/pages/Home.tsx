@@ -5,6 +5,7 @@ import PriceList from '../components/PriceList';
 import ImageCarousel from '../components/ImageCarousel';
 import Footer from '../components/Footer';
 import ContactModal from '../components/ContactModal';
+import ScrollToTop from '../components/ScrollToTop';
 import { servicesData } from '../data/services';
 import { contentStore } from '../stores/contentStore';
 import { useScrollReveal, useScrollRevealGroup } from '../hooks/useScrollReveal';
@@ -644,6 +645,9 @@ const Home: Component = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop showThreshold={500} />
     </div>
   );
 };

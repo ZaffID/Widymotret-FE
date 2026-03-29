@@ -4,6 +4,8 @@ import { authStore } from '../../stores/authStore';
 import { contentStore } from '../../stores/contentStore';
 import { EditableText } from '../../components/admin/EditableText';
 import { EditableImage } from '../../components/admin/EditableImage';
+import Toast from '../../components/Toast';
+import ScrollToTop from '../../components/ScrollToTop';
 import { servicesData } from '../../data/services';
 import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
 import { AiFillHome } from 'solid-icons/ai';
@@ -453,12 +455,8 @@ const AdminHome: Component = () => {
           </p>
         </div>
 
-        {/* Success/Error Message */}
-        <Show when={saveMessage()}>
-          <div class={`mb-6 p-4 rounded-lg ${saveMessage()?.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-            {saveMessage()?.text}
-          </div>
-        </Show>
+        {/* Success/Error Message - Toast Notification */}
+        <Toast message={saveMessage()?.text} type={saveMessage()?.type} />
 
       {/* Tab Navigation */}
         <div class="bg-white rounded-xl shadow-sm p-1 mb-8 flex gap-2 flex-wrap">
@@ -1870,6 +1868,9 @@ const AdminHome: Component = () => {
           <p>© 2026 Widymotret Studio Admin Panel</p>
         </div>
       </footer>
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop showThreshold={300} />
     </div>
   );
 };

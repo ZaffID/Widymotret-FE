@@ -494,9 +494,9 @@ const Home: Component = () => {
 
             <div class="max-w-4xl mx-auto text-center text-white px-6">
               <div class="testi-item" classList={{ 'animate': testiAnimate() }}>
-                <p class="text-lg md:text-xl italic mb-6">"{t('testimonials', `quote${testiIndex() + 1}`, testimonials[testiIndex()].quote)}"
+                <p class="text-lg md:text-xl italic mb-6">"{t('testimonials', `quote${testiIndex() + 1}`, testimonials()[testiIndex()].quote)}"
                 </p>
-                <p class="font-semibold">- {t('testimonials', `author${testiIndex() + 1}`, testimonials[testiIndex()].author)}</p>
+                <p class="font-semibold">- {t('testimonials', `author${testiIndex() + 1}`, testimonials()[testiIndex()].author)}</p>
               </div>
             </div>
 

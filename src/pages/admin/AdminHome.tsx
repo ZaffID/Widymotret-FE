@@ -70,6 +70,27 @@ const packageTemplateImages: Record<string, string[]> = {
   ],
 };
 
+const TestimoniCounter = () => {
+  const getCount = createMemo(() => {
+    let count = 0;
+    for (let i = 1; i <= 7; i++) {
+      if (contentStore.getField('testimonials', `quote${i}`)) count++;
+    }
+    return count;
+  });
+
+  const isFull = createMemo(() => getCount() >= 6);
+
+  return (
+    <p class="text-sm text-gray-600">
+      <span class="font-semibold">{getCount()}</span> dari 7 testimoni
+      <Show when={isFull()}>
+        <span class="text-orange-600 ml-2">⚠️ Max approached</span>
+      </Show>
+    </p>
+  );
+};
+
 const AdminHome: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
@@ -833,38 +854,90 @@ const AdminHome: Component = () => {
                   onError={handleError}
                 />
                 
-                <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <For each={[1, 2, 3]}>
-                    {(idx) => (
-                      <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h4 class="font-bold text-gray-800 mb-3 text-sm">Testimoni {idx}</h4>
-                        <EditableText
-                          label={`Kutipan ${idx}`}
-                          value={contentStore.getField('testimonials', `quote${idx}`)}
-                          section="testimonials"
-                          field={`quote${idx}`}
-                          multiline={true}
-                          onSave={(value) => {
-                            contentStore.updateFieldLocal('testimonials', `quote${idx}`, value);
-                            handleSave(`Kutipan ${idx} berhasil disimpan`);
-                          }}
-                          onError={handleError}
-                        />
-                        <EditableText
-                          label={`Nama ${idx}`}
-                          value={contentStore.getField('testimonials', `author${idx}`)}
-                          section="testimonials"
-                          field={`author${idx}`}
-                          multiline={false}
-                          onSave={(value) => {
-                            contentStore.updateFieldLocal('testimonials', `author${idx}`, value);
-                            handleSave(`Nama ${idx} berhasil disimpan`);
-                          }}
-                          onError={handleError}
-                        />
-                      </div>
-                    )}
-                  </For>
+                <div class="mt-6 space-y-4">
+                  <div class="flex items-center justify-between">
+                    <TestimoniCounter />
+                    <button
+                      onClick={() => {
+                        // Find first empty slot
+                        for (let i = 1; i <= 7; i++) {
+                          const quote = contentStore.getField('testimonials', `quote${i}`);
+                          if (!quote) {
+                            contentStore.updateFieldLocal('testimonials', `quote${i}`, 'Testimoni baru');
+                            contentStore.updateFieldLocal('testimonials', `author${i}`, 'Nama');
+                            handleSave(`Testimoni ${i} ditambahkan`);
+                            return;
+                          }
+                        }
+                        handleError('Maksimal 7 testimoni sudah tercapai');
+                      }}
+                      class="px-3 py-1.5 bg-[#576250] text-white rounded-md text-sm font-medium hover:bg-[#464C43]"
+                    >
+                      + Tambah Testimoni
+                    </button>
+                  </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <For each={[1, 2, 3, 4, 5, 6, 7]}>
+                      {(idx) => {
+                        const quote = () => contentStore.getField('testimonials', `quote${idx}`);
+                        const canDelete = createMemo(() => {
+                          let count = 0;
+                          for (let i = 1; i <= 7; i++) {
+                            if (contentStore.getField('testimonials', `quote${i}`)) count++;
+                          }
+                          return count > 3;
+                        });
+
+                        return (
+                          <Show when={quote()}>
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 relative">
+                              <div class="flex justify-between items-start mb-3">
+                                <h4 class="font-bold text-gray-800 text-sm">Testimoni {idx}</h4>
+                                <Show when={canDelete()}>
+                                  <button
+                                    onClick={() => {
+                                      contentStore.updateFieldLocal('testimonials', `quote${idx}`, '');
+                                      contentStore.updateFieldLocal('testimonials', `author${idx}`, '');
+                                      handleSave(`Testimoni ${idx} dihapus`);
+                                    }}
+                                    class="text-red-500 hover:text-red-700 text-lg leading-none px-2"
+                                    title="Hapus testimoni"
+                                  >
+                                    ×
+                                  </button>
+                                </Show>
+                              </div>
+                              <EditableText
+                                label={`Kutipan ${idx}`}
+                                value={quote()}
+                                section="testimonials"
+                                field={`quote${idx}`}
+                                multiline={true}
+                                onSave={(value) => {
+                                  contentStore.updateFieldLocal('testimonials', `quote${idx}`, value);
+                                  handleSave(`Kutipan ${idx} berhasil disimpan`);
+                                }}
+                                onError={handleError}
+                              />
+                              <EditableText
+                                label={`Nama ${idx}`}
+                                value={contentStore.getField('testimonials', `author${idx}`)}
+                                section="testimonials"
+                                field={`author${idx}`}
+                                multiline={false}
+                                onSave={(value) => {
+                                  contentStore.updateFieldLocal('testimonials', `author${idx}`, value);
+                                  handleSave(`Nama ${idx} berhasil disimpan`);
+                                }}
+                                onError={handleError}
+                              />
+                            </div>
+                          </Show>
+                        );
+                      }}
+                    </For>
+                  </div>
                 </div>
               </div>
 

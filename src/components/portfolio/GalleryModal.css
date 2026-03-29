@@ -92,7 +92,7 @@
 /* Title */
 .gallery-modal-title {
   color: white;
-  font-family: 'Switzer', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 16px;
   font-weight: 500;
   text-align: center;

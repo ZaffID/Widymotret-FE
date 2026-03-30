@@ -165,7 +165,7 @@ const AdminPricelist: Component = () => {
     }
   };
 
-  const uploadImageForPackage = async (file: File): Promise<string> => {
+  const uploadImageForPackage = async (file: File) => {
     const token = authStore.getToken();
     if (!token) {
       throw new Error('Anda harus login terlebih dahulu');
@@ -183,16 +183,10 @@ const AdminPricelist: Component = () => {
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
       throw new Error(`Upload gagal: ${res.status} ${res.statusText}`);
     }
 
-    const data = await res.json();
-    if (!data.success || !data.data?.url) {
-      throw new Error(data.message || 'Upload gagal, URL tidak ditemukan');
-    }
-
-    return data.data.url;
+    return await res.json();
   };
 
   const handleLogout = () => {
@@ -353,28 +347,26 @@ const AdminPricelist: Component = () => {
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <For each={pkg.images || []}>
                         {(img, idx) => (
-                          <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-                            <EditableImage
-                              label={`Foto #${idx() + 1}`}
-                              value={img}
-                              section={`package-${pkg.id}`}
-                              field={`image-${idx()}`}
-                              aspectClass="aspect-square"
-                              onUpload={uploadImageForPackage}
-                              onSave={(newValue) => {
-                                const newImages = [...(pkg.images || [])];
-                                newImages[idx()] = newValue;
-                                updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
-                                showToast('success', 'Gambar diupdate. Klik "Simpan Paket" untuk menyimpan.');
-                              }}
-                              onDelete={() => {
-                                const newImages = (pkg.images || []).filter((_, i) => i !== idx());
-                                updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
-                                showToast('success', 'Gambar dihapus. Klik "Simpan Paket" untuk menyimpan.');
-                              }}
-                              onError={(err) => showToast('error', err)}
-                            />
-                          </div>
+                          <EditableImage
+                            label={`Foto #${idx() + 1}`}
+                            value={img}
+                            section={`package-${pkg.id}`}
+                            field={`image-${idx()}`}
+                            aspectClass="aspect-square"
+                            onUpload={uploadImageForPackage}
+                            onSave={(newValue) => {
+                              const newImages = [...(pkg.images || [])];
+                              newImages[idx()] = newValue;
+                              updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                              showToast('success', 'Gambar diupdate. Klik "Simpan Paket" untuk menyimpan ke server.');
+                            }}
+                            onDelete={() => {
+                              const newImages = (pkg.images || []).filter((_, i) => i !== idx());
+                              updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                              showToast('success', 'Gambar dihapus. Klik "Simpan Paket" untuk menyimpan ke server.');
+                            }}
+                            onError={(err) => showToast('error', err)}
+                          />
                         )}
                       </For>
 
@@ -391,10 +383,14 @@ const AdminPricelist: Component = () => {
                             if (!file) return;
 
                             try {
-                              const url = await uploadImageForPackage(file);
-                              const newImages = [...(pkg.images || []), url];
-                              updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
-                              showToast('success', 'Gambar berhasil ditambahkan. Klik "Simpan Paket" untuk menyimpan.');
+                              const response = await uploadImageForPackage(file);
+                              if (response.success && response.data?.url) {
+                                const newImages = [...(pkg.images || []), response.data.url];
+                                updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                                showToast('success', 'Gambar ditambahkan. Klik "Simpan Paket" untuk menyimpan ke server.');
+                              } else {
+                                showToast('error', response.message || 'Upload gagal');
+                              }
                             } catch (err) {
                               showToast('error', err instanceof Error ? err.message : 'Upload gagal');
                             }

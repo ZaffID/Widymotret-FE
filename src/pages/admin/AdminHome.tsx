@@ -1425,53 +1425,57 @@ const AdminHome: Component = () => {
                         )}
 
                         {/* Grid Foto */}
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4" key={`portfolio-${activeServicePortfolio()}`}>
-                          <For each={images()}>
-                            {(img, idx) => {
-                              const fieldName = `${category().slug}_${img.id}`;
-                              const rawStoredValue = contentStore.getField('portfolio', fieldName);
-                              // Sanitize stored value
-                              const storedValue = rawStoredValue 
-                                && String(rawStoredValue).trim() 
-                                && !['no image', 'null', 'undefined'].includes(String(rawStoredValue).trim().toLowerCase())
-                                ? rawStoredValue 
-                                : '';
-                              const displayValue = storedValue || img.url;
-                              
-                              console.log(`[AdminHome Portfolio] Rendering ${fieldName}: stored="${storedValue}", fallback="${img.url}", display="${displayValue}"`);
-                              
-                              return (
-                                <EditableImage
-                                  label={img.title}
-                                  value={displayValue}
-                                  section="portfolio"
-                                  field={fieldName}
-                                  aspectClass="aspect-square"
-                                  onUpload={uploadImageForPackage}
-                                  onSave={async (v) => {
-                                    console.log(`[AdminHome] Portfolio onSave START: field=${fieldName}, newValue="${v}"`);
-                                    try {
-                                      // Update local store first for immediate UI feedback
-                                      contentStore.updateFieldLocal('portfolio', fieldName, v);
-                                      console.log(`[AdminHome] Portfolio local store updated`);
-                                      
-                                      // Reload portfolio section from backend to ensure sync
-                                      await contentStore.loadSection('portfolio');
-                                      console.log(`[AdminHome] Portfolio section reloaded`);
-                                      
-                                      handleSave(`${img.title} berhasil diupdate`);
-                                    } catch (error) {
-                                      console.error(`[AdminHome] Portfolio onSave ERROR:`, error);
-                                      handleError(`Gagal menyimpan: ${error instanceof Error ? error.message : 'Unknown error'}`);
-                                    }
-                                  }}
-                                  onError={handleError}
-                                  onDelete={() => handleSave(`${img.title} akan dihapus`)}
-                                />
-                              );
-                            }}
-                          </For>
-                        </div>
+                        <For each={[activeServicePortfolio()]}>
+                          {() => (
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <For each={images()}>
+                                {(img, idx) => {
+                                  const fieldName = `${category().slug}_${img.id}`;
+                                  const rawStoredValue = contentStore.getField('portfolio', fieldName);
+                                  // Sanitize stored value
+                                  const storedValue = rawStoredValue 
+                                    && String(rawStoredValue).trim() 
+                                    && !['no image', 'null', 'undefined'].includes(String(rawStoredValue).trim().toLowerCase())
+                                    ? rawStoredValue 
+                                    : '';
+                                  const displayValue = storedValue || img.url;
+                                  
+                                  console.log(`[AdminHome Portfolio] Rendering ${fieldName}: stored="${storedValue}", fallback="${img.url}", display="${displayValue}"`);
+                                  
+                                  return (
+                                    <EditableImage
+                                      label={img.title}
+                                      value={displayValue}
+                                      section="portfolio"
+                                      field={fieldName}
+                                      aspectClass="aspect-square"
+                                      onUpload={uploadImageForPackage}
+                                      onSave={async (v) => {
+                                        console.log(`[AdminHome] Portfolio onSave START: field=${fieldName}, newValue="${v}"`);
+                                        try {
+                                          // Update local store first for immediate UI feedback
+                                          contentStore.updateFieldLocal('portfolio', fieldName, v);
+                                          console.log(`[AdminHome] Portfolio local store updated`);
+                                          
+                                          // Reload portfolio section from backend to ensure sync
+                                          await contentStore.loadSection('portfolio');
+                                          console.log(`[AdminHome] Portfolio section reloaded`);
+                                          
+                                          handleSave(`${img.title} berhasil diupdate`);
+                                        } catch (error) {
+                                          console.error(`[AdminHome] Portfolio onSave ERROR:`, error);
+                                          handleError(`Gagal menyimpan: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                        }
+                                      }}
+                                      onError={handleError}
+                                      onDelete={() => handleSave(`${img.title} akan dihapus`)}
+                                    />
+                                  );
+                                }}
+                              </For>
+                            </div>
+                          )}
+                        </For>
 
                         {/* Tambah Foto Baru */}
                         <button

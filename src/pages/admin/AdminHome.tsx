@@ -165,6 +165,13 @@ const AdminHome: Component = () => {
     return packages().filter((pkg) => pkg.category?.toLowerCase() === category);
   });
 
+  const getServicePreviewImage = (slug: string, fallback: string) => {
+    const category = slug.toLowerCase();
+    const pkg = packages().find((p) => p.category?.toLowerCase() === category && (p.images || []).length > 0);
+    const fromPackages = pkg?.images?.[0];
+    return resolveMediaUrl(fromPackages || fallback);
+  };
+
   const updatePackageLocal = (id: number, updater: (pkg: ApiPackage) => ApiPackage) => {
     setPackages((prev) => prev.map((pkg) => (pkg.id === id ? updater(pkg) : pkg)));
   };
@@ -632,7 +639,7 @@ const AdminHome: Component = () => {
                     {(s) => (
                       <div class="text-center">
                         <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                          <img src={s.image} alt={s.title} class="w-full h-full object-cover" />
+                          <img src={getServicePreviewImage(s.slug, s.image)} alt={s.title} class="w-full h-full object-cover" />
                         </div>
                         <p class="text-xs text-gray-500 mt-1">{s.title}</p>
                       </div>

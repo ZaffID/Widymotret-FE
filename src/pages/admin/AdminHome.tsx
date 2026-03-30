@@ -1372,15 +1372,18 @@ const AdminHome: Component = () => {
                                 {(img, idx) => {
                                   const fieldName = `${category().slug}_${img.id}`;
                                   const rawStoredValue = contentStore.getField('portfolio', fieldName);
+                                  // Check if field has been explicitly set in backend
+                                  const hasBeenSaved = rawStoredValue !== undefined && rawStoredValue !== null;
                                   // Sanitize stored value
                                   const storedValue = rawStoredValue 
                                     && String(rawStoredValue).trim() 
                                     && !['no image', 'null', 'undefined'].includes(String(rawStoredValue).trim().toLowerCase())
                                     ? rawStoredValue 
                                     : '';
-                                  const displayValue = storedValue || img.url;
+                                  // If explicitly deleted (hasBeenSaved but storedValue empty) → show empty. Otherwise fallback to default img.url
+                                  const displayValue = hasBeenSaved ? storedValue : img.url;
                                   
-                                  console.log(`[AdminHome Portfolio] Rendering ${fieldName}: stored="${storedValue}", fallback="${img.url}", display="${displayValue}"`);
+                                  console.log(`[AdminHome Portfolio] Rendering ${fieldName}: hasBeenSaved=${hasBeenSaved}, stored="${storedValue}", display="${displayValue}"`);
                                   
                                   return (
                                     <EditableImage
@@ -1426,14 +1429,13 @@ const AdminHome: Component = () => {
 
                         {/* Tambah Foto Baru */}
                         <button
-                          onClick={() => handleSave(`Fitur tambah foto masih dalam pengembangan. Portfolio items sudah fixed dari database.`)}
-                          class="mt-6 w-full py-3 px-4 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition font-medium text-sm flex items-center justify-center gap-2 cursor-not-allowed"
-                          disabled
+                          onClick={() => handleSave(`Fitur tambah foto masih dalam pengembangan. Edit foto yang sudah ada untuk demo sekarang.`)}
+                          class="mt-6 w-full py-3 px-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-medium text-sm flex items-center justify-center gap-2"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                           </svg>
-                          Tambah Foto ke {category().name}
+                          Tambah Foto ke {category().name} (Coming Soon)
                         </button>
                       </div>
                     )}

@@ -71,13 +71,8 @@ const AdminPricelist: Component = () => {
     setPackages((prev) => prev.map((p) => (p.id === id ? updater(p) : p)));
   };
 
-  const savePackage = async (pkg: Package, silent = false) => {
+  const savePackage = async (pkg: Package) => {
     const token = authStore.getToken();
-    console.log(`[AdminPricelist] savePackage called for pkg ${pkg.id}:`, {
-      name: pkg.name,
-      images: pkg.images,
-      featuresCount: pkg.features?.length || 0,
-    });
     try {
       const res = await fetch(`${API_BASE}/packages/${pkg.id}`, {
         method: 'PUT',
@@ -97,14 +92,12 @@ const AdminPricelist: Component = () => {
       });
 
       const data = await res.json();
-      console.log(`[AdminPricelist] savePackage response:`, data);
       if (data.success) {
-        if (!silent) showToast('success', `Package "${pkg.name}" berhasil disimpan`);
+        showToast('success', `Package "${pkg.name}" berhasil disimpan`);
       } else {
         showToast('error', data.message || 'Gagal menyimpan package');
       }
     } catch (err) {
-      console.error(`[AdminPricelist] savePackage error:`, err);
       showToast('error', 'Terjadi kesalahan koneksi saat menyimpan package');
     }
   };
@@ -176,13 +169,10 @@ const AdminPricelist: Component = () => {
       return;
     }
 
-    console.log(`[AdminPricelist] File dipilih:`, file.name, file.size, file.type);
-
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      console.log(`[AdminPricelist] Uploading ke ${API_BASE}/upload`);
       const res = await fetch(`${API_BASE}/upload`, {
         method: 'POST',
         headers: {
@@ -191,17 +181,13 @@ const AdminPricelist: Component = () => {
         body: formData,
       });
 
-      console.log(`[AdminPricelist] Response status: ${res.status}`);
-      
       if (!res.ok) {
         const errorText = await res.text();
-        console.error(`[AdminPricelist] Upload error: ${errorText}`);
         showToast('error', `Upload gagal: ${res.status} ${res.statusText}`);
         return;
       }
 
       const data = await res.json();
-      console.log(`[AdminPricelist] Response data:`, data);
 
       if (!data.success) {
         showToast('error', data.message || 'Gagal upload gambar');
@@ -210,30 +196,23 @@ const AdminPricelist: Component = () => {
 
       const uploadedUrl = data?.data?.url;
       if (!uploadedUrl) {
-        console.error(`[AdminPricelist] URL tidak ada. Response:`, data);
         showToast('error', 'Upload berhasil tapi URL gambar tidak ditemukan');
         return;
       }
 
-      console.log(`[AdminPricelist] URL dterima: ${uploadedUrl}`);
-      const updatedPkg = { ...pkg, images: [...(pkg.images || []), uploadedUrl] };
-      console.log(`[AdminPricelist] Updated pkg images array:`, updatedPkg.images);
-      updatePackageLocal(pkg.id, () => updatedPkg);
-      console.log(`[AdminPricelist] Updated local state. New packages state:`, packages());
-      await savePackage(updatedPkg, true);
-      showToast('success', 'Gambar package berhasil ditambahkan');
+      // Add image to local state immediately (optimistic update)
+      const updatedImages = [...(pkg.images || []), uploadedUrl];
+      updatePackageLocal(pkg.id, (p) => ({ ...p, images: updatedImages }));
+      showToast('success', 'Gambar berhasil ditambahkan. Klik "Simpan Paket" untuk menyimpan.');
     } catch (err) {
-      console.error(`[AdminPricelist] Error during upload:`, err);
       showToast('error', `Terjadi kesalahan: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
-  const removeImageForPackage = async (pkg: Package, imageIndex: number) => {
+  const removeImageForPackage = (pkg: Package, imageIndex: number) => {
     const nextImages = (pkg.images || []).filter((_, idx) => idx !== imageIndex);
-    const updatedPkg = { ...pkg, images: nextImages };
-    updatePackageLocal(pkg.id, () => updatedPkg);
-    await savePackage(updatedPkg, true);
-    showToast('success', 'Gambar package berhasil dihapus');
+    updatePackageLocal(pkg.id, (p) => ({ ...p, images: nextImages }));
+    showToast('success', 'Gambar dihapus. Klik "Simpan Paket" untuk menyimpan.');
   };
 
   const handleLogout = () => {
@@ -391,26 +370,20 @@ const AdminPricelist: Component = () => {
 
                   <div class="mt-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Contoh Foto Package</label>
-                    <div class="text-xs text-gray-500 mb-2">
-                      Total Images: {pkg.images?.length || 0}
-                    </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                       <For each={pkg.images || []}>
-                        {(img, imgIdx) => {
-                          console.log(`[AdminPricelist] Rendering image at index ${imgIdx()}: ${img}`);
-                          return (
-                            <div class="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border">
-                              <img src={img} class="w-full h-full object-cover" alt="package" />
-                              <button
-                                type="button"
-                                onClick={() => removeImageForPackage(pkg, imgIdx())}
-                                class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                              >
-                                &times;
-                              </button>
-                            </div>
-                          );
-                        }}
+                        {(img, imgIdx) => (
+                          <div class="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border">
+                            <img src={img} class="w-full h-full object-cover" alt="package" />
+                            <button
+                              type="button"
+                              onClick={() => removeImageForPackage(pkg, imgIdx())}
+                              class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        )}
                       </For>
 
                       <label class="cursor-pointer aspect-video bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-[#576250] hover:text-[#576250] transition">
@@ -419,24 +392,19 @@ const AdminPricelist: Component = () => {
                           type="file"
                           class="hidden"
                           accept="image/*"
-                          onChange={(e) => {
+                          onChange={async (e) => {
                             const input = e.currentTarget;
                             const file = input.files?.[0];
-                            const pkgId = pkg.id; // Capture pkg.id to avoid closure issues
-                            console.log(`[AdminPricelist] Input onChange triggered, file:`, file?.name, `for pkg:`, pkgId);
-                            if (file) {
-                              // Find package from current state to ensure reference consistency
+                            const pkgId = pkg.id;
+                            
+                            if (file && pkgId) {
                               const currentPkg = packages().find(p => p.id === pkgId);
                               if (currentPkg) {
-                                uploadImageForPackage(currentPkg, file);
-                              } else {
-                                console.error(`[AdminPricelist] Package ${pkgId} not found in state!`);
+                                await uploadImageForPackage(currentPkg, file);
                               }
                             }
-                            // Reset value di next tick untuk allow re-select same file
-                            setTimeout(() => {
-                              input.value = '';
-                            }, 100);
+                            
+                            input.value = '';
                           }}
                         />
                       </label>

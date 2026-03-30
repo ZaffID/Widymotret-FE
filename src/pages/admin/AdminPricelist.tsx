@@ -1,6 +1,9 @@
 import { Component, For, Show, createMemo, createSignal, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { authStore } from '../../stores/authStore';
+import { EditableImage } from '../../components/admin/EditableImage';
+import Toast from '../../components/Toast';
+import ScrollToTop from '../../components/ScrollToTop';
 
 type Category = 'studio' | 'graduation' | 'event' | 'product' | 'wedding';
 
@@ -162,57 +165,34 @@ const AdminPricelist: Component = () => {
     }
   };
 
-  const uploadImageForPackage = async (pkg: Package, file: File) => {
+  const uploadImageForPackage = async (file: File): Promise<string> => {
     const token = authStore.getToken();
     if (!token) {
-      showToast('error', 'Anda harus login terlebih dahulu');
-      return;
+      throw new Error('Anda harus login terlebih dahulu');
     }
 
     const formData = new FormData();
     formData.append('file', file);
 
-    try {
-      const res = await fetch(`${API_BASE}/upload`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        showToast('error', `Upload gagal: ${res.status} ${res.statusText}`);
-        return;
-      }
-
-      const data = await res.json();
-
-      if (!data.success) {
-        showToast('error', data.message || 'Gagal upload gambar');
-        return;
-      }
-
-      const uploadedUrl = data?.data?.url;
-      if (!uploadedUrl) {
-        showToast('error', 'Upload berhasil tapi URL gambar tidak ditemukan');
-        return;
-      }
-
-      // Add image to local state immediately (optimistic update)
-      const updatedImages = [...(pkg.images || []), uploadedUrl];
-      updatePackageLocal(pkg.id, (p) => ({ ...p, images: updatedImages }));
-      showToast('success', 'Gambar berhasil ditambahkan. Klik "Simpan Paket" untuk menyimpan.');
-    } catch (err) {
-      showToast('error', `Terjadi kesalahan: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Upload gagal: ${res.status} ${res.statusText}`);
     }
-  };
 
-  const removeImageForPackage = (pkg: Package, imageIndex: number) => {
-    const nextImages = (pkg.images || []).filter((_, idx) => idx !== imageIndex);
-    updatePackageLocal(pkg.id, (p) => ({ ...p, images: nextImages }));
-    showToast('success', 'Gambar dihapus. Klik "Simpan Paket" untuk menyimpan.');
+    const data = await res.json();
+    if (!data.success || !data.data?.url) {
+      throw new Error(data.message || 'Upload gagal, URL tidak ditemukan');
+    }
+
+    return data.data.url;
   };
 
   const handleLogout = () => {
@@ -369,45 +349,66 @@ const AdminPricelist: Component = () => {
                   </div>
 
                   <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Contoh Foto Package</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-4">Contoh Foto Package</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <For each={pkg.images || []}>
-                        {(img, imgIdx) => (
-                          <div class="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border">
-                            <img src={img} class="w-full h-full object-cover" alt="package" />
-                            <button
-                              type="button"
-                              onClick={() => removeImageForPackage(pkg, imgIdx())}
-                              class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                            >
-                              &times;
-                            </button>
+                        {(img, idx) => (
+                          <div class="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
+                            <EditableImage
+                              label={`Foto #${idx() + 1}`}
+                              value={img}
+                              section={`package-${pkg.id}`}
+                              field={`image-${idx()}`}
+                              aspectClass="aspect-square"
+                              onUpload={uploadImageForPackage}
+                              onSave={(newValue) => {
+                                const newImages = [...(pkg.images || [])];
+                                newImages[idx()] = newValue;
+                                updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                                showToast('success', 'Gambar diupdate. Klik "Simpan Paket" untuk menyimpan.');
+                              }}
+                              onDelete={() => {
+                                const newImages = (pkg.images || []).filter((_, i) => i !== idx());
+                                updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                                showToast('success', 'Gambar dihapus. Klik "Simpan Paket" untuk menyimpan.');
+                              }}
+                              onError={(err) => showToast('error', err)}
+                            />
                           </div>
                         )}
                       </For>
 
-                      <label class="cursor-pointer aspect-video bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-[#576250] hover:text-[#576250] transition">
-                        <span class="text-xs">Upload Foto</span>
-                        <input
-                          type="file"
-                          class="hidden"
-                          accept="image/*"
-                          onChange={async (e) => {
-                            const input = e.currentTarget;
+                      {/* Add New Image Button */}
+                      <div
+                        class="bg-white p-3 rounded-lg border-2 border-dashed border-gray-300 shadow-sm flex items-center justify-center aspect-square cursor-pointer hover:bg-gray-50 transition"
+                        onClick={() => {
+                          const fileInput = document.createElement('input');
+                          fileInput.type = 'file';
+                          fileInput.accept = 'image/*';
+                          fileInput.addEventListener('change', async (e) => {
+                            const input = e.target as HTMLInputElement;
                             const file = input.files?.[0];
-                            const pkgId = pkg.id;
-                            
-                            if (file && pkgId) {
-                              const currentPkg = packages().find(p => p.id === pkgId);
-                              if (currentPkg) {
-                                await uploadImageForPackage(currentPkg, file);
-                              }
+                            if (!file) return;
+
+                            try {
+                              const url = await uploadImageForPackage(file);
+                              const newImages = [...(pkg.images || []), url];
+                              updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                              showToast('success', 'Gambar berhasil ditambahkan. Klik "Simpan Paket" untuk menyimpan.');
+                            } catch (err) {
+                              showToast('error', err instanceof Error ? err.message : 'Upload gagal');
                             }
-                            
-                            input.value = '';
-                          }}
-                        />
-                      </label>
+                          });
+                          fileInput.click();
+                        }}
+                      >
+                        <div class="text-center">
+                          <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                          </svg>
+                          <p class="text-xs text-gray-500 font-medium">Tambah Foto</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

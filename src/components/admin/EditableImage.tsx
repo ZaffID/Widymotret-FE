@@ -177,9 +177,8 @@ export const EditableImage = (props: EditableImageProps) => {
         
         setCurrentValue(uploadedUrl);
         setImgError(false);
-
-        // Auto-save uploaded file path - close editor after successful save
-        await persistValue(uploadedUrl, true);
+        // Preview first: keep edit mode open and wait for manual "Simpan" click.
+        console.log('[DEBUG EditableImage] Preview updated. Waiting for manual save.');
       } else {
         const errorMsg = response?.message || 'Upload berhasil tapi URL tidak ditemukan';
         console.log(`[DEBUG EditableImage] ❌ Upload failed - missing URL: ${errorMsg}`);

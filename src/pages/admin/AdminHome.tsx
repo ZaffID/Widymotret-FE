@@ -1624,29 +1624,65 @@ const AdminHome: Component = () => {
                   }}
                   onError={handleError}
                 />
-                <h4 class="text-sm font-semibold text-gray-600 mt-4 mb-2">Galeri Foto (7 foto)</h4>
-                <div class="grid grid-cols-3 md:grid-cols-7 gap-2">
-                  <For each={[
-                    { path: '/landscape/landscape (1).png', label: '1', field: 'btl_left1' },
-                    { path: '/landscape/landscape (2).png', label: '2', field: 'btl_left2' },
-                    { path: '/landscape/landscape (3).png', label: '3', field: 'btl_left3' },
-                    { path: '/portrait/portrait (2).png', label: '4', field: 'btl_center' },
-                    { path: '/landscape/landscape (4).png', label: '5', field: 'btl_right1' },
-                    { path: '/portrait/portrait (3).png', label: '6', field: 'btl_right2' },
-                    { path: '/portrait/portrait (4).png', label: '7', field: 'btl_right3' },
-                  ]}>
-                    {(img) => (
-                      <EditableImage
-                        label={`Foto ${img.label}`}
-                        value={aboutImageValue(img.field, img.path)}
-                        section="about"
-                        field={img.field}
-                        aspectClass="aspect-square"
-                        onSave={(v) => handleAboutImageSave(img.field, `Foto ${img.label}`, v)}
-                        onError={handleError}
-                      />
-                    )}
-                  </For>
+                <p class="text-sm text-gray-500 mb-4">Layout: 3 kolom (Kiri: 3 landscape | Tengah: 1 portrait | Kanan: 3 landscape)</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl">
+                  {/* Left Column - 3 Landscape Photos */}
+                  <div class="flex flex-col gap-4">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase">Kolom Kiri (Landscape)</h4>
+                    <For each={[
+                      { path: '/landscape/landscape (1).png', label: '1', field: 'btl_left1' },
+                      { path: '/landscape/landscape (2).png', label: '2', field: 'btl_left2' },
+                      { path: '/landscape/landscape (3).png', label: '3', field: 'btl_left3' },
+                    ]}>
+                      {(img) => (
+                        <EditableImage
+                          label={`Foto ${img.label}`}
+                          value={aboutImageValue(img.field, img.path)}
+                          section="about"
+                          field={img.field}
+                          aspectClass="aspect-[3/2]"
+                          onSave={(v) => handleAboutImageSave(img.field, `Foto ${img.label}`, v)}
+                          onError={handleError}
+                        />
+                      )}
+                    </For>
+                  </div>
+
+                  {/* Center Column - 1 Portrait Photo */}
+                  <div class="flex flex-col gap-4">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase">Kolom Tengah (Portrait)</h4>
+                    <EditableImage
+                      label="Foto 4 (Portrait)"
+                      value={aboutImageValue('btl_center', '/portrait/portrait (2).png')}
+                      section="about"
+                      field="btl_center"
+                      aspectClass="aspect-[3/4]"
+                      onSave={(v) => handleAboutImageSave('btl_center', 'Foto 4 (Portrait)', v)}
+                      onError={handleError}
+                    />
+                  </div>
+
+                  {/* Right Column - 3 Landscape Photos */}
+                  <div class="flex flex-col gap-4">
+                    <h4 class="text-xs font-semibold text-gray-500 uppercase">Kolom Kanan (Landscape)</h4>
+                    <For each={[
+                      { path: '/landscape/landscape (4).png', label: '5', field: 'btl_right1' },
+                      { path: '/portrait/portrait (3).png', label: '6', field: 'btl_right2' },
+                      { path: '/portrait/portrait (4).png', label: '7', field: 'btl_right3' },
+                    ]}>
+                      {(img) => (
+                        <EditableImage
+                          label={`Foto ${img.label}`}
+                          value={aboutImageValue(img.field, img.path)}
+                          section="about"
+                          field={img.field}
+                          aspectClass="aspect-[3/2]"
+                          onSave={(v) => handleAboutImageSave(img.field, `Foto ${img.label}`, v)}
+                          onError={handleError}
+                        />
+                      )}
+                    </For>
+                  </div>
                 </div>
               </div>
 

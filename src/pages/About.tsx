@@ -135,8 +135,9 @@ const About: Component = () => {
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12 scroll-reveal" ref={behindTheLensRef}>
-            <h2 class="text-4xl font-bold text-gray-900 mb-4">Behind the Lens</h2>
-            <p class="text-lg text-gray-600 mb-4">Ketika kami tidak berada di belakang kamera, kami mendaki, menyeruput kopi, atau mengejar matahari terbenam.</p>
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">{t('behind_lens_heading', 'Behind the Lens')}</h2>
+            <p class="text-lg text-gray-600 mb-4">{t('behind_lens_tagline', 'Ketika kami tidak berada di belakang kamera, kami mendaki, menyeruput kopi, atau mengejar matahari terbenam.')}</p>
+            <p class="text-gray-600">{t('behind_lens_description', 'Setiap momen yang tertangkap adalah cerita yang terpelihara seumur hidup.')}</p>
           </div>
 
           {/* 3-Column Layout: Left (3 landscape) - Center (1 portrait) - Right (3 landscape) */}

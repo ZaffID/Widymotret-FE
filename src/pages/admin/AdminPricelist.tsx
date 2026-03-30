@@ -73,6 +73,11 @@ const AdminPricelist: Component = () => {
 
   const savePackage = async (pkg: Package, silent = false) => {
     const token = authStore.getToken();
+    console.log(`[AdminPricelist] savePackage called for pkg ${pkg.id}:`, {
+      name: pkg.name,
+      images: pkg.images,
+      featuresCount: pkg.features?.length || 0,
+    });
     try {
       const res = await fetch(`${API_BASE}/packages/${pkg.id}`, {
         method: 'PUT',
@@ -92,12 +97,14 @@ const AdminPricelist: Component = () => {
       });
 
       const data = await res.json();
+      console.log(`[AdminPricelist] savePackage response:`, data);
       if (data.success) {
         if (!silent) showToast('success', `Package "${pkg.name}" berhasil disimpan`);
       } else {
         showToast('error', data.message || 'Gagal menyimpan package');
       }
-    } catch {
+    } catch (err) {
+      console.error(`[AdminPricelist] savePackage error:`, err);
       showToast('error', 'Terjadi kesalahan koneksi saat menyimpan package');
     }
   };
@@ -210,7 +217,9 @@ const AdminPricelist: Component = () => {
 
       console.log(`[AdminPricelist] URL dterima: ${uploadedUrl}`);
       const updatedPkg = { ...pkg, images: [...(pkg.images || []), uploadedUrl] };
+      console.log(`[AdminPricelist] Updated pkg images array:`, updatedPkg.images);
       updatePackageLocal(pkg.id, () => updatedPkg);
+      console.log(`[AdminPricelist] Updated local state. New packages state:`, packages());
       await savePackage(updatedPkg, true);
       showToast('success', 'Gambar package berhasil ditambahkan');
     } catch (err) {
@@ -382,20 +391,26 @@ const AdminPricelist: Component = () => {
 
                   <div class="mt-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Contoh Foto Package</label>
+                    <div class="text-xs text-gray-500 mb-2">
+                      Total Images: {pkg.images?.length || 0}
+                    </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                       <For each={pkg.images || []}>
-                        {(img, imgIdx) => (
-                          <div class="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border">
-                            <img src={img} class="w-full h-full object-cover" alt="package" />
-                            <button
-                              type="button"
-                              onClick={() => removeImageForPackage(pkg, imgIdx())}
-                              class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                            >
-                              &times;
-                            </button>
-                          </div>
-                        )}
+                        {(img, imgIdx) => {
+                          console.log(`[AdminPricelist] Rendering image at index ${imgIdx()}: ${img}`);
+                          return (
+                            <div class="relative group aspect-video bg-gray-100 rounded-lg overflow-hidden border">
+                              <img src={img} class="w-full h-full object-cover" alt="package" />
+                              <button
+                                type="button"
+                                onClick={() => removeImageForPackage(pkg, imgIdx())}
+                                class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                              >
+                                &times;
+                              </button>
+                            </div>
+                          );
+                        }}
                       </For>
 
                       <label class="cursor-pointer aspect-video bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center text-gray-400 hover:border-[#576250] hover:text-[#576250] transition">
@@ -407,9 +422,16 @@ const AdminPricelist: Component = () => {
                           onChange={(e) => {
                             const input = e.currentTarget;
                             const file = input.files?.[0];
-                            console.log(`[AdminPricelist] Input onChange triggered, file:`, file?.name);
+                            const pkgId = pkg.id; // Capture pkg.id to avoid closure issues
+                            console.log(`[AdminPricelist] Input onChange triggered, file:`, file?.name, `for pkg:`, pkgId);
                             if (file) {
-                              uploadImageForPackage(pkg, file);
+                              // Find package from current state to ensure reference consistency
+                              const currentPkg = packages().find(p => p.id === pkgId);
+                              if (currentPkg) {
+                                uploadImageForPackage(currentPkg, file);
+                              } else {
+                                console.error(`[AdminPricelist] Package ${pkgId} not found in state!`);
+                              }
                             }
                             // Reset value di next tick untuk allow re-select same file
                             setTimeout(() => {

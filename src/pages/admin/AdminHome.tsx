@@ -376,8 +376,10 @@ const AdminHome: Component = () => {
     return contentStore.getField('about', field) || fallback;
   };
 
-  const handleAboutImageSave = (field: string, label: string, value: string) => {
+  const handleAboutImageSave = async (field: string, label: string, value: string) => {
     contentStore.updateFieldLocal('about', field, value);
+    // Reload the 'about' section to get fresh data from backend
+    await contentStore.loadSection('about');
     handleSave(`${label} berhasil diupdate`);
   };
 

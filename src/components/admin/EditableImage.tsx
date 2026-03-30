@@ -11,7 +11,7 @@ interface EditableImageProps {
   field: string;
   /** Aspect ratio class (default: aspect-video) */
   aspectClass?: string;
-  onSave?: (newValue: string) => void;
+  onSave?: (newValue: string) => void | Promise<void>;
   onError?: (error: string) => void;
   onDelete?: () => void;
   onUpload?: (file: File) => Promise<string>; // Return URL after upload
@@ -58,7 +58,8 @@ export const EditableImage = (props: EditableImageProps) => {
         if (closeEditor) setIsEditing(false);
         setLastPropValue(newValue);
         setImgError(false);
-        props.onSave?.(newValue);
+        // Await the onSave callback in case it's async
+        await Promise.resolve(props.onSave?.(newValue));
         return true;
       } else {
         const errorMsg = response.message || 'Gagal menyimpan gambar';

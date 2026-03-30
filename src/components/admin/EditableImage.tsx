@@ -1,7 +1,5 @@
-import { createSignal, createEffect, Show, createMemo } from 'solid-js';
+import { createSignal, Show } from 'solid-js';
 import { BiRegularPencil } from 'solid-icons/bi';
-import { FaSolidTrashAlt } from 'solid-icons/fa';
-import { updateContent, uploadImage } from '../../services/contentApi';
 
 interface EditableImageProps {
   label: string;
@@ -19,56 +17,19 @@ interface EditableImageProps {
 export const EditableImage = (props: EditableImageProps) => {
   const [isEditing, setIsEditing] = createSignal(false);
   const [currentValue, setCurrentValue] = createSignal(props.value);
-  const [lastPropValue, setLastPropValue] = createSignal(props.value || '');
   const [imgError, setImgError] = createSignal(false);
   const [isUploading, setIsUploading] = createSignal(false);
-  const [isSaving, setIsSaving] = createSignal(false);
-  // FIXED: Generate fileInputId once, not every render
-  const fileInputId = createMemo(() => `file-input-${props.section}-${props.field}-${Math.random().toString(36).substr(2, 9)}`);
+  const fileInputId = `file-input-${Math.random().toString(36).substr(2, 9)}`;
 
-  // Keep local preview in sync with store updates from parent after save/load.
-  createEffect(() => {
-    const nextValue = props.value || '';
-    if (nextValue !== lastPropValue()) {
-      setCurrentValue(nextValue);
-      setLastPropValue(nextValue);
-      setImgError(false);
-    }
-  });
-
-  const handleSave = async () => {
+  const handleSave = () => {
     const newValue = currentValue().trim();
     if (!newValue) {
       props.onError?.('URL tidak boleh kosong');
       return;
     }
-    
-    console.log(`[DEBUG EditableImage] Saving: section=${props.section}, field=${props.field}, value=${newValue}`);
-    
-    setIsSaving(true);
-    try {
-      // Save to backend via API
-      const response = await updateContent(props.section, props.field, newValue);
-      console.log(`[DEBUG EditableImage] Save response:`, response);
-      
-      if (response.success) {
-        console.log(`[DEBUG EditableImage] Save successful`);
-        setIsEditing(false);
-        setLastPropValue(newValue);
-        setImgError(false);
-        props.onSave?.(newValue);
-      } else {
-        const errorMsg = response.message || 'Gagal menyimpan gambar';
-        console.log(`[DEBUG EditableImage] Save failed: ${errorMsg}`);
-        props.onError?.(errorMsg);
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Gagal menyimpan';
-      console.log(`[DEBUG EditableImage] Save exception: ${errorMsg}`);
-      props.onError?.(errorMsg);
-    } finally {
-      setIsSaving(false);
-    }
+    setIsEditing(false);
+    setImgError(false);
+    props.onSave?.(newValue);
   };
 
   const handleCancel = () => {
@@ -80,8 +41,6 @@ export const EditableImage = (props: EditableImageProps) => {
     const input = e.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
-
-    console.log(`[DEBUG EditableImage] File selected: ${file.name}, size: ${file.size}, type: ${file.type}`);
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
@@ -97,24 +56,23 @@ export const EditableImage = (props: EditableImageProps) => {
 
     setIsUploading(true);
     try {
-      // Always upload to server first
-      const uploadFn = props.onUpload || uploadImage;
-      const response = await uploadFn(file);
-      
-      console.log(`[DEBUG EditableImage] Upload response:`, response);
-      
-      if (response.success && response.data?.url) {
-        console.log(`[DEBUG EditableImage] Setting currentValue to: ${response.data.url}`);
-        setCurrentValue(response.data.url);
+      if (props.onUpload) {
+        // If callback provided, use it to upload
+        const url = await props.onUpload(file);
+        setCurrentValue(url);
         setImgError(false);
       } else {
-        const errorMsg = response.message || 'Gagal upload gambar';
-        console.log(`[DEBUG EditableImage] Upload failed: ${errorMsg}`);
-        props.onError?.(errorMsg);
+        // Default: convert to data URL for FE-only usage
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const url = event.target?.result as string;
+          setCurrentValue(url);
+          setImgError(false);
+        };
+        reader.readAsDataURL(file);
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Gagal upload gambar';
-      console.log(`[DEBUG EditableImage] Upload exception: ${errorMsg}`);
       props.onError?.(errorMsg);
     } finally {
       setIsUploading(false);
@@ -130,7 +88,7 @@ export const EditableImage = (props: EditableImageProps) => {
         {/* Image Preview */}
         <div class={`${props.aspectClass || 'aspect-video'} bg-gray-100 rounded-lg overflow-hidden border border-gray-200`}>
           <Show
-            when={currentValue() && !imgError()}
+            when={props.value && !imgError()}
             fallback={
               <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
                 <span>No image</span>
@@ -138,7 +96,7 @@ export const EditableImage = (props: EditableImageProps) => {
             }
           >
             <img
-              src={currentValue()}
+              src={props.value}
               alt={props.label}
               class="w-full h-full object-cover"
               onError={() => setImgError(true)}
@@ -158,10 +116,9 @@ export const EditableImage = (props: EditableImageProps) => {
               {props.onDelete && (
                 <button
                   onClick={props.onDelete}
-                  class="px-3 py-2 bg-red-500 text-white rounded-lg shadow text-sm font-medium hover:bg-red-600 flex items-center gap-2"
+                  class="px-3 py-2 bg-red-500 text-white rounded-lg shadow text-sm font-medium hover:bg-red-600"
                 >
-                  <FaSolidTrashAlt size={14} />
-                  Hapus
+                  🗑️
                 </button>
               )}
             </div>
@@ -187,33 +144,18 @@ export const EditableImage = (props: EditableImageProps) => {
             <div>
               <input
                 type="file"
-                id={fileInputId()}
+                id={fileInputId}
                 accept="image/*"
                 onChange={handleFileSelect}
                 disabled={isUploading()}
                 class="hidden"
               />
               <button
-                onClick={() => document.getElementById(fileInputId())?.click()}
+                onClick={() => document.getElementById(fileInputId)?.click()}
                 disabled={isUploading()}
-                class="w-full px-3 py-2 border border-dashed border-gray-300 rounded-md text-sm font-medium text-gray-600 hover:border-[#576250] hover:text-[#576250] transition disabled:opacity-50 flex items-center justify-center gap-2"
+                class="w-full px-3 py-2 border border-dashed border-gray-300 rounded-md text-sm font-medium text-gray-600 hover:border-[#576250] hover:text-[#576250] transition disabled:opacity-50"
               >
-                {isUploading() ? (
-                  <>
-                    <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <span>Uploading...</span>
-                  </>
-                ) : (
-                  <>
-                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M4 20h16" />
-                    </svg>
-                    <span>Upload dari file</span>
-                  </>
-                )}
+                {isUploading() ? '⏳ Uploading...' : '📁 Upload dari file'}
               </button>
             </div>
 
@@ -221,14 +163,14 @@ export const EditableImage = (props: EditableImageProps) => {
             <div class="flex gap-2">
               <button
                 onClick={handleSave}
-                disabled={isUploading() || isSaving()}
+                disabled={isUploading()}
                 class="px-4 py-1.5 bg-[#576250] text-white rounded-md text-sm font-medium hover:bg-[#464C43] transition disabled:opacity-50"
               >
-                {isSaving() ? 'Menyimpan...' : 'Simpan'}
+                Simpan
               </button>
               <button
                 onClick={handleCancel}
-                disabled={isUploading() || isSaving()}
+                disabled={isUploading()}
                 class="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300 transition disabled:opacity-50"
               >
                 Batal
@@ -239,7 +181,7 @@ export const EditableImage = (props: EditableImageProps) => {
 
         {/* URL display */}
         <Show when={!isEditing()}>
-          <p class="mt-1 text-xs text-gray-400 truncate">{currentValue() || 'Belum ada gambar'}</p>
+          <p class="mt-1 text-xs text-gray-400 truncate">{props.value || 'Belum ada gambar'}</p>
         </Show>
       </div>
     </div>

@@ -1,38 +1,21 @@
-import { Component, For, createSignal, onMount } from 'solid-js';
+import { Component, For, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import ContactModal from '../components/ContactModal';
 import { aboutData } from '../data/about';
 import { contentStore } from '../stores/contentStore';
-import { useScrollReveal } from '../hooks/useScrollReveal';
-import '../styles/scroll-reveal.css';
 import './About.css';
 
 const About: Component = () => {
   const navigate = useNavigate();
-  const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
-
-  // Scroll reveal refs
-  const storyRef = useScrollReveal({ threshold: 0.5 });
-  const philosophyRef = useScrollReveal({ threshold: 0.5 });
-  const behindTheLensRef = useScrollReveal({ threshold: 0.5 });
-  const teamRef = useScrollReveal({ threshold: 0.5 });
-  const ctaRef = useScrollReveal({ threshold: 0.5 });
 
   onMount(async () => {
-    await Promise.all([
-      contentStore.loadSection('about_page'),
-      contentStore.loadSection('about'),
-    ]);
+    await contentStore.loadSection('about_page');
   });
 
   // Helper: returns contentStore value, falls back to aboutData default
   const t = (field: string, fallback: string): string =>
     contentStore.getField('about_page', field) || fallback;
-
-  const aboutImage = (field: string, fallback: string): string =>
-    contentStore.getField('about', field) || fallback;
 
   return (
     <div class="min-h-screen bg-white">
@@ -56,7 +39,7 @@ const About: Component = () => {
             {/* Square image on left - tall */}
             <div class="rounded-2xl overflow-hidden shadow-lg h-[480px]">
               <img
-                src={aboutImage('hero_main', aboutData.heroImage)}
+                src={aboutData.heroImage}
                 alt="Photographer"
                 class="w-full h-full object-cover hover:scale-105 transition duration-300"
               />
@@ -66,14 +49,14 @@ const About: Component = () => {
             <div class="flex flex-col gap-4">
               <div class="rounded-2xl overflow-hidden shadow-lg h-[232px]">
                 <img
-                  src={aboutImage('hero_right_top', aboutData.heroGallery[0])}
+                  src={aboutData.heroGallery[0]}
                   alt="Gallery"
                   class="w-full h-full object-cover hover:scale-105 transition duration-300"
                 />
               </div>
               <div class="rounded-2xl overflow-hidden shadow-lg h-[232px]">
                 <img
-                  src={aboutImage('hero_right_bottom', aboutData.heroGallery[1])}
+                  src={aboutData.heroGallery[1]}
                   alt="Gallery"
                   class="w-full h-full object-cover hover:scale-105 transition duration-300"
                 />
@@ -86,7 +69,7 @@ const About: Component = () => {
       {/* My Story Section */}
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center scroll-reveal" ref={storyRef}>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             {/* Left: Text */}
             <div>
               <h2 class="text-4xl font-bold text-gray-900 mb-8">Our Story</h2>
@@ -102,7 +85,7 @@ const About: Component = () => {
               {/* First image - slightly rotated, behind */}
               <div class="absolute top-0 right-12 md:right-20 w-[220px] h-[280px] rounded-2xl overflow-hidden shadow-xl transform rotate-6 hover:rotate-3 transition-transform duration-300 z-10">
                 <img
-                  src={aboutImage('story_img1', aboutData.myStory.galleryImages[0])}
+                  src={aboutData.myStory.galleryImages[0]}
                   alt="Story 1"
                   class="w-full h-full object-cover"
                 />
@@ -110,7 +93,7 @@ const About: Component = () => {
               {/* Second image - slightly rotated opposite, in front */}
               <div class="absolute bottom-0 left-12 md:left-20 w-[220px] h-[280px] rounded-2xl overflow-hidden shadow-xl transform -rotate-6 hover:-rotate-3 transition-transform duration-300 z-20">
                 <img
-                  src={aboutImage('story_img2', aboutData.myStory.galleryImages[1])}
+                  src={aboutData.myStory.galleryImages[1]}
                   alt="Story 2"
                   class="w-full h-full object-cover"
                 />
@@ -122,7 +105,7 @@ const About: Component = () => {
 
       {/* Philosophy Quote Section */}
       <section class="py-20 px-6 bg-gray-50">
-        <div class="container mx-auto max-w-3xl text-center scroll-reveal" ref={philosophyRef}>
+        <div class="container mx-auto max-w-3xl text-center">
           <h2 class="text-4xl font-bold text-gray-900 mb-8">Filosofi</h2>
           <p class="text-3xl md:text-4xl font-bold text-gray-900 leading-relaxed">
             {t('philosophy_quote', aboutData.philosophyQuote)}
@@ -133,7 +116,7 @@ const About: Component = () => {
       {/* Behind the Lens Gallery Section */}
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
-          <div class="text-center mb-12 scroll-reveal" ref={behindTheLensRef}>
+          <div class="text-center mb-12">
             <h2 class="text-4xl font-bold text-gray-900 mb-4">Behind the Lens</h2>
             <p class="text-lg text-gray-600 mb-4">Ketika kami tidak berada di belakang kamera, kami mendaki, menyeruput kopi, atau mengejar matahari terbenam.</p>
           </div>
@@ -142,15 +125,11 @@ const About: Component = () => {
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {/* Left Column - 3 landscape photos */}
             <div class="flex flex-col gap-4">
-              <For each={[
-                { field: 'btl_left1', fallback: aboutData.behindTheLens.leftImages[0] },
-                { field: 'btl_left2', fallback: aboutData.behindTheLens.leftImages[1] },
-                { field: 'btl_left3', fallback: aboutData.behindTheLens.leftImages[2] },
-              ]}>
+              <For each={aboutData.behindTheLens.leftImages}>
                 {(image) => (
                   <div class="rounded-2xl overflow-hidden shadow-lg h-[200px]">
                     <img
-                      src={aboutImage(image.field, image.fallback)}
+                      src={image}
                       alt="Behind the lens left"
                       class="w-full h-full object-cover hover:scale-105 transition duration-300"
                     />
@@ -162,7 +141,7 @@ const About: Component = () => {
             {/* Center Column - 1 portrait photo (tall) */}
             <div class="rounded-2xl overflow-hidden shadow-lg h-[616px]">
               <img
-                src={aboutImage('btl_center', aboutData.behindTheLens.centerImage)}
+                src={aboutData.behindTheLens.centerImage}
                 alt="Behind the lens center"
                 class="w-full h-full object-cover hover:scale-105 transition duration-300"
               />
@@ -170,15 +149,11 @@ const About: Component = () => {
 
             {/* Right Column - 3 landscape photos */}
             <div class="flex flex-col gap-4">
-              <For each={[
-                { field: 'btl_right1', fallback: aboutData.behindTheLens.rightImages[0] },
-                { field: 'btl_right2', fallback: aboutData.behindTheLens.rightImages[1] },
-                { field: 'btl_right3', fallback: aboutData.behindTheLens.rightImages[2] },
-              ]}>
+              <For each={aboutData.behindTheLens.rightImages}>
                 {(image) => (
                   <div class="rounded-2xl overflow-hidden shadow-lg h-[200px]">
                     <img
-                      src={aboutImage(image.field, image.fallback)}
+                      src={image}
                       alt="Behind the lens right"
                       class="w-full h-full object-cover hover:scale-105 transition duration-300"
                     />
@@ -197,7 +172,7 @@ const About: Component = () => {
       {/* Team Section - Single Photo */}
       <section class="py-20 px-6 bg-gray-50">
         <div class="container mx-auto max-w-4xl">
-          <div class="text-center mb-12 scroll-reveal" ref={teamRef}>
+          <div class="text-center mb-12">
             <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Team</h2>
             <p class="text-lg text-gray-600">Temui pikiran kreatif di balik setiap bidikan yang menakjubkan. Tim dedicated kami membawa passion, expertise, dan komitmen untuk mengabadikan momen paling berharga Anda.</p>
           </div>
@@ -205,7 +180,7 @@ const About: Component = () => {
           {/* Team Photo - Full Width */}
           <div class="rounded-2xl overflow-hidden shadow-xl">
             <img
-              src={aboutImage('team_photo', aboutData.teamPhoto)}
+              src={aboutData.teamPhoto}
               alt="Our Team"
               class="w-full h-auto object-cover hover:scale-105 transition duration-300"
             />
@@ -215,23 +190,17 @@ const About: Component = () => {
 
       {/* CTA Section */}
       <section class="py-20 px-6 bg-white">
-        <div class="container mx-auto max-w-3xl text-center scroll-reveal" ref={ctaRef}>
+        <div class="container mx-auto max-w-3xl text-center">
           <h2 class="text-4xl font-bold text-gray-900 mb-4">Made up your mind yet?</h2>
           <p class="text-lg text-gray-600 mb-10">Mari kita bicarakan visi Anda dan bagaimana saya bisa mewujudkannya</p>
           <button
-            onClick={() => setIsContactModalOpen(true)}
+            onClick={() => navigate('/#contact')}
             class="px-8 py-4 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition duration-300 shadow-lg"
           >
             Contact me
           </button>
         </div>
       </section>
-
-      {/* Contact Modal */}
-      <ContactModal 
-        isOpen={isContactModalOpen} 
-        onClose={() => setIsContactModalOpen(false)} 
-      />
 
       <Footer />
     </div>

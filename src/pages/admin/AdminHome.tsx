@@ -1416,32 +1416,40 @@ const AdminHome: Component = () => {
                         )}
 
                         {/* Grid Foto */}
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                          <For each={images()}>
-                            {(img, idx) => {
-                              const fieldName = `${category().slug}_${img.id}`;
-                              const storedValue = contentStore.getField('portfolio', fieldName);
-                              const displayValue = storedValue || img.url;
-                              return (
-                                <EditableImage
-                                  label={img.title}
-                                  value={displayValue}
-                                  section="portfolio"
-                                  field={fieldName}
-                                  aspectClass="aspect-square"
-                                  onUpload={uploadImageForPackage}
-                                  onSave={(v) => {
-                                    console.log(`[AdminHome] Portfolio onSave: ${fieldName} = ${v}`);
-                                    contentStore.updateFieldLocal('portfolio', fieldName, v);
-                                    handleSave(`${img.title} berhasil diupdate`);
-                                  }}
-                                  onError={handleError}
-                                  onDelete={() => handleSave(`${img.title} akan dihapus`)}
-                                />
-                              );
-                            }}
-                          </For>
-                        </div>
+                        <For each={[activeServicePortfolio()]}>
+                          {() => (
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <For each={images()}>
+                                {(img, idx) => {
+                                  const fieldName = `${category().slug}_${img.id}`;
+                                  const rawStoredValue = contentStore.getField('portfolio', fieldName);
+                                  const storedValue = ['no image', 'null', 'undefined'].includes(String(rawStoredValue).trim().toLowerCase())
+                                    ? ''
+                                    : rawStoredValue;
+                                  const displayValue = storedValue || img.url;
+                                  return (
+                                    <EditableImage
+                                      label={img.title}
+                                      value={displayValue}
+                                      section="portfolio"
+                                      field={fieldName}
+                                      aspectClass="aspect-square"
+                                      onUpload={uploadImageForPackage}
+                                      onSave={async (v) => {
+                                        console.log(`[AdminHome] Portfolio onSave: ${fieldName} = ${v}`);
+                                        contentStore.updateFieldLocal('portfolio', fieldName, v);
+                                        await contentStore.loadSection('portfolio');
+                                        handleSave(`${img.title} berhasil diupdate`);
+                                      }}
+                                      onError={handleError}
+                                      onDelete={() => handleSave(`${img.title} akan dihapus`)}
+                                    />
+                                  );
+                                }}
+                              </For>
+                            </div>
+                          )}
+                        </For>
 
                         {/* Tambah Foto Baru */}
                         <button

@@ -1267,8 +1267,8 @@ const AdminHome: Component = () => {
                                   </For>
 
                                   {/* Add New Image Button */}
-                                  <div
-                                    class="aspect-video rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-xs text-gray-500 hover:border-[#576250] hover:text-[#576250] hover:bg-gray-50 transition cursor-pointer"
+                                  <button
+                                    class="aspect-video rounded-lg border-2 border-gray-300 flex flex-col items-center justify-center text-sm text-gray-600 hover:border-[#576250] hover:text-[#576250] hover:bg-gray-50 transition cursor-pointer font-medium"
                                     onClick={() => {
                                       const fileInput = document.createElement('input');
                                       fileInput.type = 'file';
@@ -1297,8 +1297,8 @@ const AdminHome: Component = () => {
                                     <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                     </svg>
-                                    <span>Upload Foto</span>
-                                  </div>
+                                    <span>Tambah Foto</span>
+                                  </button>
                                 </div>
                               </div>
 

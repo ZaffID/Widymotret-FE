@@ -337,45 +337,24 @@ const AdminHome: Component = () => {
     }
   };
 
-  const uploadImageForPackage = async (pkg: ApiPackage, file: File) => {
+  const uploadImageForPackage = async (file: File) => {
     const token = authStore.getToken();
     const formData = new FormData();
     formData.append('file', file);
 
-    try {
-      const res = await fetch(`${API_BASE}/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-        body: formData,
-      });
-      const data = await res.json();
-      if (!data.success) {
-        handleError(data.message || 'Gagal upload gambar package');
-        return;
-      }
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: formData,
+    });
 
-      const uploadedUrl = data?.data?.url;
-      if (!uploadedUrl) {
-        handleError('Upload berhasil tapi URL tidak ditemukan');
-        return;
-      }
-
-      const nextPkg = { ...pkg, images: [...(pkg.images || []), uploadedUrl] };
-      updatePackageLocal(pkg.id, () => nextPkg);
-      await savePackage(nextPkg, true);
-      handleSave(`Gambar untuk ${pkg.name} berhasil ditambahkan`);
-    } catch (error) {
-      handleError('Terjadi kesalahan koneksi saat upload gambar');
+    if (!res.ok) {
+      throw new Error(`Upload gagal: ${res.status}`);
     }
-  };
 
-  const removeImageForPackage = async (pkg: ApiPackage, imageIndex: number) => {
-    const nextPkg = { ...pkg, images: (pkg.images || []).filter((_, idx) => idx !== imageIndex) };
-    updatePackageLocal(pkg.id, () => nextPkg);
-    await savePackage(nextPkg, true);
-    handleSave(`Gambar untuk ${pkg.name} berhasil dihapus`);
+    return await res.json();
   };
 
   const handleLogout = () => {
@@ -1264,33 +1243,62 @@ const AdminHome: Component = () => {
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                                   <For each={pkg.images || []}>
                                     {(img, imgIdx) => (
-                                      <div class="relative group aspect-video rounded-lg overflow-hidden border border-gray-200 bg-gray-100">
-                                        <img src={img} alt="package" class="w-full h-full object-cover" />
-                                        <button
-                                          onClick={() => removeImageForPackage(pkg, imgIdx())}
-                                          class="absolute top-1 right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
-                                        >
-                                          &times;
-                                        </button>
-                                      </div>
+                                      <EditableImage
+                                        label={`Foto #${imgIdx() + 1}`}
+                                        value={img}
+                                        section={`package-${pkg.id}`}
+                                        field={`image-${imgIdx()}`}
+                                        aspectClass="aspect-video"
+                                        onUpload={uploadImageForPackage}
+                                        onSave={(newValue) => {
+                                          const newImages = [...(pkg.images || [])];
+                                          newImages[imgIdx()] = newValue;
+                                          updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                                          handleSave(`Gambar #${imgIdx() + 1} berhasil diupdate. Klik SIMPAN untuk menyimpan ke server.`);
+                                        }}
+                                        onDelete={() => {
+                                          const newImages = (pkg.images || []).filter((_, i) => i !== imgIdx());
+                                          updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                                          handleSave(`Gambar dihapus. Klik SIMPAN untuk menyimpan ke server.`);
+                                        }}
+                                        onError={handleError}
+                                      />
                                     )}
                                   </For>
 
-                                  <label class="cursor-pointer aspect-video rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-xs text-gray-500 hover:border-[#576250] hover:text-[#576250] transition">
-                                    Upload Foto
-                                    <input
-                                      type="file"
-                                      class="hidden"
-                                      accept="image/*"
-                                      onChange={(e) => {
-                                        const input = e.currentTarget;
-                                        if (input.files && input.files[0]) {
-                                          uploadImageForPackage(pkg, input.files[0]);
+                                  {/* Add New Image Button */}
+                                  <div
+                                    class="aspect-video rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-xs text-gray-500 hover:border-[#576250] hover:text-[#576250] hover:bg-gray-50 transition cursor-pointer"
+                                    onClick={() => {
+                                      const fileInput = document.createElement('input');
+                                      fileInput.type = 'file';
+                                      fileInput.accept = 'image/*';
+                                      fileInput.addEventListener('change', async (e) => {
+                                        const input = e.target as HTMLInputElement;
+                                        const file = input.files?.[0];
+                                        if (!file) return;
+
+                                        try {
+                                          const response = await uploadImageForPackage(file);
+                                          if (response.success && response.data?.url) {
+                                            const newImages = [...(pkg.images || []), response.data.url];
+                                            updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                                            handleSave(`Gambar ditambahkan. Klik SIMPAN untuk menyimpan ke server.`);
+                                          } else {
+                                            handleError(response.message || 'Upload gagal');
+                                          }
+                                        } catch (err) {
+                                          handleError(err instanceof Error ? err.message : 'Upload gagal');
                                         }
-                                        input.value = '';
-                                      }}
-                                    />
-                                  </label>
+                                      });
+                                      fileInput.click();
+                                    }}
+                                  >
+                                    <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span>Upload Foto</span>
+                                  </div>
                                 </div>
                               </div>
 

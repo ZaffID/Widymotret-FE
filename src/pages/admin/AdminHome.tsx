@@ -120,6 +120,14 @@ const AdminHome: Component = () => {
   const [newPackagePrice, setNewPackagePrice] = createSignal('0');
   const [newPackageFeatures, setNewPackageFeatures] = createSignal('');
   const [newPackagePublished, setNewPackagePublished] = createSignal(true);
+  
+  // Portfolio - track new items added per category
+  const [newPortfolioItems, setNewPortfolioItems] = createSignal<Record<string, Array<{id: string; title: string; url: string; category: string}>>>({
+    portrait: [],
+    event: [],
+    editorial: [],
+    retouching: [],
+  });
 
   onMount(async () => {
     // Load all content on component mount
@@ -389,6 +397,31 @@ const AdminHome: Component = () => {
   const handleError = (message: string) => {
     setSaveMessage({ type: 'error', text: message });
     setTimeout(() => setSaveMessage(null), 5000); // Errors stay 5s before auto-dismissing
+  };
+
+  // Get all images for category (default + new)
+  const getPortfolioCategoryImages = (categorySlug: string) => {
+    const defaultImages = getImagesByCategory(categorySlug);
+    const newItems = newPortfolioItems()[categorySlug as keyof typeof newPortfolioItems] || [];
+    return [...defaultImages, ...newItems];
+  };
+
+  // Add new portfolio item to category
+  const addPortfolioItem = (categorySlug: string) => {
+    const newItems = newPortfolioItems();
+    const categoryItems = newItems[categorySlug as keyof typeof newPortfolioItems] || [];
+    const itemIndex = categoryItems.length + 1;
+    const newItem = {
+      id: `new_${itemIndex}`,
+      title: `Foto Baru #${itemIndex}`,
+      url: '/placeholder.png', // Default placeholder
+      category: categorySlug as any,
+    };
+    setNewPortfolioItems({
+      ...newItems,
+      [categorySlug]: [...categoryItems, newItem],
+    });
+    handleSave(`Slot foto baru ditambahkan. Upload foto kemudian klik Simpan.`);
   };
 
   const aboutTextValue = (field: string, fallback: string) => {
@@ -1328,7 +1361,7 @@ const AdminHome: Component = () => {
 
               {/* Portfolio Images for selected category */}
               {(() => {
-                const images = () => getImagesByCategory(activeServicePortfolio());
+                const images = () => getPortfolioCategoryImages(activeServicePortfolio());
                 const cat = () => portfolioCategories.find(c => c.slug === activeServicePortfolio());
                 return (
                   <Show when={cat()}>
@@ -1429,13 +1462,13 @@ const AdminHome: Component = () => {
 
                         {/* Tambah Foto Baru */}
                         <button
-                          onClick={() => handleSave(`Fitur tambah foto masih dalam pengembangan. Edit foto yang sudah ada untuk demo sekarang.`)}
+                          onClick={() => addPortfolioItem(category().slug)}
                           class="mt-6 w-full py-3 px-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-medium text-sm flex items-center justify-center gap-2"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                           </svg>
-                          Tambah Foto ke {category().name} (Coming Soon)
+                          Tambah Foto ke {category().name}
                         </button>
                       </div>
                     )}

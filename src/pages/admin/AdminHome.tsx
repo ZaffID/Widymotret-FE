@@ -390,6 +390,7 @@ const AdminHome: Component = () => {
 
   const handleError = (message: string) => {
     setSaveMessage({ type: 'error', text: message });
+    setTimeout(() => setSaveMessage(null), 5000); // Errors stay 5s before auto-dismissing
   };
 
   const aboutImageValue = (field: string, fallback: string) => {

@@ -3,6 +3,7 @@ import { Component, Show } from 'solid-js';
 interface ToastProps {
   message: string | null | undefined;
   type?: 'success' | 'error' | 'warning' | 'info';
+  onClose?: () => void;
 }
 
 const Toast: Component<ToastProps> = (props) => {
@@ -37,12 +38,7 @@ const Toast: Component<ToastProps> = (props) => {
   return (
     <Show when={props.message}>
       <div
-        class={`fixed top-6 right-6 max-w-sm px-6 py-4 rounded-lg shadow-lg text-white flex items-start gap-3 z-50 animate-slideInRight backdrop-blur-sm`}
-        style={{
-          'background-color': getComputedStyle(document.documentElement)
-            .getPropertyValue(`--color-${props.type}`)
-            .trim() || undefined,
-        }}
+        class={`fixed top-20 right-4 md:right-6 max-w-sm px-6 py-4 rounded-lg shadow-lg text-white flex items-start gap-3 z-50 animate-slideInRight backdrop-blur-sm`}
         classList={{
           'bg-green-500': props.type === 'success',
           'bg-red-500': props.type === 'error',
@@ -56,6 +52,20 @@ const Toast: Component<ToastProps> = (props) => {
         <span class="flex-1 text-sm font-medium leading-relaxed">
           {props.message}
         </span>
+        <button
+          onClick={props.onClose}
+          class="flex-shrink-0 ml-4 text-white hover:opacity-80 transition-opacity p-1 focus:outline-none"
+          aria-label="Close notification"
+          title="Tutup"
+        >
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
       </div>
     </Show>
   );

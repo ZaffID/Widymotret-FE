@@ -456,7 +456,11 @@ const AdminHome: Component = () => {
         </div>
 
         {/* Success/Error Message - Toast Notification */}
-        <Toast message={saveMessage()?.text} type={saveMessage()?.type} />
+        <Toast 
+          message={saveMessage()?.text} 
+          type={saveMessage()?.type}
+          onClose={() => setSaveMessage(null)}
+        />
 
       {/* Tab Navigation */}
         <div class="bg-white rounded-xl shadow-sm p-1 mb-8 flex gap-2 flex-wrap">

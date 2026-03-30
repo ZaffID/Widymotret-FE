@@ -7,6 +7,7 @@ import ScrollToTop from '../components/ScrollToTop';
 import { aboutData } from '../data/about';
 import { contentStore } from '../stores/contentStore';
 import { resolveMediaUrl } from '../utils/mediaUrl';
+import { FiImage } from 'solid-icons/fi';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import '../styles/scroll-reveal.css';
 import './About.css';
@@ -43,12 +44,8 @@ const About: Component = () => {
       when={props.src}
       fallback={
         <div class={`w-full h-full flex flex-col items-center justify-center gap-2 text-gray-500 bg-gradient-to-br from-gray-50 to-gray-100 ${props.class || ''}`}>
-          <svg class="w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
-            <circle cx="8.5" cy="9.5" r="1.5"></circle>
-            <path stroke-linecap="round" stroke-linejoin="round" d="M21 16l-5-5-4 4-2-2-7 7"></path>
-          </svg>
-          <p class="text-sm font-medium">Belum ada gambar</p>
+          <FiImage size={36} class="text-gray-400" />
+          <p class="text-sm font-medium">no image</p>
         </div>
       }
     >

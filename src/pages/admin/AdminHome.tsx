@@ -8,6 +8,10 @@ import Toast from '../../components/Toast';
 import ScrollToTop from '../../components/ScrollToTop';
 import { servicesData } from '../../data/services';
 import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
+
+// API Base URL - same as contentApi
+const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+
 import { AiFillHome } from 'solid-icons/ai';
 import { AiFillDollarCircle } from 'solid-icons/ai';
 import { AiFillCamera } from 'solid-icons/ai';
@@ -137,7 +141,7 @@ const AdminHome: Component = () => {
   const loadPackages = async () => {
     setPackagesLoading(true);
     try {
-      const res = await fetch('/api/packages');
+      const res = await fetch(`${API_BASE}/packages`);
       const data = await res.json();
       if (data.success) {
         const hydrated = (data.data || []).map((pkg: ApiPackage, idx: number) => ({
@@ -224,7 +228,7 @@ const AdminHome: Component = () => {
     const token = authStore.getToken();
     const payloadPkg = buildPackageFromDrafts(pkg);
     try {
-      const res = await fetch(`/api/packages/${payloadPkg.id}`, {
+      const res = await fetch(`${API_BASE}/packages/${payloadPkg.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -272,7 +276,7 @@ const AdminHome: Component = () => {
     setAddingPackage(true);
     const token = authStore.getToken();
     try {
-      const res = await fetch('/api/packages', {
+      const res = await fetch(`${API_BASE}/packages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -313,7 +317,7 @@ const AdminHome: Component = () => {
     if (!pkg) return;
     const token = authStore.getToken();
     try {
-      const res = await fetch(`/api/packages/${pkg.id}`, {
+      const res = await fetch(`${API_BASE}/packages/${pkg.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -339,7 +343,7 @@ const AdminHome: Component = () => {
     formData.append('file', file);
 
     try {
-      const res = await fetch('/api/upload', {
+      const res = await fetch(`${API_BASE}/upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

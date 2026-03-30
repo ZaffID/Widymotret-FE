@@ -351,6 +351,8 @@ const AdminHome: Component = () => {
     const formData = new FormData();
     formData.append('file', file);
 
+    console.log(`[AdminHome uploadImageForPackage] Starting upload for ${file.name}`);
+
     const res = await fetch(`${API_BASE}/upload`, {
       method: 'POST',
       headers: {
@@ -360,10 +362,17 @@ const AdminHome: Component = () => {
     });
 
     if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`[AdminHome uploadImageForPackage] Upload failed: ${res.status}`, errorText);
       throw new Error(`Upload gagal: ${res.status}`);
     }
 
-    return await res.json();
+    const responseData = await res.json();
+    console.log(`[AdminHome uploadImageForPackage] Upload response:`, responseData);
+    console.log(`[AdminHome uploadImageForPackage] Response type:`, typeof responseData);
+    console.log(`[AdminHome uploadImageForPackage] Response keys:`, Object.keys(responseData || {}));
+    
+    return responseData;
   };
 
   const handleLogout = () => {

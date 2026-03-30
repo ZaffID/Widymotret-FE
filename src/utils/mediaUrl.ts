@@ -9,17 +9,23 @@ export const resolveMediaUrl = (value: string): string => {
 
   // Already absolute URL
   if (/^https?:\/\//i.test(value)) {
+    console.log(`[DEBUG resolveMediaUrl] Already absolute URL: ${value}`);
     return value;
   }
 
   // Uploaded assets are stored on backend
   if (value.startsWith('/uploads/')) {
-    return `${API_ORIGIN}${value}`;
+    const resolved = `${API_ORIGIN}${value}`;
+    console.log(`[DEBUG resolveMediaUrl] /uploads/ path: ${value} => ${resolved}`);
+    return resolved;
   }
   if (value.startsWith('uploads/')) {
-    return `${API_ORIGIN}/${value}`;
+    const resolved = `${API_ORIGIN}/${value}`;
+    console.log(`[DEBUG resolveMediaUrl] uploads/ path: ${value} => ${resolved}`);
+    return resolved;
   }
 
   // Public assets remain relative to frontend
+  console.log(`[DEBUG resolveMediaUrl] Public asset (relative): ${value}`);
   return value;
 };

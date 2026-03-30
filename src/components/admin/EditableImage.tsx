@@ -27,7 +27,11 @@ export const EditableImage = (props: EditableImageProps) => {
   const [isSaving, setIsSaving] = createSignal(false);
   // Generate file input ID once - stable ID for file input reference
   const fileInputId = `file-input-${props.section}-${props.field}-${Math.random().toString(36).substr(2, 9)}`;
-  const previewSrc = createMemo(() => resolveMediaUrl(currentValue()));
+  const previewSrc = createMemo(() => {
+    const resolved = resolveMediaUrl(currentValue());
+    console.log(`[DEBUG EditableImage previewSrc] currentValue="${currentValue()}" => resolved="${resolved}"`);
+    return resolved;
+  });
 
   // Keep local preview in sync with store updates from parent after save/load.
   createEffect(() => {
@@ -123,24 +127,36 @@ export const EditableImage = (props: EditableImageProps) => {
       const uploadFn = props.onUpload || uploadImage;
       const response = await uploadFn(file);
 
-      console.log(`[DEBUG EditableImage] Upload response:`, response, typeof response);
+      console.log(`[DEBUG EditableImage] RAW Upload response:`, response);
+      console.log(`[DEBUG EditableImage] Response type:`, typeof response);
+      console.log(`[DEBUG EditableImage] Response keys:`, typeof response === 'object' ? Object.keys(response || {}) : 'N/A');
+      if (typeof response === 'object' && response !== null) {
+        console.log(`[DEBUG EditableImage] Response.data:`, (response as any).data);
+        console.log(`[DEBUG EditableImage] Response.url:`, (response as any).url);
+        console.log(`[DEBUG EditableImage] Response.message:`, (response as any).message);
+        console.log(`[DEBUG EditableImage] Response.success:`, (response as any).success);
+      }
 
       // Extract URL from various response formats
       let uploadedUrl = '';
       if (typeof response === 'string') {
         uploadedUrl = response;
+        console.log(`[DEBUG EditableImage] Using string response as URL: "${uploadedUrl}"`);
       } else if (response && typeof response === 'object') {
         // Try multiple possible response formats
         uploadedUrl = response?.data?.url 
           || response?.url 
           || (response as any)?.['data/url']
           || '';
+        console.log(`[DEBUG EditableImage] Tried data?.url: "${response?.data?.url}"`);
+        console.log(`[DEBUG EditableImage] Tried url: "${response?.url}"`);
+        console.log(`[DEBUG EditableImage] Final extracted URL: "${uploadedUrl}"`);
       }
 
-      console.log(`[DEBUG EditableImage] Extracted URL: "${uploadedUrl}"`);
+      console.log(`[DEBUG EditableImage] Final extracted URL after processing: "${uploadedUrl}"`);
 
       if (uploadedUrl && uploadedUrl.trim()) {
-        console.log(`[DEBUG EditableImage] Setting currentValue to: ${uploadedUrl}`);
+        console.log(`[DEBUG EditableImage] ✅ Valid URL found, setting currentValue to: ${uploadedUrl}`);
         setCurrentValue(uploadedUrl);
         setImgError(false);
 
@@ -148,12 +164,13 @@ export const EditableImage = (props: EditableImageProps) => {
         await persistValue(uploadedUrl, true); // Changed to true to close editor
       } else {
         const errorMsg = response?.message || 'Upload berhasil tapi URL tidak ditemukan';
-        console.log(`[DEBUG EditableImage] Upload failed - missing URL: ${errorMsg}`);
+        console.log(`[DEBUG EditableImage] ❌ Upload failed - missing URL: ${errorMsg}`);
+        console.log(`[DEBUG EditableImage] Full response was:`, response);
         props.onError?.(errorMsg);
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Gagal upload gambar';
-      console.log(`[DEBUG EditableImage] Upload exception: ${errorMsg}`);
+      console.log(`[DEBUG EditableImage] ❌ Upload exception: ${errorMsg}`, err);
       props.onError?.(errorMsg);
     } finally {
       setIsUploading(false);
@@ -185,11 +202,15 @@ export const EditableImage = (props: EditableImageProps) => {
               alt={props.label}
               class="w-full h-full object-cover"
               onError={() => {
-                console.error(`[DEBUG EditableImage] Image load failed for: ${previewSrc()}`);
+                const failedUrl = previewSrc();
+                console.error(`[DEBUG EditableImage] ❌ Image failed to load`);
+                console.error(`[DEBUG EditableImage] Failed URL: ${failedUrl}`);
+                console.error(`[DEBUG EditableImage] Original value: ${currentValue()}`);
+                console.error(`[DEBUG EditableImage] Field: ${props.field}`);
                 setImgError(true);
               }}
               onLoad={() => {
-                console.log(`[DEBUG EditableImage] Image loaded successfully: ${previewSrc()}`);
+                console.log(`[DEBUG EditableImage] ✅ Image loaded successfully: ${previewSrc()}`);
                 setImgError(false);
               }}
             />

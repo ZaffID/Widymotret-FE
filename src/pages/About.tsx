@@ -6,6 +6,7 @@ import ContactModal from '../components/ContactModal';
 import ScrollToTop from '../components/ScrollToTop';
 import { aboutData } from '../data/about';
 import { contentStore } from '../stores/contentStore';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import '../styles/scroll-reveal.css';
 import './About.css';
@@ -32,8 +33,10 @@ const About: Component = () => {
   const t = (field: string, fallback: string): string =>
     contentStore.getField('about_page', field) || fallback;
 
-  const aboutImage = (field: string, fallback: string): string =>
-    contentStore.getField('about', field) || fallback;
+  const aboutImage = (field: string, fallback: string): string => {
+    const value = contentStore.getField('about', field) || fallback;
+    return resolveMediaUrl(value);
+  };
 
   return (
     <div class="min-h-screen bg-white">

@@ -8,6 +8,7 @@ import Toast from '../../components/Toast';
 import ScrollToTop from '../../components/ScrollToTop';
 import { servicesData } from '../../data/services';
 import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
+import { resolveMediaUrl } from '../../utils/mediaUrl';
 
 // API Base URL - same as contentApi
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
@@ -373,7 +374,8 @@ const AdminHome: Component = () => {
   };
 
   const aboutImageValue = (field: string, fallback: string) => {
-    return contentStore.getField('about', field) || fallback;
+    const value = contentStore.getField('about', field) || fallback;
+    return resolveMediaUrl(value);
   };
 
   const handleAboutImageSave = async (field: string, label: string, value: string) => {

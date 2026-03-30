@@ -7,6 +7,7 @@ import { EditableImage } from '../../components/admin/EditableImage';
 import Toast from '../../components/Toast';
 import ScrollToTop from '../../components/ScrollToTop';
 import { servicesData } from '../../data/services';
+import { aboutData } from '../../data/about';
 import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
 
@@ -380,8 +381,12 @@ const AdminHome: Component = () => {
     setTimeout(() => setSaveMessage(null), 5000); // Errors stay 5s before auto-dismissing
   };
 
-  const aboutImageValue = (field: string, fallback: string) => {
-    const value = contentStore.getField('about', field) || fallback;
+  const aboutTextValue = (field: string, fallback: string) => {
+    return contentStore.getField('about_page', field) || fallback;
+  };
+
+  const aboutImageValue = (field: string, fallback?: string) => {
+    const value = contentStore.getField('about', field) || fallback || '';
     return resolveMediaUrl(value);
   };
 
@@ -1507,7 +1512,7 @@ const AdminHome: Component = () => {
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Tagline</h3>
                 <EditableText
                   label="Tagline (di bawah judul)"
-                  value={contentStore.getField('about_page', 'tagline')}
+                  value={aboutTextValue('tagline', aboutData.tagline)}
                   section="about_page"
                   field="tagline"
                   multiline={true}
@@ -1526,7 +1531,7 @@ const AdminHome: Component = () => {
                   <div class="md:col-span-3">
                     <EditableText
                       label="Judul"
-                      value={contentStore.getField('about_page', 'story_heading')}
+                      value={aboutTextValue('story_heading', aboutData.myStory.heading)}
                       section="about_page"
                       field="story_heading"
                       multiline={false}
@@ -1540,7 +1545,7 @@ const AdminHome: Component = () => {
                       {(idx) => (
                         <EditableText
                           label={`Paragraf ${idx}`}
-                          value={contentStore.getField('about_page', `story_paragraph${idx}`)}
+                          value={aboutTextValue(`story_paragraph${idx}`, aboutData.myStory.paragraphs[idx - 1] || '')}
                           section="about_page"
                           field={`story_paragraph${idx}`}
                           multiline={true}
@@ -1584,7 +1589,7 @@ const AdminHome: Component = () => {
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Filosofi</h3>
                 <EditableText
                   label="Kutipan"
-                  value={contentStore.getField('about_page', 'philosophy_quote')}
+                  value={aboutTextValue('philosophy_quote', aboutData.philosophyQuote)}
                   section="about_page"
                   field="philosophy_quote"
                   multiline={true}
@@ -1601,7 +1606,7 @@ const AdminHome: Component = () => {
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Di Balik Lensa</h3>
                 <EditableText
                   label="Judul"
-                  value={contentStore.getField('about_page', 'behind_lens_heading')}
+                  value={aboutTextValue('behind_lens_heading', aboutData.behindTheLens.heading)}
                   section="about_page"
                   field="behind_lens_heading"
                   multiline={false}
@@ -1613,7 +1618,7 @@ const AdminHome: Component = () => {
                 />
                 <EditableText
                   label="Tagline"
-                  value={contentStore.getField('about_page', 'behind_lens_tagline')}
+                  value={aboutTextValue('behind_lens_tagline', aboutData.behindTheLens.tagline)}
                   section="about_page"
                   field="behind_lens_tagline"
                   multiline={false}
@@ -1625,7 +1630,7 @@ const AdminHome: Component = () => {
                 />
                 <EditableText
                   label="Deskripsi"
-                  value={contentStore.getField('about_page', 'behind_lens_description')}
+                  value={aboutTextValue('behind_lens_description', aboutData.behindTheLens.description)}
                   section="about_page"
                   field="behind_lens_description"
                   multiline={true}
@@ -1648,7 +1653,7 @@ const AdminHome: Component = () => {
                       {(img) => (
                         <EditableImage
                           label={`Foto ${img.label}`}
-                          value={aboutImageValue(img.field, img.path)}
+                          value={aboutImageValue(img.field)}
                           section="about"
                           field={img.field}
                           aspectClass="aspect-[3/2]"
@@ -1664,7 +1669,7 @@ const AdminHome: Component = () => {
                     <h4 class="text-xs font-semibold text-gray-500 uppercase">Kolom Tengah (Portrait)</h4>
                     <EditableImage
                       label="Foto 4 (Portrait)"
-                      value={aboutImageValue('btl_center', '/portrait/portrait (2).png')}
+                      value={aboutImageValue('btl_center')}
                       section="about"
                       field="btl_center"
                       aspectClass="aspect-[3/4]"
@@ -1684,7 +1689,7 @@ const AdminHome: Component = () => {
                       {(img) => (
                         <EditableImage
                           label={`Foto ${img.label}`}
-                          value={aboutImageValue(img.field, img.path)}
+                          value={aboutImageValue(img.field)}
                           section="about"
                           field={img.field}
                           aspectClass="aspect-[3/2]"
@@ -1704,7 +1709,7 @@ const AdminHome: Component = () => {
                   <div>
                     <EditableImage
                       label="Foto Tim"
-                      value={aboutImageValue('team_photo', '/landscape/landscape (2).png')}
+                      value={aboutImageValue('team_photo')}
                       section="about"
                       field="team_photo"
                       aspectClass="aspect-video"
@@ -1715,7 +1720,7 @@ const AdminHome: Component = () => {
                   <div class="md:col-span-3">
                     <EditableText
                       label="Judul"
-                      value={contentStore.getField('about_page', 'team_heading')}
+                      value={aboutTextValue('team_heading', 'Our Team')}
                       section="about_page"
                       field="team_heading"
                       multiline={false}
@@ -1727,7 +1732,7 @@ const AdminHome: Component = () => {
                     />
                     <EditableText
                       label="Deskripsi"
-                      value={contentStore.getField('about_page', 'team_description')}
+                      value={aboutTextValue('team_description', aboutData.teamDescription)}
                       section="about_page"
                       field="team_description"
                       multiline={true}
@@ -1746,7 +1751,7 @@ const AdminHome: Component = () => {
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Call to Action</h3>
                 <EditableText
                   label="Judul"
-                  value={contentStore.getField('about_page', 'cta_heading')}
+                  value={aboutTextValue('cta_heading', aboutData.cta.heading)}
                   section="about_page"
                   field="cta_heading"
                   multiline={false}
@@ -1758,7 +1763,7 @@ const AdminHome: Component = () => {
                 />
                 <EditableText
                   label="Deskripsi"
-                  value={contentStore.getField('about_page', 'cta_subheading')}
+                  value={aboutTextValue('cta_subheading', aboutData.cta.subheading)}
                   section="about_page"
                   field="cta_subheading"
                   multiline={true}
@@ -1770,7 +1775,7 @@ const AdminHome: Component = () => {
                 />
                 <EditableText
                   label="Teks Tombol"
-                  value={contentStore.getField('about_page', 'cta_button')}
+                  value={aboutTextValue('cta_button', aboutData.cta.buttonText)}
                   section="about_page"
                   field="cta_button"
                   multiline={false}

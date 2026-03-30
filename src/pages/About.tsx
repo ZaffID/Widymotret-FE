@@ -34,7 +34,7 @@ const About: Component = () => {
     contentStore.getField('about_page', field) || fallback;
 
   const aboutImage = (field: string, fallback: string): string => {
-    const value = contentStore.getField('about', field) || fallback;
+    const value = contentStore.getField('about', field) || '';
     return resolveMediaUrl(value);
   };
 

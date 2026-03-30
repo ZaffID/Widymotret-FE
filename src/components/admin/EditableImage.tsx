@@ -25,6 +25,8 @@ export const EditableImage = (props: EditableImageProps) => {
   const [imgError, setImgError] = createSignal(false);
   const [isUploading, setIsUploading] = createSignal(false);
   const [isSaving, setIsSaving] = createSignal(false);
+  // Track saved state to prevent accidental revert on props change after save
+  const [lastSavedValue, setLastSavedValue] = createSignal<string>('');
   // Generate file input ID once - stable ID for file input reference
   const fileInputId = `file-input-${props.section}-${props.field}-${Math.random().toString(36).substr(2, 9)}`;
   const previewSrc = createMemo(() => {
@@ -33,10 +35,14 @@ export const EditableImage = (props: EditableImageProps) => {
     return resolved;
   });
 
-  // Keep local preview in sync with store updates from parent after save/load.
+  // Keep local preview in sync with store updates from parent, but don't revert after save
   createEffect(() => {
     const nextValue = props.value || '';
-    if (nextValue !== lastPropValue()) {
+    const lastSaved = lastSavedValue();
+    
+    // Only update if: (1) not editing AND (2) value changed AND (3) not recent save
+    if (!isEditing() && nextValue !== lastPropValue() && nextValue !== lastSaved) {
+      console.log(`[DEBUG EditableImage] createEffect update: nextValue="${nextValue}", lastPropValue="${lastPropValue()}"`);
       setCurrentValue(nextValue);
       setLastPropValue(nextValue);
       setImgError(false);
@@ -59,7 +65,9 @@ export const EditableImage = (props: EditableImageProps) => {
       console.log(`[DEBUG EditableImage] updateContent response:`, response);
       
       if (response.success) {
-        console.log(`[DEBUG EditableImage] persistValue SUCCESS - will closeEditor=${closeEditor}`);
+        console.log(`[DEBUG EditableImage] persistValue SUCCESS - saving value as lastSavedValue`);
+        // Mark this value as saved to prevent createEffect from reverting it
+        setLastSavedValue(newValue);
         if (closeEditor) {
           setIsEditing(false);
         }
@@ -233,9 +241,9 @@ export const EditableImage = (props: EditableImageProps) => {
             />
           </Show>
 
-          {/* Overlay edit button */}
+          {/* Desktop: Hover overlay buttons */}
           <Show when={!isEditing()}>
-            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 gap-2">
+            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 gap-2">
               <button
                 onClick={() => {
                   console.log(`[DEBUG EditableImage] Opening editor for field: ${props.field}`);
@@ -255,6 +263,22 @@ export const EditableImage = (props: EditableImageProps) => {
                   Hapus
                 </button>
               )}
+            </div>
+          </Show>
+
+          {/* Mobile: Always visible edit button */}
+          <Show when={!isEditing()}>
+            <div class="absolute top-1 left-1 md:hidden">
+              <button
+                onClick={() => {
+                  console.log(`[DEBUG EditableImage] Opening editor for field (mobile): ${props.field}`);
+                  setIsEditing(true);
+                }}
+                class="px-2 py-1 bg-[#576250] text-white rounded text-xs font-medium hover:bg-[#464C43] flex items-center gap-1"
+              >
+                <BiRegularPencil size={14} />
+                Edit
+              </button>
             </div>
           </Show>
         </div>
@@ -308,22 +332,35 @@ export const EditableImage = (props: EditableImageProps) => {
               </button>
             </div>
 
-            {/* Actions */}
-            <div class="flex gap-2">
+            {/* Actions - Stacked vertically on mobile */}
+            <div class="flex flex-col md:flex-row gap-2">
               <button
                 onClick={handleSave}
                 disabled={isUploading() || isSaving()}
-                class="px-4 py-1.5 bg-[#576250] text-white rounded-md text-sm font-medium hover:bg-[#464C43] transition disabled:opacity-50"
+                class="px-4 py-2 bg-[#576250] text-white rounded-md text-sm font-medium hover:bg-[#464C43] transition disabled:opacity-50 flex-1"
               >
                 {isSaving() ? 'Menyimpan...' : 'Simpan'}
               </button>
               <button
                 onClick={handleCancel}
                 disabled={isUploading() || isSaving()}
-                class="px-4 py-1.5 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300 transition disabled:opacity-50"
+                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-300 transition disabled:opacity-50 flex-1"
               >
                 Batal
               </button>
+              {props.onDelete && (
+                <button
+                  onClick={() => {
+                    setIsEditing(false);
+                    props.onDelete?.();
+                  }}
+                  disabled={isUploading() || isSaving()}
+                  class="px-4 py-2 bg-red-500 text-white rounded-md text-sm font-medium hover:bg-red-600 transition disabled:opacity-50 flex-1 flex items-center justify-center gap-2"
+                >
+                  <FaSolidTrashAlt size={14} />
+                  Hapus
+                </button>
+              )}
             </div>
           </div>
         </Show>

@@ -10,6 +10,7 @@ import { servicesData } from '../../data/services';
 import { aboutData } from '../../data/about';
 import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
+import { updateContent } from '../../services/contentApi';
 
 // API Base URL - same as contentApi
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
@@ -1403,7 +1404,18 @@ const AdminHome: Component = () => {
                                         }
                                       }}
                                       onError={handleError}
-                                      onDelete={() => handleSave(`${img.title} akan dihapus`)}
+                                      onDelete={async () => {
+                                        try {
+                                          console.log(`[AdminHome] Portfolio delete START: field=${fieldName}`);
+                                          await updateContent('portfolio', fieldName, '');
+                                          console.log(`[AdminHome] Portfolio delete API success`);
+                                          contentStore.updateFieldLocal('portfolio', fieldName, '');
+                                          handleSave(`${img.title} berhasil dihapus`);
+                                        } catch (error) {
+                                          console.error(`[AdminHome] Portfolio delete ERROR:`, error);
+                                          handleError(`Gagal menghapus: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                        }
+                                      }}
                                     />
                                   );
                                 }}
@@ -1414,9 +1426,7 @@ const AdminHome: Component = () => {
 
                         {/* Tambah Foto Baru */}
                         <button
-                          onClick={() => {
-                            handleSave(`Fitur tambah foto masih dalam pengembangan. Hubungi developer untuk informasi lebih lanjut.`);
-                          }}
+                          onClick={() => handleSave(`Fitur tambah foto masih dalam pengembangan. Portfolio items sudah fixed dari database.`)}
                           class="mt-6 w-full py-3 px-4 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition font-medium text-sm flex items-center justify-center gap-2 cursor-not-allowed"
                           disabled
                         >

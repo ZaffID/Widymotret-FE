@@ -17,7 +17,7 @@ interface Package {
   updatedAt: string;
 }
 
-const API_BASE = '/api';
+const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
 
 const categoryOptions: Array<{ value: Category; label: string }> = [
   { value: 'studio', label: 'Studio Photoshoot' },
@@ -164,10 +164,18 @@ const AdminPricelist: Component = () => {
 
   const uploadImageForPackage = async (pkg: Package, file: File) => {
     const token = authStore.getToken();
+    if (!token) {
+      showToast('error', 'Anda harus login terlebih dahulu');
+      return;
+    }
+
+    console.log(`[AdminPricelist] File dipilih:`, file.name, file.size, file.type);
+
     const formData = new FormData();
     formData.append('file', file);
 
     try {
+      console.log(`[AdminPricelist] Uploading ke ${API_BASE}/upload`);
       const res = await fetch(`${API_BASE}/upload`, {
         method: 'POST',
         headers: {
@@ -176,7 +184,18 @@ const AdminPricelist: Component = () => {
         body: formData,
       });
 
+      console.log(`[AdminPricelist] Response status: ${res.status}`);
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(`[AdminPricelist] Upload error: ${errorText}`);
+        showToast('error', `Upload gagal: ${res.status} ${res.statusText}`);
+        return;
+      }
+
       const data = await res.json();
+      console.log(`[AdminPricelist] Response data:`, data);
+
       if (!data.success) {
         showToast('error', data.message || 'Gagal upload gambar');
         return;
@@ -184,16 +203,19 @@ const AdminPricelist: Component = () => {
 
       const uploadedUrl = data?.data?.url;
       if (!uploadedUrl) {
+        console.error(`[AdminPricelist] URL tidak ada. Response:`, data);
         showToast('error', 'Upload berhasil tapi URL gambar tidak ditemukan');
         return;
       }
 
+      console.log(`[AdminPricelist] URL dterima: ${uploadedUrl}`);
       const updatedPkg = { ...pkg, images: [...(pkg.images || []), uploadedUrl] };
       updatePackageLocal(pkg.id, () => updatedPkg);
       await savePackage(updatedPkg, true);
       showToast('success', 'Gambar package berhasil ditambahkan');
-    } catch {
-      showToast('error', 'Terjadi kesalahan saat upload gambar');
+    } catch (err) {
+      console.error(`[AdminPricelist] Error during upload:`, err);
+      showToast('error', `Terjadi kesalahan: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
   };
 
@@ -384,10 +406,15 @@ const AdminPricelist: Component = () => {
                           accept="image/*"
                           onChange={(e) => {
                             const input = e.currentTarget;
-                            if (input.files && input.files[0]) {
-                              uploadImageForPackage(pkg, input.files[0]);
+                            const file = input.files?.[0];
+                            console.log(`[AdminPricelist] Input onChange triggered, file:`, file?.name);
+                            if (file) {
+                              uploadImageForPackage(pkg, file);
                             }
-                            input.value = '';
+                            // Reset value di next tick untuk allow re-select same file
+                            setTimeout(() => {
+                              input.value = '';
+                            }, 100);
                           }}
                         />
                       </label>

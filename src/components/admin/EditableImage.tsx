@@ -146,8 +146,13 @@ export const EditableImage = (props: EditableImageProps) => {
           <Show
             when={currentValue() && !imgError()}
             fallback={
-              <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                <span>No image</span>
+              <div class="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-500 text-sm bg-gradient-to-br from-gray-50 to-gray-100">
+                <svg class="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="9.5" r="1.5"></circle>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 16l-5-5-4 4-2-2-7 7"></path>
+                </svg>
+                <span class="font-medium">Belum ada gambar</span>
               </div>
             }
           >

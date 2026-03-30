@@ -1,4 +1,4 @@
-import { Component, For, createSignal, onMount } from 'solid-js';
+import { Component, For, Show, createSignal, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -38,6 +38,28 @@ const About: Component = () => {
     return resolveMediaUrl(value);
   };
 
+  const AboutImage: Component<{ src: string; alt: string; class?: string }> = (props) => (
+    <Show
+      when={props.src}
+      fallback={
+        <div class={`w-full h-full flex flex-col items-center justify-center gap-2 text-gray-500 bg-gradient-to-br from-gray-50 to-gray-100 ${props.class || ''}`}>
+          <svg class="w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="16" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="9.5" r="1.5"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 16l-5-5-4 4-2-2-7 7"></path>
+          </svg>
+          <p class="text-sm font-medium">Belum ada gambar</p>
+        </div>
+      }
+    >
+      <img
+        src={props.src}
+        alt={props.alt}
+        class={props.class || 'w-full h-full object-cover'}
+      />
+    </Show>
+  );
+
   return (
     <div class="min-h-screen bg-white">
       <Navbar hasWhiteBackground={true} />
@@ -59,7 +81,7 @@ const About: Component = () => {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
             {/* Square image on left - tall */}
             <div class="rounded-2xl overflow-hidden shadow-lg h-[480px]">
-              <img
+              <AboutImage
                 src={aboutImage('hero_main', aboutData.heroImage)}
                 alt="Photographer"
                 class="w-full h-full object-cover hover:scale-105 transition duration-300"
@@ -69,14 +91,14 @@ const About: Component = () => {
             {/* Right side - 2 landscape stacked vertically */}
             <div class="flex flex-col gap-4">
               <div class="rounded-2xl overflow-hidden shadow-lg h-[232px]">
-                <img
+                <AboutImage
                   src={aboutImage('hero_right_top', aboutData.heroGallery[0])}
                   alt="Gallery"
                   class="w-full h-full object-cover hover:scale-105 transition duration-300"
                 />
               </div>
               <div class="rounded-2xl overflow-hidden shadow-lg h-[232px]">
-                <img
+                <AboutImage
                   src={aboutImage('hero_right_bottom', aboutData.heroGallery[1])}
                   alt="Gallery"
                   class="w-full h-full object-cover hover:scale-105 transition duration-300"
@@ -105,7 +127,7 @@ const About: Component = () => {
             <div class="relative h-[400px] flex items-center justify-center">
               {/* First image - slightly rotated, behind */}
               <div class="absolute top-0 right-12 md:right-20 w-[220px] h-[280px] rounded-2xl overflow-hidden shadow-xl transform rotate-6 hover:rotate-3 transition-transform duration-300 z-10">
-                <img
+                <AboutImage
                   src={aboutImage('story_img1', aboutData.myStory.galleryImages[0])}
                   alt="Story 1"
                   class="w-full h-full object-cover"
@@ -113,7 +135,7 @@ const About: Component = () => {
               </div>
               {/* Second image - slightly rotated opposite, in front */}
               <div class="absolute bottom-0 left-12 md:left-20 w-[220px] h-[280px] rounded-2xl overflow-hidden shadow-xl transform -rotate-6 hover:-rotate-3 transition-transform duration-300 z-20">
-                <img
+                <AboutImage
                   src={aboutImage('story_img2', aboutData.myStory.galleryImages[1])}
                   alt="Story 2"
                   class="w-full h-full object-cover"
@@ -154,7 +176,7 @@ const About: Component = () => {
               ]}>
                 {(image) => (
                   <div class="rounded-2xl overflow-hidden shadow-lg h-[200px]">
-                    <img
+                    <AboutImage
                       src={aboutImage(image.field, image.fallback)}
                       alt="Behind the lens left"
                       class="w-full h-full object-cover hover:scale-105 transition duration-300"
@@ -166,7 +188,7 @@ const About: Component = () => {
 
             {/* Center Column - 1 portrait photo (tall) */}
             <div class="rounded-2xl overflow-hidden shadow-lg h-[616px]">
-              <img
+              <AboutImage
                 src={aboutImage('btl_center', aboutData.behindTheLens.centerImage)}
                 alt="Behind the lens center"
                 class="w-full h-full object-cover hover:scale-105 transition duration-300"
@@ -182,7 +204,7 @@ const About: Component = () => {
               ]}>
                 {(image) => (
                   <div class="rounded-2xl overflow-hidden shadow-lg h-[200px]">
-                    <img
+                    <AboutImage
                       src={aboutImage(image.field, image.fallback)}
                       alt="Behind the lens right"
                       class="w-full h-full object-cover hover:scale-105 transition duration-300"
@@ -209,7 +231,7 @@ const About: Component = () => {
 
           {/* Team Photo - Full Width */}
           <div class="rounded-2xl overflow-hidden shadow-xl">
-            <img
+            <AboutImage
               src={aboutImage('team_photo', aboutData.teamPhoto)}
               alt="Our Team"
               class="w-full h-auto object-cover hover:scale-105 transition duration-300"

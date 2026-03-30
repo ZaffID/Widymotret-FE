@@ -3,7 +3,8 @@ import { useNavigate } from '@solidjs/router';
 import { authStore } from '../../stores/authStore';
 import { contentStore } from '../../stores/contentStore';
 import { EditableText } from '../../components/admin/EditableText';
-import { servicesData } from '../../data/services';
+import { EditableImage } from '../../components/admin/EditableImage';
+import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
 import { FaSolidArrowLeftLong } from 'solid-icons/fa';
 import { AiFillCamera } from 'solid-icons/ai';
 import { FaSolidTrashAlt } from 'solid-icons/fa';
@@ -12,7 +13,7 @@ import { FaSolidLightbulb } from 'solid-icons/fa';
 const AdminPortfolio: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
-  const [activeService, setActiveService] = createSignal<string>('studio');
+  const [activeCategory, setActiveCategory] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
 
   onMount(async () => {
@@ -33,7 +34,21 @@ const AdminPortfolio: Component = () => {
     setSaveMessage({ type: 'error', text: message });
   };
 
-  const currentService = () => servicesData.find(s => s.slug === activeService());
+  const currentCategory = () => 
+    portfolioCategories.find(c => c.slug === activeCategory());
+
+  const currentImages = () => {
+    const stored = contentStore.getField('portfolio', `${activeCategory()}_images`);
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        console.log('Failed to parse portfolio images:', e);
+      }
+    }
+    // Fallback to portfolio.ts data
+    return getImagesByCategory(activeCategory() as 'portrait' | 'event' | 'editorial' | 'retouching');
+  };
 
   return (
     <div class="min-h-screen bg-gray-100">
@@ -84,7 +99,7 @@ const AdminPortfolio: Component = () => {
         {/* Welcome Section */}
         <div class="mb-8">
           <h1 class="text-3xl font-bold text-gray-800 mb-2">Portfolio Management</h1>
-          <p class="text-gray-600">Kelola foto dan galeri untuk setiap jenis layanan</p>
+          <p class="text-gray-600">Kelola foto galeri per kategori. Unlimited, tapi disarankan max 20 per kategori.</p>
           
           {saveMessage() && (
             <div class={`mt-4 p-4 rounded-lg ${
@@ -97,21 +112,21 @@ const AdminPortfolio: Component = () => {
           )}
         </div>
 
-        {/* Service Type Tabs */}
+        {/* Category Tabs */}
         <div class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Jenis Layanan:</h2>
+          <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Kategori:</h2>
           <div class="flex gap-3 flex-wrap">
-            <For each={servicesData}>
-              {(service) => (
+            <For each={portfolioCategories}>
+              {(category) => (
                 <button
-                  onClick={() => setActiveService(service.slug)}
+                  onClick={() => setActiveCategory(category.slug)}
                   class={`px-6 py-2 rounded-lg font-medium transition-all ${
-                    activeService() === service.slug
+                    activeCategory() === category.slug
                       ? 'bg-[#576250] text-white'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  {service.title}
+                  {category.name}
                 </button>
               )}
             </For>
@@ -119,97 +134,46 @@ const AdminPortfolio: Component = () => {
         </div>
 
         {/* Portfolio Items Section */}
-        <Show when={currentService()}>
-          {(service) => (
+        <Show when={currentCategory()}>
+          {(category) => (
             <div>
-              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillCamera class="inline mr-2" size={28} />{service().title} - Portfolio</h2>
+              <h2 class="text-2xl font-bold text-gray-800 mb-4"><AiFillCamera class="inline mr-2" size={28} />{category().name}</h2>
+              <p class="text-gray-600 mb-6">{category().description}</p>
 
-              {/* Portfolio Items Grid */}
-              <div class="space-y-6">
-                <For each={service().packages}>
-                  {(item, idx) => (
-                    <div class="p-6 bg-white rounded-lg border border-gray-200 shadow-sm">
-                      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Image Preview */}
-                        <div class="md:col-span-1">
-                          <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center">
-                            <Show 
-                              when={item.price} 
-                              fallback={<span class="text-gray-400 text-center text-sm">No Image URL</span>}
-                            >
-                              <img 
-                                src={item.price || ''} 
-                                alt={item.name}
-                                class="w-full h-full object-cover"
-                                onerror={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                              />
-                            </Show>
-                          </div>
-                        </div>
-
-                        {/* Portfolio Item Details */}
-                        <div class="md:col-span-2 space-y-4">
-                          <EditableText
-                            label="Portfolio Item Title"
-                            value={item.name}
-                            section="portfolio"
-                            field={`${service().slug}_item${idx()}_title`}
-                            multiline={false}
-                            onSave={(value) => { handleSave(`Portfolio item title would be updated`) }}
-                            onError={handleError}
-                          />
-
-                          <EditableText
-                            label="Image URL"
-                            value={item.price || ''}
-                            section="portfolio"
-                            field={`${service().slug}_item${idx()}_image`}
-                            multiline={false}
-                            onSave={(value) => { handleSave(`Image URL would be updated`) }}
-                            onError={handleError}
-                          />
-
-                          <EditableText
-                            label="Description"
-                            value={item.description || ''}
-                            section="portfolio"
-                            field={`${service().slug}_item${idx()}_description`}
-                            multiline={true}
-                            onSave={(value) => { handleSave(`Description would be updated`) }}
-                            onError={handleError}
-                          />
-
-                          {/* Meta Information */}
-                          <div class="pt-2 border-t border-gray-200 flex justify-between items-center">
-                            <span class="text-sm text-gray-500">Item #{idx() + 1}</span>
-                            <button
-                              class="px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-all text-sm font-medium flex items-center gap-2"
-                              onClick={() => handleSave(`Portfolio item would be deleted`)}
-                            >
-                              <FaSolidTrashAlt size={16} />
-                              Delete Item
-                            </button>
-                          </div>
-                        </div>
-                      </div>
+              {/* Portfolio Images Grid */}
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <For each={currentImages()}>
+                  {(image, idx) => (
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                      <EditableImage
+                        label={`Foto #${idx() + 1}`}
+                        value={contentStore.getField('portfolio', `${activeCategory()}_${image.id}`) || image.url}
+                        section="portfolio"
+                        field={`${activeCategory()}_${image.id}`}
+                        aspectClass="aspect-square"
+                        onSave={(value) => {
+                          contentStore.updateFieldLocal('portfolio', `${activeCategory()}_${image.id}`, value);
+                          handleSave(`Gambar #${idx() + 1} berhasil diupdate`);
+                        }}
+                        onError={handleError}
+                      />
                     </div>
                   )}
                 </For>
-              </div>
 
-              {/* Add New Item Button */}
-              <div class="mt-8">
-                <button
-                  onClick={() => handleSave(`New portfolio item would be added`)}
-                  class="w-full py-3 px-4 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition-all font-medium flex items-center justify-center gap-2"
+                {/* Add New Image Button */}
+                <div class="bg-white p-4 rounded-lg border-2 border-dashed border-gray-300 shadow-sm flex items-center justify-center aspect-square cursor-pointer hover:bg-gray-50 transition"
+                  onClick={() => {
+                    handleSave('TODO: Implementasi tambah gambar baru');
+                  }}
                 >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add New Portfolio Item
-                </button>
+                  <div class="text-center">
+                    <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <p class="text-xs text-gray-500 font-medium">Tambah Foto</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}

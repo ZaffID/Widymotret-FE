@@ -27,6 +27,7 @@ const ServiceDetail: Component = () => {
   // Scroll reveal refs
   const packagesTitleRef = useScrollReveal({ threshold: 0.3 });
   const packagesGridRef = useScrollRevealGroup({ threshold: 0.3, itemDelay: 80 });
+  const detailSectionRef = useScrollReveal({ threshold: 0.2 });
   
   const service = () => servicesData.find(s => s.slug === params.slug);
 
@@ -307,7 +308,7 @@ const ServiceDetail: Component = () => {
                     </button>
                   </div>
 
-                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 scroll-reveal" ref={detailSectionRef}>
                     {/* Left - Gallery Slider */}
                     <div class="relative">
                       <div class="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
@@ -364,7 +365,7 @@ const ServiceDetail: Component = () => {
                                 'border-transparent opacity-60 hover:opacity-100': galleryIndex() !== idx()
                               }}
                             >
-                              <img src={img} alt="" class="w-full h-full object-cover" />
+                              <img src={resolveMediaUrl(img)} alt="" class="w-full h-full object-cover" />
                             </button>
                           )}
                         </For>

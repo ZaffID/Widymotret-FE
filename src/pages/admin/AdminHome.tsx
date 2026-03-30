@@ -1240,7 +1240,7 @@ const AdminHome: Component = () => {
 
                               <div class="mb-4">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Contoh Foto Package</label>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 auto-rows-max">
                                   <For each={pkg.images || []}>
                                     {(img, imgIdx) => (
                                       <EditableImage

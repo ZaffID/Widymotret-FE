@@ -157,11 +157,29 @@ export const EditableImage = (props: EditableImageProps) => {
 
       if (uploadedUrl && uploadedUrl.trim()) {
         console.log(`[DEBUG EditableImage] ✅ Valid URL found, setting currentValue to: ${uploadedUrl}`);
+        
+        // Test if file is accessible
+        const resolvedUrl = resolveMediaUrl(uploadedUrl);
+        console.log(`[DEBUG EditableImage] Testing accessibility of: ${resolvedUrl}`);
+        try {
+          const headResponse = await fetch(resolvedUrl, { method: 'HEAD' });
+          if (!headResponse.ok) {
+            console.error(`[DEBUG EditableImage] ❌ File not accessible: ${headResponse.status} ${headResponse.statusText}`);
+            props.onError?.(`⚠️ File uploaded but not accessible: ${headResponse.status}. Check backend logs.`);
+            setIsUploading(false);
+            return;
+          }
+          console.log(`[DEBUG EditableImage] ✅ File is accessible: ${resolvedUrl}`);
+        } catch (fetchErr) {
+          console.error(`[DEBUG EditableImage] ⚠️ Could not verify file access:`, fetchErr);
+          // Continue anyway - CORS or local testing might fail
+        }
+        
         setCurrentValue(uploadedUrl);
         setImgError(false);
 
         // Auto-save uploaded file path - close editor after successful save
-        await persistValue(uploadedUrl, true); // Changed to true to close editor
+        await persistValue(uploadedUrl, true);
       } else {
         const errorMsg = response?.message || 'Upload berhasil tapi URL tidak ditemukan';
         console.log(`[DEBUG EditableImage] ❌ Upload failed - missing URL: ${errorMsg}`);

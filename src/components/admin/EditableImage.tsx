@@ -15,7 +15,7 @@ interface EditableImageProps {
   onSave?: (newValue: string) => void | Promise<void>;
   onError?: (error: string) => void;
   onDelete?: () => void;
-  onUpload?: (file: File) => Promise<string>; // Return URL after upload
+  onUpload?: (file: File) => Promise<string | { success?: boolean; message?: string; data?: { url?: string } }>;
 }
 
 export const EditableImage = (props: EditableImageProps) => {
@@ -112,18 +112,26 @@ export const EditableImage = (props: EditableImageProps) => {
       // Always upload to server first
       const uploadFn = props.onUpload || uploadImage;
       const response = await uploadFn(file);
-      
+
       console.log(`[DEBUG EditableImage] Upload response:`, response);
-      
-      if (response.success && response.data?.url) {
-        console.log(`[DEBUG EditableImage] Setting currentValue to: ${response.data.url}`);
-        setCurrentValue(response.data.url);
+
+      const uploadedUrl = typeof response === 'string'
+        ? response
+        : response?.success && response?.data?.url
+          ? response.data.url
+          : '';
+
+      if (uploadedUrl) {
+        console.log(`[DEBUG EditableImage] Setting currentValue to: ${uploadedUrl}`);
+        setCurrentValue(uploadedUrl);
         setImgError(false);
 
         // Auto-save uploaded file path so users don't lose changes by missing manual save.
-        await persistValue(response.data.url, false);
+        await persistValue(uploadedUrl, false);
       } else {
-        const errorMsg = response.message || 'Gagal upload gambar';
+        const errorMsg = typeof response === 'string'
+          ? 'Gagal upload gambar'
+          : (response?.message || 'Gagal upload gambar');
         console.log(`[DEBUG EditableImage] Upload failed: ${errorMsg}`);
         props.onError?.(errorMsg);
       }

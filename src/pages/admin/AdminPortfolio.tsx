@@ -10,6 +10,8 @@ import { AiFillCamera } from 'solid-icons/ai';
 import { FaSolidTrashAlt } from 'solid-icons/fa';
 import { FaSolidLightbulb } from 'solid-icons/fa';
 
+const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+
 const AdminPortfolio: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
@@ -38,16 +40,32 @@ const AdminPortfolio: Component = () => {
     portfolioCategories.find(c => c.slug === activeCategory());
 
   const currentImages = () => {
-    const stored = contentStore.getField('portfolio', `${activeCategory()}_images`);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (e) {
-        console.log('Failed to parse portfolio images:', e);
-      }
-    }
-    // Fallback to portfolio.ts data
+    // Always use stable portfolio IDs from portfolio.ts so field mapping stays consistent.
     return getImagesByCategory(activeCategory() as 'portrait' | 'event' | 'editorial' | 'retouching');
+  };
+
+  const uploadImageForPortfolio = async (file: File) => {
+    const token = authStore.getToken();
+    if (!token) {
+      throw new Error('Anda harus login terlebih dahulu');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Upload gagal: ${res.status} ${res.statusText}`);
+    }
+
+    return await res.json();
   };
 
   return (
@@ -151,6 +169,7 @@ const AdminPortfolio: Component = () => {
                         section="portfolio"
                         field={`${activeCategory()}_${image.id}`}
                         aspectClass="aspect-square"
+                        onUpload={uploadImageForPortfolio}
                         onSave={(value) => {
                           contentStore.updateFieldLocal('portfolio', `${activeCategory()}_${image.id}`, value);
                           handleSave(`Gambar #${idx() + 1} berhasil diupdate`);

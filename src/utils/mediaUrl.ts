@@ -16,14 +16,6 @@ export const resolveMediaUrl = (value: string): string => {
     return `${API_ORIGIN}/${value}`;
   }
 
-  // Public assets from backend (portrait, landscape folders, etc)
-  if (value.startsWith('/portrait/') || value.startsWith('/landscape/')) {
-    return `${API_ORIGIN}${value}`;
-  }
-  if (value.startsWith('portrait/') || value.startsWith('landscape/')) {
-    return `${API_ORIGIN}/${value}`;
-  }
-
   // Public assets remain relative to frontend
   return value;
 };

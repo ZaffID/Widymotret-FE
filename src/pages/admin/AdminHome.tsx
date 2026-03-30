@@ -1429,6 +1429,7 @@ const AdminHome: Component = () => {
                                   section="portfolio"
                                   field={fieldName}
                                   aspectClass="aspect-square"
+                                  onUpload={uploadImageForPackage}
                                   onSave={(v) => {
                                     console.log(`[AdminHome] Portfolio onSave: ${fieldName} = ${v}`);
                                     contentStore.updateFieldLocal('portfolio', fieldName, v);

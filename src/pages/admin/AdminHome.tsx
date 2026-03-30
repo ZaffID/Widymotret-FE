@@ -662,68 +662,7 @@ const AdminHome: Component = () => {
                 </div>
               </div>
 
-              {/* Portfolio Grid Preview */}
-              <div class="mb-10 pb-10 border-b-2 border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800 mb-4"><AiFillFileImage class="inline mr-2" size={20} />Portfolio Grid (4 gambar)</h3>
-                <p class="text-sm text-gray-500 mb-4">4 foto dengan kategori yang tampil di homepage</p>
-                <div class="space-y-6">
-                  <For each={Array.from({length: 4}, (_, i) => i)}>
-                    {(idx) => {
-                      const defaultPortfolios = [
-                        '/landscape/landscape (1).png',
-                        '/landscape/landscape (2).png',
-                        '/landscape/landscape (3).png',
-                        '/landscape/landscape (4).png',
-                      ];
-                      const defaultCategories = [
-                        'Portrait Photography',
-                        'Event and Wedding Coverage',
-                        'Editorial and Brand Shots',
-                        'Image Retouching and Editing',
-                      ];
-                      return (
-                        <div class="border border-gray-200 rounded-lg p-4">
-                          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {/* Image Column */}
-                            <div>
-                              <EditableImage
-                                label={`Portfolio ${idx + 1} - Gambar`}
-                                value={contentStore.getField('home', `portfolio_grid_${idx}`) || defaultPortfolios[idx]}
-                                section="home"
-                                field={`portfolio_grid_${idx}`}
-                                aspectClass="aspect-video"
-                                onSave={(v) => {
-                                  console.log(`[AdminHome] Portfolio grid onSave: portfolio_grid_${idx} = ${v}`);
-                                  contentStore.updateFieldLocal('home', `portfolio_grid_${idx}`, v);
-                                  handleSave(`Portfolio ${idx + 1} gambar berhasil diupdate`);
-                                }}
-                                onError={handleError}
-                              />
-                            </div>
-                            
-                            {/* Text Info Column */}
-                            <div class="md:col-span-2 space-y-3">
-                              <EditableText
-                                label={`Portfolio ${idx + 1} - Kategori`}
-                                value={contentStore.getField('home', `portfolio_grid_category_${idx}`) || defaultCategories[idx]}
-                                section="home"
-                                field={`portfolio_grid_category_${idx}`}
-                                multiline={false}
-                                onSave={(v) => {
-                                  console.log(`[AdminHome] Portfolio category onSave: portfolio_grid_category_${idx} = ${v}`);
-                                  contentStore.updateFieldLocal('home', `portfolio_grid_category_${idx}`, v);
-                                  handleSave(`Portfolio ${idx + 1} kategori berhasil diupdate`);
-                                }}
-                                onError={handleError}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    }}
-                  </For>
-                </div>
-              </div>
+              {/* Portfolio Grid automatically fetches from first image of each category - no manual admin config needed */}
 
               {/* Potret Unggulan (Featured Shots) - READ FROM STORE */}
               <div class="mb-10 pb-10 border-b-2 border-gray-200">
@@ -1453,14 +1392,10 @@ const AdminHome: Component = () => {
                                       onSave={async (v) => {
                                         console.log(`[AdminHome] Portfolio onSave START: field=${fieldName}, newValue="${v}"`);
                                         try {
-                                          // Update local store first for immediate UI feedback
+                                          // Keep the new value locally for immediate UI persistence
+                                          // No need to reload from backend - trust the save worked
                                           contentStore.updateFieldLocal('portfolio', fieldName, v);
-                                          console.log(`[AdminHome] Portfolio local store updated`);
-                                          
-                                          // Reload portfolio section from backend to ensure sync
-                                          await contentStore.loadSection('portfolio');
-                                          console.log(`[AdminHome] Portfolio section reloaded`);
-                                          
+                                          console.log(`[AdminHome] Portfolio local store updated with new value`);
                                           handleSave(`${img.title} berhasil diupdate`);
                                         } catch (error) {
                                           console.error(`[AdminHome] Portfolio onSave ERROR:`, error);
@@ -1479,8 +1414,11 @@ const AdminHome: Component = () => {
 
                         {/* Tambah Foto Baru */}
                         <button
-                          onClick={() => handleSave(`Foto baru akan ditambah ke ${category().name}`)}
-                          class="mt-6 w-full py-3 px-4 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium text-sm flex items-center justify-center gap-2"
+                          onClick={() => {
+                            handleSave(`Fitur tambah foto masih dalam pengembangan. Hubungi developer untuk informasi lebih lanjut.`);
+                          }}
+                          class="mt-6 w-full py-3 px-4 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition font-medium text-sm flex items-center justify-center gap-2 cursor-not-allowed"
+                          disabled
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

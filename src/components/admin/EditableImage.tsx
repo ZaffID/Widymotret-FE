@@ -46,35 +46,45 @@ export const EditableImage = (props: EditableImageProps) => {
       return false;
     }
     
-    console.log(`[DEBUG EditableImage] Saving: section=${props.section}, field=${props.field}, value=${newValue}`);
+    console.log(`[DEBUG EditableImage] persistValue START: section=${props.section}, field=${props.field}, value="${newValue}", closeEditor=${closeEditor}`);
     
     setIsSaving(true);
     try {
       // Save to backend via API
       const response = await updateContent(props.section, props.field, newValue);
-      console.log(`[DEBUG EditableImage] Save response:`, response);
+      console.log(`[DEBUG EditableImage] updateContent response:`, response);
       
       if (response.success) {
-        console.log(`[DEBUG EditableImage] Save successful`);
-        if (closeEditor) setIsEditing(false);
+        console.log(`[DEBUG EditableImage] persistValue SUCCESS - will closeEditor=${closeEditor}`);
+        if (closeEditor) {
+          setIsEditing(false);
+        }
         setLastPropValue(newValue);
         setImgError(false);
+        
         // Await the onSave callback in case it's async
-        await Promise.resolve(props.onSave?.(newValue));
+        try {
+          await Promise.resolve(props.onSave?.(newValue));
+          console.log(`[DEBUG EditableImage] onSave callback completed`);
+        } catch (cbError) {
+          console.error(`[DEBUG EditableImage] onSave callback error:`, cbError);
+          throw cbError;
+        }
         return true;
       } else {
         const errorMsg = response.message || 'Gagal menyimpan gambar';
-        console.log(`[DEBUG EditableImage] Save failed: ${errorMsg}`);
+        console.log(`[DEBUG EditableImage] persistValue FAILED: ${errorMsg}`);
         props.onError?.(errorMsg);
         return false;
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Gagal menyimpan';
-      console.log(`[DEBUG EditableImage] Save exception: ${errorMsg}`);
+      console.log(`[DEBUG EditableImage] persistValue EXCEPTION: ${errorMsg}`, err);
       props.onError?.(errorMsg);
       return false;
     } finally {
       setIsSaving(false);
+      console.log(`[DEBUG EditableImage] persistValue END`);
     }
   };
 
@@ -113,26 +123,32 @@ export const EditableImage = (props: EditableImageProps) => {
       const uploadFn = props.onUpload || uploadImage;
       const response = await uploadFn(file);
 
-      console.log(`[DEBUG EditableImage] Upload response:`, response);
+      console.log(`[DEBUG EditableImage] Upload response:`, response, typeof response);
 
-      const uploadedUrl = typeof response === 'string'
-        ? response
-        : response?.success && response?.data?.url
-          ? response.data.url
-          : '';
+      // Extract URL from various response formats
+      let uploadedUrl = '';
+      if (typeof response === 'string') {
+        uploadedUrl = response;
+      } else if (response && typeof response === 'object') {
+        // Try multiple possible response formats
+        uploadedUrl = response?.data?.url 
+          || response?.url 
+          || (response as any)?.['data/url']
+          || '';
+      }
 
-      if (uploadedUrl) {
+      console.log(`[DEBUG EditableImage] Extracted URL: "${uploadedUrl}"`);
+
+      if (uploadedUrl && uploadedUrl.trim()) {
         console.log(`[DEBUG EditableImage] Setting currentValue to: ${uploadedUrl}`);
         setCurrentValue(uploadedUrl);
         setImgError(false);
 
-        // Auto-save uploaded file path so users don't lose changes by missing manual save.
-        await persistValue(uploadedUrl, false);
+        // Auto-save uploaded file path - close editor after successful save
+        await persistValue(uploadedUrl, true); // Changed to true to close editor
       } else {
-        const errorMsg = typeof response === 'string'
-          ? 'Gagal upload gambar'
-          : (response?.message || 'Gagal upload gambar');
-        console.log(`[DEBUG EditableImage] Upload failed: ${errorMsg}`);
+        const errorMsg = response?.message || 'Upload berhasil tapi URL tidak ditemukan';
+        console.log(`[DEBUG EditableImage] Upload failed - missing URL: ${errorMsg}`);
         props.onError?.(errorMsg);
       }
     } catch (err) {
@@ -158,6 +174,9 @@ export const EditableImage = (props: EditableImageProps) => {
               <div class="w-full h-full flex flex-col items-center justify-center gap-2 text-gray-500 text-sm bg-gradient-to-br from-gray-50 to-gray-100">
                 <FiImage size={28} class="text-gray-400" />
                 <span class="font-medium">no image</span>
+                <Show when={currentValue() && imgError()}>
+                  <span class="text-xs text-red-500">({currentValue()?.length > 30 ? '...' + currentValue()?.slice(-30) : currentValue()})</span>
+                </Show>
               </div>
             }
           >
@@ -165,7 +184,14 @@ export const EditableImage = (props: EditableImageProps) => {
               src={previewSrc()}
               alt={props.label}
               class="w-full h-full object-cover"
-              onError={() => setImgError(true)}
+              onError={() => {
+                console.error(`[DEBUG EditableImage] Image load failed for: ${previewSrc()}`);
+                setImgError(true);
+              }}
+              onLoad={() => {
+                console.log(`[DEBUG EditableImage] Image loaded successfully: ${previewSrc()}`);
+                setImgError(false);
+              }}
             />
           </Show>
 
@@ -173,7 +199,10 @@ export const EditableImage = (props: EditableImageProps) => {
           <Show when={!isEditing()}>
             <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 gap-2">
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  console.log(`[DEBUG EditableImage] Opening editor for field: ${props.field}`);
+                  setIsEditing(true);
+                }}
                 class="px-3 py-2 bg-white rounded-lg shadow text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
               >
                 <BiRegularPencil />

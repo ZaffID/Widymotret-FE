@@ -21,7 +21,7 @@ const Portfolio: Component = () => {
   const [loadError, setLoadError] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(true);
 
-  // Check BE health on mount
+  // Check BE health and load all portfolio data on mount
   onMount(async () => {
     setIsLoading(true);
     try {
@@ -30,8 +30,9 @@ const Portfolio: Component = () => {
       const res = await fetch(`${apiUrl}/api/packages`, { method: 'HEAD' });
       if (!res.ok) throw new Error('BE unavailable');
 
-      // Load portfolio section values saved from admin panel
+      // Load portfolio section - gets ALL fields including new items added by admin
       await contentStore.loadSection('portfolio');
+      console.log('[Portfolio] Loaded all portfolio fields from backend');
       setLoadError(false);
     } catch (err) {
       console.error('Backend unavailable:', err);
@@ -52,10 +53,38 @@ const Portfolio: Component = () => {
     }
   });
 
-  // Get images for active category
+  // Get images for active category (defaults + any new items from backend)
   const currentImages = createMemo(() => {
     const category = activeCategory();
-    return getImagesByCategory(category).map((img) => {
+    
+    // Get default images
+    const defaultImages = getImagesByCategory(category);
+    
+    // Get all portfolio fields for this category from contentStore
+    const allFields = contentStore.getSectionFields('portfolio');
+    const categoryFields = allFields.filter(f => f.field.startsWith(`${category}_`));
+    
+    // Start with defaults
+    const allImages = [...defaultImages];
+    
+    // Add any new items that aren't in defaults
+    categoryFields.forEach(field => {
+      if (field.field.startsWith(`${category}_new_`)) {
+        const id = field.field.replace(`${category}_`, '');
+        const value = field.value;
+        if (value && !allImages.find(img => img.id === id)) {
+          allImages.push({
+            id,
+            url: value,
+            category: category as any,
+            title: `Photo #${id}`,
+          });
+        }
+      }
+    });
+    
+    // Map to get saved values from contentStore
+    return allImages.map((img) => {
       const fieldName = `${category}_${img.id}`;
       const savedValue = contentStore.getField('portfolio', fieldName);
       return {

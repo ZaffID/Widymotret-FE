@@ -422,17 +422,18 @@ const AdminHome: Component = () => {
       if (field.field.startsWith(`${categorySlug}_new_`)) {
         const id = field.field.replace(`${categorySlug}_`, ''); // Extract just 'new_1', 'new_2', etc
         const value = field.value;
-        // Only add if it has content
-        if (value && value.trim() && value !== '/placeholder.png') {
+        // Add if field exists (even if just placeholder)
+        if (value) {
           // Check if already in defaults
           if (!allImages.find(img => img.id === id)) {
             newItemCount++;
+            const hasRealContent = !!(value && value.trim() && value !== '/placeholder.png');
             allImages.push({
               id,
               title: getNewItemTitle(categorySlug, newItemCount),
               url: value,
               category: categorySlug as any,
-              hasValue: true,
+              hasValue: hasRealContent,
             });
           }
         }
@@ -460,15 +461,16 @@ const AdminHome: Component = () => {
       
       console.log(`[AdminHome] Adding new portfolio item: ${fieldName}`);
       
-      // Create empty field in backend to reserve the slot
-      await updateContent('portfolio', fieldName, '');
+      // Create with placeholder to make it visible in grid immediately
+      const placeholderUrl = '/placeholder.png';
+      await updateContent('portfolio', fieldName, placeholderUrl);
       
-      // Update contentStore with empty value
-      contentStore.updateFieldLocal('portfolio', fieldName, '');
+      // Update contentStore with placeholder
+      contentStore.updateFieldLocal('portfolio', fieldName, placeholderUrl);
       
       handleSave(`Slot foto baru ditambahkan untuk ${categorySlug}. Upload foto dan klik Simpan.`);
       
-      // No need to reload - contentStore already updated locally
+      // Memo will re-run automatically due to contentStore.lastUpdated change
     } catch (error) {
       console.error(`[AdminHome] Error adding portfolio item:`, error);
       handleError(`Gagal menambahkan slot foto: ${error instanceof Error ? error.message : 'Unknown error'}`);

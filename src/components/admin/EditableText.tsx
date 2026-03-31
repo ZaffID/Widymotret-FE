@@ -45,8 +45,10 @@ export const EditableText = (props: EditableTextProps) => {
   const handleSave = async () => {
     const newValue = currentValue();
 
-    if (!newValue.trim()) {
-      setError('Konten tidak boleh kosong');
+    // Allow empty strings (for deletion purposes like testimonials)
+    // But don't allow whitespace-only strings
+    if (newValue !== '' && !newValue.trim()) {
+      setError('Konten tidak boleh hanya berisi spasi');
       return;
     }
 

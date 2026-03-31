@@ -391,6 +391,25 @@ const AdminHome: Component = () => {
     setTimeout(() => setSaveMessage(null), 5000); // Errors stay 5s before auto-dismissing
   };
 
+  // Delete testimonial and save to backend
+  const deleteTestimonial = async (idx: number) => {
+    try {
+      // Update local state first
+      contentStore.updateFieldLocal('testimonials', `quote${idx}`, '');
+      contentStore.updateFieldLocal('testimonials', `author${idx}`, '');
+
+      // Save to backend
+      await updateContent('testimonials', `quote${idx}`, '');
+      await updateContent('testimonials', `author${idx}`, '');
+
+      handleSave(`Testimoni ${idx} dihapus`);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Gagal menghapus testimoni';
+      handleError(errorMsg);
+      console.error('Delete testimonial error:', error);
+    }
+  };
+
   // Get appropriate title for new portfolio item
   const getNewItemTitle = (categorySlug: string, newIndex: number) => {
     const categoryTitles: Record<string, string> = {
@@ -944,11 +963,7 @@ const AdminHome: Component = () => {
                               <div class="flex justify-between items-start mb-3">
                                 <h4 class="font-bold text-gray-800 text-sm">Testimoni {idx}</h4>
                                 <button
-                                  onClick={() => {
-                                    contentStore.updateFieldLocal('testimonials', `quote${idx}`, '');
-                                    contentStore.updateFieldLocal('testimonials', `author${idx}`, '');
-                                    handleSave(`Testimoni ${idx} dihapus`);
-                                  }}
+                                  onClick={() => deleteTestimonial(idx)}
                                   class="text-red-500 hover:text-red-700 text-lg leading-none px-2"
                                   title="Hapus testimoni"
                                 >

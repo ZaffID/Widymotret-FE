@@ -1,8 +1,15 @@
-import { Component, createMemo } from 'solid-js';
+import { Component, createMemo, createSignal, onMount, For } from 'solid-js';
 import { BsInstagram, BsFacebook, BsWhatsapp } from 'solid-icons/bs';
 import { contentStore } from '../stores/contentStore';
 
+interface ServiceCategory {
+  name: string;
+  category: string;
+}
+
 const Footer: Component = () => {
+  const [services, setServices] = createSignal<ServiceCategory[]>([]);
+
   // Create memos for footer data to track changes
   const studioDescription = createMemo(() => 
     contentStore.getField('footer', 'studio_description') || 'Mengabadikan momen abadi dan menciptakan kenangan indah yang bertahan selamanya.'
@@ -27,6 +34,52 @@ const Footer: Component = () => {
   const tagline = createMemo(() => 
     contentStore.getField('footer', 'tagline') || 'Made with ♥ for capturing love'
   );
+
+  // Social media links from contentStore
+  const facebookUrl = createMemo(() => 
+    contentStore.getField('footer', 'facebook_url') || 'https://www.facebook.com/dalban.speed.71/'
+  );
+
+  const instagramUrl = createMemo(() => 
+    contentStore.getField('footer', 'instagram_url') || 'https://www.instagram.com/widymotretstudio/'
+  );
+
+  const whatsappUrl = createMemo(() => 
+    contentStore.getField('footer', 'whatsapp_url') || 'https://api.whatsapp.com/send/?phone=62895351115777%3F&type=phone_number&app_absent=0'
+  );
+
+  // Fetch unique service categories from backend
+  onMount(async () => {
+    try {
+      const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const response = await fetch(`${API_BASE}/api/packages`);
+      const data = await response.json();
+      
+      if (Array.isArray(data)) {
+        // Get unique categories with first package name from each
+        const uniqueCategories = new Map<string, ServiceCategory>();
+        data.forEach((pkg: any) => {
+          if (!uniqueCategories.has(pkg.category)) {
+            uniqueCategories.set(pkg.category, {
+              name: pkg.name,
+              category: pkg.category,
+            });
+          }
+        });
+        setServices(Array.from(uniqueCategories.values()).slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      // Fallback to default services
+      setServices([
+        { name: 'Studio Photoshoot', category: 'studio' },
+        { name: 'Graduation', category: 'graduation' },
+        { name: 'Event Photography', category: 'event' },
+        { name: 'Product Photography', category: 'product' },
+        { name: 'Wedding Photography', category: 'wedding' },
+      ]);
+    }
+  });
   return (
     <footer class="bg-black text-white py-16 px-6">
       <div class="container mx-auto max-w-6xl">
@@ -55,11 +108,11 @@ const Footer: Component = () => {
           <div>
             <h4 class="text-sm tracking-widest mb-6 text-gray-300">LAYANAN</h4>
             <ul class="space-y-3 text-gray-400 text-sm">
-              <li><a href="/pricelist/studio" class="hover:text-white transition">Studio Photoshoot</a></li>
-              <li><a href="/pricelist/graduation" class="hover:text-white transition">Graduation</a></li>
-              <li><a href="/pricelist/event" class="hover:text-white transition">Event Photography</a></li>
-              <li><a href="/pricelist/product" class="hover:text-white transition">Product Photography</a></li>
-              <li><a href="/pricelist/wedding" class="hover:text-white transition">Wedding Photography</a></li>
+              <For each={services()}>
+                {(service) => (
+                  <li><a href={`/pricelist/${service.category}`} class="hover:text-white transition">{service.name}</a></li>
+                )}
+              </For>
             </ul>
           </div>
           
@@ -77,13 +130,13 @@ const Footer: Component = () => {
                 <span>{contactAddress()}</span>
               </li>
               <li class="flex gap-3 mt-6">
-                <a href="https://www.facebook.com/dalban.speed.71/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition border border-gray-600 rounded-lg p-2 hover:border-white">
+                <a href={facebookUrl()} target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition border border-gray-600 rounded-lg p-2 hover:border-white">
                   <BsFacebook class="w-4 h-4" />
                 </a>
-                <a href="https://www.instagram.com/widymotretstudio/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition border border-gray-600 rounded-lg p-2 hover:border-white">
+                <a href={instagramUrl()} target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition border border-gray-600 rounded-lg p-2 hover:border-white">
                   <BsInstagram class="w-4 h-4" />
                 </a>
-                <a href="https://api.whatsapp.com/send/?phone=62895351115777%3F&type=phone_number&app_absent=0" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition border border-gray-600 rounded-lg p-2 hover:border-white">
+                <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition border border-gray-600 rounded-lg p-2 hover:border-white">
                   <BsWhatsapp class="w-4 h-4" />
                 </a>
               </li>

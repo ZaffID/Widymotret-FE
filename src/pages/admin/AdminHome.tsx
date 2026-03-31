@@ -1994,6 +1994,47 @@ const AdminHome: Component = () => {
                   onError={handleError}
                 />
               </div>
+
+              {/* Social Media Links */}
+              <div class="mb-10 pb-10 border-b-2 border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Link Media Sosial</h3>
+                <EditableText
+                  label="Facebook URL"
+                  value={contentStore.getField('footer', 'facebook_url') || 'https://www.facebook.com/dalban.speed.71/'}
+                  section="footer"
+                  field="facebook_url"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'facebook_url', value);
+                    handleSave('Facebook URL berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+                <EditableText
+                  label="Instagram URL"
+                  value={contentStore.getField('footer', 'instagram_url') || 'https://www.instagram.com/widymotretstudio/'}
+                  section="footer"
+                  field="instagram_url"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'instagram_url', value);
+                    handleSave('Instagram URL berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+                <EditableText
+                  label="WhatsApp URL"
+                  value={contentStore.getField('footer', 'whatsapp_url') || 'https://api.whatsapp.com/send/?phone=62895351115777%3F&type=phone_number&app_absent=0'}
+                  section="footer"
+                  field="whatsapp_url"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'whatsapp_url', value);
+                    handleSave('WhatsApp URL berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+              </div>
             </div>
           </Show>
 

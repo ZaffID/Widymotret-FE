@@ -120,14 +120,6 @@ const AdminHome: Component = () => {
   const [newPackagePrice, setNewPackagePrice] = createSignal('0');
   const [newPackageFeatures, setNewPackageFeatures] = createSignal('');
   const [newPackagePublished, setNewPackagePublished] = createSignal(true);
-  
-  // Portfolio - track new items added per category
-  const [newPortfolioItems, setNewPortfolioItems] = createSignal<Record<string, Array<{id: string; title: string; url: string; category: string}>>>({
-    portrait: [],
-    event: [],
-    editorial: [],
-    retouching: [],
-  });
 
   onMount(async () => {
     // Load all content on component mount
@@ -399,29 +391,75 @@ const AdminHome: Component = () => {
     setTimeout(() => setSaveMessage(null), 5000); // Errors stay 5s before auto-dismissing
   };
 
-  // Get all images for category (default + new)
+  // Get all images for category (default + from backend)
   const getPortfolioCategoryImages = (categorySlug: string) => {
+    // Get default images from portfolio.ts
     const defaultImages = getImagesByCategory(categorySlug);
-    const newItems = newPortfolioItems()[categorySlug as keyof typeof newPortfolioItems] || [];
-    return [...defaultImages, ...newItems];
+    
+    // Get all portfolio fields for this category from contentStore
+    const allFields = contentStore.getSectionFields('portfolio');
+    const categoryFields = allFields.filter(f => f.field.startsWith(`${categorySlug}_`));
+    
+    // Build map of fields for quick lookup
+    const fieldMap = new Map(categoryFields.map(f => [f.field, f]));
+    
+    // Create complete image list: defaults + any new items not in defaults
+    const allImages: Array<{id: string; title: string; url: string; category: string}> = [...defaultImages];
+    
+    // Add any fields that start with "new_" (dynamically added items)
+    categoryFields.forEach(field => {
+      if (field.field.startsWith('new_')) {
+        const id = field.field;
+        const value = field.value;
+        // Only add if it has content
+        if (value && value.trim() && value !== '/placeholder.png') {
+          // Check if already in defaults
+          if (!allImages.find(img => img.id === id)) {
+            allImages.push({
+              id,
+              title: `Foto Baru (${id})`,
+              url: value,
+              category: categorySlug as any,
+            });
+          }
+        }
+      }
+    });
+    
+    return allImages.sort((a, b) => {
+      // Sort defaults first (p1-p5, e1-e5, etc), then new items
+      const aIsDefault = !a.id.startsWith('new_');
+      const bIsDefault = !b.id.startsWith('new_');
+      if (aIsDefault !== bIsDefault) return aIsDefault ? -1 : 1;
+      return a.id.localeCompare(b.id);
+    });
   };
 
-  // Add new portfolio item to category
-  const addPortfolioItem = (categorySlug: string) => {
-    const newItems = newPortfolioItems();
-    const categoryItems = newItems[categorySlug as keyof typeof newPortfolioItems] || [];
-    const itemIndex = categoryItems.length + 1;
-    const newItem = {
-      id: `new_${itemIndex}`,
-      title: `Foto Baru #${itemIndex}`,
-      url: '/placeholder.png', // Default placeholder
-      category: categorySlug as any,
-    };
-    setNewPortfolioItems({
-      ...newItems,
-      [categorySlug]: [...categoryItems, newItem],
-    });
-    handleSave(`Slot foto baru ditambahkan. Upload foto kemudian klik Simpan.`);
+  // Add new portfolio item to category - creates field in backend
+  const addPortfolioItem = async (categorySlug: string) => {
+    try {
+      // Find next available ID
+      const allFields = contentStore.getSectionFields('portfolio');
+      const categoryFields = allFields.filter(f => f.field.startsWith(`${categorySlug}_new_`));
+      const newCount = categoryFields.length + 1;
+      const newId = `new_${newCount}`;
+      const fieldName = `${categorySlug}_${newId}`;
+      
+      console.log(`[AdminHome] Adding new portfolio item: ${fieldName}`);
+      
+      // Create empty field in backend to reserve the slot
+      await updateContent('portfolio', fieldName, '');
+      
+      // Update contentStore with empty value
+      contentStore.updateFieldLocal('portfolio', fieldName, '');
+      
+      handleSave(`Slot foto baru ditambahkan untuk ${categorySlug}. Upload foto dan klik Simpan.`);
+      
+      // No need to reload - contentStore already updated locally
+    } catch (error) {
+      console.error(`[AdminHome] Error adding portfolio item:`, error);
+      handleError(`Gagal menambahkan slot foto: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   const aboutTextValue = (field: string, fallback: string) => {

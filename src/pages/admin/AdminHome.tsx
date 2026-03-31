@@ -103,7 +103,7 @@ const TestimoniCounter = () => {
 const AdminHome: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
-  const [currentPage, setCurrentPage] = createSignal<'home' | 'pricelist' | 'portfolio' | 'about' | 'footer'>('home');
+  const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio' | 'about' | 'footer'>('home');
   const [activeServicePricelist, setActiveServicePricelist] = createSignal<string>('studio');
   const [activeServicePortfolio, setActiveServicePortfolio] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
@@ -121,10 +121,21 @@ const AdminHome: Component = () => {
   const [newPackageFeatures, setNewPackageFeatures] = createSignal('');
   const [newPackagePublished, setNewPackagePublished] = createSignal(true);
 
+  // Services Management
+  const [showAddServiceModal, setShowAddServiceModal] = createSignal(false);
+  const [newServiceName, setNewServiceName] = createSignal('Layanan Baru');
+  const [newServiceSlug, setNewServiceSlug] = createSignal('layanan-baru');
+  const [newServiceDescription, setNewServiceDescription] = createSignal('Deskripsi layanan');
+  const [newServiceImage, setNewServiceImage] = createSignal('/photography.png');
+  const [uploadingServiceImage, setUploadingServiceImage] = createSignal(false);
+  const [allServices, setAllServices] = createSignal<any[]>([]);
+
   onMount(async () => {
     // Load all content on component mount
     await contentStore.loadAll();
     await loadPackages();
+    // Load services after packages are loaded
+    loadAllServices();
   });
 
   const getTemplateImagesByCategory = (category: string, seed = 0): string[] => {
@@ -165,6 +176,52 @@ const AdminHome: Component = () => {
   const filteredPackages = createMemo(() => {
     const category = activeServicePricelist().toLowerCase();
     return packages().filter((pkg) => pkg.category?.toLowerCase() === category);
+  });
+
+  // Load all unique service categories
+  const loadAllServices = () => {
+    // Start with hardcoded services
+    const servicesSet = new Map<string, any>();
+    
+    // Add hardcoded services
+    servicesData.forEach(service => {
+      servicesSet.set(service.slug, {
+        slug: service.slug,
+        title: contentStore.getField('service', `${service.slug}_title`) || service.title,
+        description: contentStore.getField('service', `${service.slug}_description`) || service.description,
+        image: contentStore.getField('service', `${service.slug}_image`) || service.image,
+        isCustom: false
+      });
+    });
+
+    // Add categories from packages that aren't in hardcoded list
+    const packageCategories = [...new Set(packages().map(pkg => pkg.category?.toLowerCase()).filter(Boolean))];
+    packageCategories.forEach(category => {
+      if (!servicesSet.has(category)) {
+        servicesSet.set(category, {
+          slug: category,
+          title: contentStore.getField('service', `${category}_title`) || category.charAt(0).toUpperCase() + category.slice(1),
+          description: contentStore.getField('service', `${category}_description`) || 'Layanan fotografi',
+          image: contentStore.getField('service', `${category}_image`) || '/photography.png',
+          isCustom: true
+        });
+      }
+    });
+
+    setAllServices(Array.from(servicesSet.values()));
+  };
+
+  // Initialize active service when allServices loads
+  createMemo(() => {
+    const services = allServices();
+    if (services.length > 0 && activeServicePricelist()) {
+      // Check if current selection still exists
+      if (!services.find(s => s.slug === activeServicePricelist())) {
+        setActiveServicePricelist(services[0].slug);
+      }
+    } else if (services.length > 0) {
+      setActiveServicePricelist(services[0].slug);
+    }
   });
 
   const getServicePreviewImage = (slug: string, fallback: string) => {
@@ -307,6 +364,7 @@ const AdminHome: Component = () => {
         handleSave('Paket baru berhasil ditambahkan');
         setShowAddPackageModal(false);
         await loadPackages();
+        loadAllServices();
       } else {
         handleError(data.message || 'Gagal menambahkan paket');
       }
@@ -339,11 +397,50 @@ const AdminHome: Component = () => {
         setShowDeletePackageModal(false);
         setPackageToDelete(null);
         await loadPackages();
+        loadAllServices();
       } else {
         handleError(data.message || 'Gagal menghapus package');
       }
     } catch (error) {
       handleError('Terjadi kesalahan koneksi saat menghapus package');
+    }
+  };
+
+  const addNewService = async () => {
+    const slug = newServiceSlug().trim().toLowerCase().replace(/\s+/g, '-');
+    const name = newServiceName().trim();
+    const desc = newServiceDescription().trim();
+    const image = newServiceImage() || '/photography.png';
+
+    if (!name || !slug) {
+      handleError('Nama dan slug layanan harus diisi');
+      return;
+    }
+
+    try {
+      // Save to contentStore
+      contentStore.updateFieldLocal('service', `${slug}_title`, name);
+      contentStore.updateFieldLocal('service', `${slug}_description`, desc);
+      contentStore.updateFieldLocal('service', `${slug}_image`, image);
+
+      // Persist to backend
+      await updateContent('service', `${slug}_title`, name);
+      await updateContent('service', `${slug}_description`, desc);
+      await updateContent('service', `${slug}_image`, image);
+
+      // Reset form and close modal
+      setNewServiceName('Layanan Baru');
+      setNewServiceSlug('layanan-baru');
+      setNewServiceDescription('Deskripsi layanan');
+      setNewServiceImage('/photography.png');
+      setShowAddServiceModal(false);
+
+      // Reload services
+      loadAllServices();
+      handleSave(`Layanan "${name}" berhasil ditambahkan`);
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Gagal menambahkan layanan');
+      console.error('Add service error:', error);
     }
   };
 
@@ -597,6 +694,17 @@ const AdminHome: Component = () => {
           >
             <AiFillHome size={20} />
             Halaman Utama
+          </button>
+          <button
+            onClick={() => setCurrentPage('services')}
+            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              currentPage() === 'services'
+                ? 'bg-[#576250] text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <AiFillDollarCircle size={20} />
+            Kelola Services
           </button>
           <button
             onClick={() => setCurrentPage('pricelist')}
@@ -1113,6 +1221,49 @@ const AdminHome: Component = () => {
             </div>
           </Show>
 
+          {/* SERVICES MANAGEMENT PAGE */}
+          <Show when={currentPage() === 'services'}>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillDollarCircle class="inline mr-2" size={24} />Kelola Layanan</h2>
+              <p class="text-gray-600 mb-6">Tambah dan kelola kategori layanan fotografi.</p>
+
+              <button
+                onClick={() => setShowAddServiceModal(true)}
+                class="mb-8 px-5 py-2.5 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium text-sm"
+              >
+                + Tambah Layanan Baru
+              </button>
+
+              {/* Services List */}
+              <div class="space-y-4">
+                <For each={allServices()} fallback={
+                  <div class="p-5 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-500">
+                    Tidak ada layanan. Buat layanan baru untuk memulai.
+                  </div>
+                }>
+                  {(service) => (
+                    <div class="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex gap-4">
+                        <div class="w-24 h-24 flex-shrink-0">
+                          <img 
+                            src={resolveMediaUrl(service.image)} 
+                            alt={service.title}
+                            class="w-full h-full object-cover rounded"
+                          />
+                        </div>
+                        <div class="flex-grow">
+                          <h3 class="font-bold text-gray-800 mb-2">{service.title}</h3>
+                          <p class="text-sm text-gray-600 mb-3">{service.description}</p>
+                          <p class="text-xs text-gray-500">Slug: <code class="bg-gray-200 px-1 py-0.5 rounded">{service.slug}</code></p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </For>
+              </div>
+            </div>
+          </Show>
+
           {/* PRICELIST PAGE */}
           <Show when={currentPage() === 'pricelist'}>
             <div>
@@ -1121,7 +1272,7 @@ const AdminHome: Component = () => {
 
               {/* Service Type Tabs */}
               <div class="bg-gray-50 rounded-xl p-1 mb-8 flex gap-2 flex-wrap">
-                <For each={servicesData}>
+                <For each={allServices()}>
                   {(service) => (
                     <button
                       onClick={() => setActiveServicePricelist(service.slug)}
@@ -1137,7 +1288,7 @@ const AdminHome: Component = () => {
                 </For>
               </div>
 
-              <Show when={servicesData.find(s => s.slug === activeServicePricelist())}>
+              <Show when={allServices().find(s => s.slug === activeServicePricelist())}>
                 {(service) => (
                   <div>
                     <h3 class="text-xl font-bold text-gray-800 mb-6">{service().title}</h3>
@@ -2180,6 +2331,112 @@ const AdminHome: Component = () => {
                 class="flex-1 py-3 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium"
               >
                 Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      </Show>
+
+      {/* Add Service Modal */}
+      <Show when={showAddServiceModal()}>
+        <div
+          class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50"
+          onClick={() => setShowAddServiceModal(false)}
+        >
+          <div
+            class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fadeInScale overflow-y-auto max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 class="text-2xl font-bold text-[#464C43] mb-6">Tambah Layanan Baru</h3>
+            <div class="space-y-4">
+              {/* Image Preview */}
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Gambar Layanan</label>
+                <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300 mb-3">
+                  <img 
+                    src={resolveMediaUrl(newServiceImage())} 
+                    alt="Preview"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'image/*';
+                    fileInput.addEventListener('change', async (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (!file) return;
+                      
+                      setUploadingServiceImage(true);
+                      try {
+                        const response = await uploadImageForPackage(file);
+                        if (response.success && response.data?.url) {
+                          setNewServiceImage(response.data.url);
+                          handleSave('Gambar layanan berhasil diupload');
+                        } else {
+                          handleError(response.message || 'Upload gambar gagal');
+                        }
+                      } catch (err) {
+                        handleError(err instanceof Error ? err.message : 'Gagal upload gambar');
+                      } finally {
+                        setUploadingServiceImage(false);
+                      }
+                    });
+                    fileInput.click();
+                  }}
+                  disabled={uploadingServiceImage()}
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-sm disabled:opacity-60"
+                >
+                  {uploadingServiceImage() ? 'Uploading...' : 'Pilih Gambar'}
+                </button>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Layanan</label>
+                <input
+                  type="text"
+                  value={newServiceName()}
+                  onInput={(e) => setNewServiceName(e.currentTarget.value)}
+                  placeholder="Contoh: Outdoor Photoshoot"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Slug (URL)</label>
+                <input
+                  type="text"
+                  value={newServiceSlug()}
+                  onInput={(e) => setNewServiceSlug(e.currentTarget.value)}
+                  placeholder="Contoh: outdoor-photoshoot"
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                />
+                <p class="text-xs text-gray-500 mt-1">Gunakan huruf kecil dan strip (-) tanpa spasi</p>
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi</label>
+                <textarea
+                  value={newServiceDescription()}
+                  onInput={(e) => setNewServiceDescription(e.currentTarget.value)}
+                  placeholder="Deskripsi ringkas tentang layanan ini"
+                  rows={3}
+                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                />
+              </div>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowAddServiceModal(false)}
+                class="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+              >
+                Batal
+              </button>
+              <button
+                onClick={addNewService}
+                class="flex-1 py-3 px-4 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium"
+              >
+                Tambah
               </button>
             </div>
           </div>

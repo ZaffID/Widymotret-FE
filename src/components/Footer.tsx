@@ -17,46 +17,17 @@ const Footer: Component = () => {
     { name: 'Wedding Photography', category: 'wedding' },
   ]);
 
-  // Create memos for footer data to track changes
-  const studioDescription = createMemo(() => 
-    contentStore.getField('footer', 'studio_description') || 'Mengabadikan momen abadi dan menciptakan kenangan indah yang bertahan selamanya.'
-  );
-  
-  const contactEmail = createMemo(() => 
-    contentStore.getField('footer', 'email') || 'widymotret@gmail.com'
-  );
-  
-  const contactPhone = createMemo(() => 
-    contentStore.getField('footer', 'phone') || '+62 895-3511-15777'
-  );
-  
-  const contactAddress = createMemo(() => 
-    contentStore.getField('footer', 'address') || 'Jl. Raya Pernasidi No.3, Cilongok, Banyumas – Jawa Tengah'
-  );
-  
-  const copyrightText = createMemo(() => 
-    contentStore.getField('footer', 'copyright_text') || '© 2026 Studio Photography. All rights reserved.'
-  );
-  
-  const tagline = createMemo(() => 
-    contentStore.getField('footer', 'tagline') || 'Made with ♥ for capturing love'
-  );
-
-  // Social media links from contentStore
-  const facebookUrl = createMemo(() => 
-    contentStore.getField('footer', 'facebook_url') || 'https://www.facebook.com/dalban.speed.71/'
-  );
-
-  const instagramUrl = createMemo(() => 
-    contentStore.getField('footer', 'instagram_url') || 'https://www.instagram.com/widymotretstudio/'
-  );
-
-  const whatsappUrl = createMemo(() => 
-    contentStore.getField('footer', 'whatsapp_url') || 'https://api.whatsapp.com/send/?phone=62895351115777%3F&type=phone_number&app_absent=0'
-  );
-
-  // Fetch unique service categories from backend
+  // Load footer content from backend on mount
   onMount(async () => {
+    try {
+      console.log('📥 Loading footer content from contentStore...');
+      await contentStore.loadSection('footer');
+      console.log('✅ Footer section loaded');
+    } catch (error) {
+      console.error('❌ Failed to load footer section:', error);
+    }
+
+    // Fetch services from API
     try {
       const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
       const response = await fetch(`${API_BASE}/api/packages`, {
@@ -95,6 +66,45 @@ const Footer: Component = () => {
       // Keep fallback services - already initialized above
     }
   });
+
+  // Create memos for footer data to track changes from contentStore
+  const studioDescription = createMemo(() => 
+    contentStore.getField('footer', 'studio_description') || 'Mengabadikan momen abadi dan menciptakan kenangan indah yang bertahan selamanya.'
+  );
+  
+  const contactEmail = createMemo(() => 
+    contentStore.getField('footer', 'email') || 'widymotret@gmail.com'
+  );
+  
+  const contactPhone = createMemo(() => 
+    contentStore.getField('footer', 'phone') || '+62 895-3511-15777'
+  );
+  
+  const contactAddress = createMemo(() => 
+    contentStore.getField('footer', 'address') || 'Jl. Raya Pernasidi No.3, Cilongok, Banyumas – Jawa Tengah'
+  );
+  
+  const copyrightText = createMemo(() => 
+    contentStore.getField('footer', 'copyright_text') || '© 2026 Studio Photography. All rights reserved.'
+  );
+  
+  const tagline = createMemo(() => 
+    contentStore.getField('footer', 'tagline') || 'Made with ♥ for capturing love'
+  );
+
+  // Social media links from contentStore
+  const facebookUrl = createMemo(() => 
+    contentStore.getField('footer', 'facebook_url') || 'https://www.facebook.com/dalban.speed.71/'
+  );
+
+  const instagramUrl = createMemo(() => 
+    contentStore.getField('footer', 'instagram_url') || 'https://www.instagram.com/widymotretstudio/'
+  );
+
+  const whatsappUrl = createMemo(() => 
+    contentStore.getField('footer', 'whatsapp_url') || 'https://api.whatsapp.com/send/?phone=62895351115777%3F&type=phone_number&app_absent=0'
+  );
+  
   return (
     <footer class="bg-black text-white py-16 px-6">
       <div class="container mx-auto max-w-6xl">

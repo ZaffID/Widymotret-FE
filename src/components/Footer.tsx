@@ -8,7 +8,14 @@ interface ServiceCategory {
 }
 
 const Footer: Component = () => {
-  const [services, setServices] = createSignal<ServiceCategory[]>([]);
+  // Initialize with fallback services
+  const [services, setServices] = createSignal<ServiceCategory[]>([
+    { name: 'Studio Photoshoot', category: 'studio' },
+    { name: 'Graduation', category: 'graduation' },
+    { name: 'Event Photography', category: 'event' },
+    { name: 'Product Photography', category: 'product' },
+    { name: 'Wedding Photography', category: 'wedding' },
+  ]);
 
   // Create memos for footer data to track changes
   const studioDescription = createMemo(() => 
@@ -52,32 +59,40 @@ const Footer: Component = () => {
   onMount(async () => {
     try {
       const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
-      const response = await fetch(`${API_BASE}/api/packages`);
-      const data = await response.json();
+      const response = await fetch(`${API_BASE}/api/packages`, {
+        headers: { 'Content-Type': 'application/json' },
+      });
       
-      if (Array.isArray(data)) {
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const responseData = await response.json();
+      
+      // Handle response format: { success: true, data: [...] }
+      const packages = responseData.data || responseData;
+      
+      if (Array.isArray(packages) && packages.length > 0) {
         // Get unique categories with first package name from each
         const uniqueCategories = new Map<string, ServiceCategory>();
-        data.forEach((pkg: any) => {
-          if (!uniqueCategories.has(pkg.category)) {
+        packages.forEach((pkg: any) => {
+          if (pkg.category && pkg.name && !uniqueCategories.has(pkg.category)) {
             uniqueCategories.set(pkg.category, {
               name: pkg.name,
               category: pkg.category,
             });
           }
         });
-        setServices(Array.from(uniqueCategories.values()).slice(0, 5));
+        
+        const newServices = Array.from(uniqueCategories.values()).slice(0, 5);
+        if (newServices.length > 0) {
+          setServices(newServices);
+          console.log('✅ Services loaded from API:', newServices.length, 'categories');
+        }
       }
     } catch (error) {
-      console.error('Failed to fetch services:', error);
-      // Fallback to default services
-      setServices([
-        { name: 'Studio Photoshoot', category: 'studio' },
-        { name: 'Graduation', category: 'graduation' },
-        { name: 'Event Photography', category: 'event' },
-        { name: 'Product Photography', category: 'product' },
-        { name: 'Wedding Photography', category: 'wedding' },
-      ]);
+      console.warn('Failed to fetch services from API, using fallback:', error);
+      // Keep fallback services - already initialized above
     }
   });
   return (

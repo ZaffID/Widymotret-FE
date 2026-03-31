@@ -396,15 +396,16 @@ const AdminHome: Component = () => {
     // Get default images from portfolio.ts
     const defaultImages = getImagesByCategory(categorySlug);
     
-    // Get all portfolio fields for this category from contentStore
-    const allFields = contentStore.getSectionFields('portfolio');
-    const categoryFields = allFields.filter(f => f.field.startsWith(`${categorySlug}_`));
+    // Force re-evaluation when contentStore state changes
+    // By accessing state directly, Solid.js will track the dependency
+    const portfolioFields = contentStore.getSectionFields('portfolio');
+    const categoryFields = portfolioFields.filter(f => f.field.startsWith(`${categorySlug}_`));
     
     // Build map of fields for quick lookup
     const fieldMap = new Map(categoryFields.map(f => [f.field, f]));
     
     // Create complete image list: defaults + any new items not in defaults
-    const allImages: Array<{id: string; title: string; url: string; category: string}> = [...defaultImages];
+    const allImages: Array<{id: string; title: string; url: string; category: string; hasValue?: boolean}> = [...defaultImages];
     
     // Add any fields that start with "new_" (dynamically added items)
     categoryFields.forEach(field => {
@@ -420,6 +421,7 @@ const AdminHome: Component = () => {
               title: `Foto Baru (${id})`,
               url: value,
               category: categorySlug as any,
+              hasValue: true,
             });
           }
         }
@@ -461,6 +463,9 @@ const AdminHome: Component = () => {
       handleError(`Gagal menambahkan slot foto: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
+
+  // Portfolio images memo - properly tracked by Solid.js
+  const portfolioImages = createMemo(() => getPortfolioCategoryImages(activeServicePortfolio()));
 
   const aboutTextValue = (field: string, fallback: string) => {
     return contentStore.getField('about_page', field) || fallback;
@@ -1399,7 +1404,6 @@ const AdminHome: Component = () => {
 
               {/* Portfolio Images for selected category */}
               {(() => {
-                const images = () => getPortfolioCategoryImages(activeServicePortfolio());
                 const cat = () => portfolioCategories.find(c => c.slug === activeServicePortfolio());
                 return (
                   <Show when={cat()}>
@@ -1411,12 +1415,12 @@ const AdminHome: Component = () => {
                             <p class="text-sm text-gray-500">{category().description}</p>
                           </div>
                           <span class={`text-sm font-medium px-3 py-1 rounded-full ${
-                            images().length > 20 
+                            portfolioImages().length > 20 
                               ? 'bg-yellow-100 text-yellow-700' 
                               : 'bg-green-100 text-green-700'
                           }`}>
-                            {images().length} foto
-                            {images().length > 20 && (
+                            {portfolioImages().length} foto
+                            {portfolioImages().length > 20 && (
                               <svg class="inline ml-1 w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.981-1.742 2.981H4.42c-1.53 0-2.492-1.647-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd" />
                               </svg>
@@ -1424,7 +1428,7 @@ const AdminHome: Component = () => {
                           </span>
                         </div>
 
-                        {images().length > 20 && (
+                        {portfolioImages().length > 20 && (
                           <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
                             <div class="flex items-start gap-2">
                               <svg class="w-4 h-4 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -1439,7 +1443,7 @@ const AdminHome: Component = () => {
                         <For each={[activeServicePortfolio()]}>
                           {() => (
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                              <For each={images()}>
+                              <For each={portfolioImages()}>
                                 {(img, idx) => {
                                   const fieldName = `${category().slug}_${img.id}`;
                                   const rawStoredValue = contentStore.getField('portfolio', fieldName);

@@ -937,32 +937,23 @@ const AdminHome: Component = () => {
                     <For each={[1, 2, 3, 4, 5, 6, 7]}>
                       {(idx) => {
                         const quote = () => contentStore.getField('testimonials', `quote${idx}`);
-                        const canDelete = createMemo(() => {
-                          let count = 0;
-                          for (let i = 1; i <= 7; i++) {
-                            if (contentStore.getField('testimonials', `quote${i}`)) count++;
-                          }
-                          return count > 3;
-                        });
 
                         return (
                           <Show when={quote()}>
                             <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 relative">
                               <div class="flex justify-between items-start mb-3">
                                 <h4 class="font-bold text-gray-800 text-sm">Testimoni {idx}</h4>
-                                <Show when={canDelete()}>
-                                  <button
-                                    onClick={() => {
-                                      contentStore.updateFieldLocal('testimonials', `quote${idx}`, '');
-                                      contentStore.updateFieldLocal('testimonials', `author${idx}`, '');
-                                      handleSave(`Testimoni ${idx} dihapus`);
-                                    }}
-                                    class="text-red-500 hover:text-red-700 text-lg leading-none px-2"
-                                    title="Hapus testimoni"
-                                  >
-                                    ×
-                                  </button>
-                                </Show>
+                                <button
+                                  onClick={() => {
+                                    contentStore.updateFieldLocal('testimonials', `quote${idx}`, '');
+                                    contentStore.updateFieldLocal('testimonials', `author${idx}`, '');
+                                    handleSave(`Testimoni ${idx} dihapus`);
+                                  }}
+                                  class="text-red-500 hover:text-red-700 text-lg leading-none px-2"
+                                  title="Hapus testimoni"
+                                >
+                                  ×
+                                </button>
                               </div>
                               <EditableText
                                 label={`Kutipan ${idx}`}

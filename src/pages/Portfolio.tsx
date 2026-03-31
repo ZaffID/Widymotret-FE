@@ -145,7 +145,7 @@ const Portfolio: Component = () => {
       {/* Hero Section - Similar to ServiceDetail */}
       <section class="relative h-[60vh] overflow-hidden">
         <img
-          src="/landscape/landscape (1).png"
+          src={resolveMediaUrl(contentStore.getField('portfolio', 'hero_image') || '/landscape/landscape (1).png')}
           alt="Portfolio"
           class="w-full h-full object-cover"
         />

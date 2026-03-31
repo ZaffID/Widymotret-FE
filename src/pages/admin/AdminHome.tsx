@@ -1402,6 +1402,31 @@ const AdminHome: Component = () => {
               <h2 class="text-2xl font-bold text-gray-800 mb-2"><AiFillCamera class="inline mr-2" size={24} />Manajemen Portfolio</h2>
               <p class="text-gray-600 mb-6">Kelola foto galeri per kategori. Unlimited, tapi disarankan max 20 per kategori.</p>
 
+              {/* Hero Image Section */}
+              <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Hero Image - Portfolio Page</h3>
+                <p class="text-sm text-gray-600 mb-4">Gambar besar di atas portfolio page (rekomendasi: landscape/cover image)</p>
+                <div class="max-w-md">
+                  <EditableImage
+                    label="Portfolio Hero Image"
+                    value={contentStore.getField('portfolio', 'hero_image')}
+                    section="portfolio"
+                    field="hero_image"
+                    aspectClass="aspect-video"
+                    onUpload={uploadImageForPackage}
+                    onSave={async (v) => {
+                      try {
+                        contentStore.updateFieldLocal('portfolio', 'hero_image', v);
+                        handleSave(`Hero image berhasil diupdate`);
+                      } catch (error) {
+                        handleError(`Gagal menyimpan: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                      }
+                    }}
+                    onError={handleError}
+                  />
+                </div>
+              </div>
+
               {/* Tabs Kategori */}
               <div class="bg-gray-50 rounded-xl p-1 mb-8 flex gap-2 flex-wrap">
                 <For each={portfolioCategories}>
@@ -1523,7 +1548,7 @@ const AdminHome: Component = () => {
                         {/* Tambah Foto Baru */}
                         <button
                           onClick={() => addPortfolioItem(category().slug)}
-                          class="mt-6 w-full py-3 px-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-medium text-sm flex items-center justify-center gap-2"
+                          class="mt-6 w-full py-3 px-4 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium text-sm flex items-center justify-center gap-2"
                         >
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />

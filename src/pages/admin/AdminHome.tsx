@@ -103,7 +103,7 @@ const TestimoniCounter = () => {
 const AdminHome: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
-  const [currentPage, setCurrentPage] = createSignal<'home' | 'pricelist' | 'portfolio' | 'about'>('home');
+  const [currentPage, setCurrentPage] = createSignal<'home' | 'pricelist' | 'portfolio' | 'about' | 'footer'>('home');
   const [activeServicePricelist, setActiveServicePricelist] = createSignal<string>('studio');
   const [activeServicePortfolio, setActiveServicePortfolio] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
@@ -611,6 +611,17 @@ const AdminHome: Component = () => {
           >
             <AiFillBook size={20} />
             Halaman About
+          </button>
+          <button
+            onClick={() => setCurrentPage('footer')}
+            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+              currentPage() === 'footer'
+                ? 'bg-[#576250] text-white'
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <AiFillFileImage size={20} />
+            Footer
           </button>
         </div>
 
@@ -1885,6 +1896,100 @@ const AdminHome: Component = () => {
                   onSave={(value) => {
                     contentStore.updateFieldLocal('about_page', 'cta_button', value);
                     handleSave('Teks tombol berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+              </div>
+            </div>
+          </Show>
+
+          {/* FOOTER PAGE */}
+          <Show when={currentPage() === 'footer'}>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8">Kelola Footer</h2>
+              
+              {/* Studio Information */}
+              <div class="mb-10 pb-10 border-b-2 border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Informasi Studio</h3>
+                <EditableText
+                  label="Deskripsi Studio"
+                  value={contentStore.getField('footer', 'studio_description') || 'Mengabadikan momen abadi bersama orang-orang terkasih. Kami percaya setiap momen memiliki cerita uniknya sendiri.'}
+                  section="footer"
+                  field="studio_description"
+                  multiline={true}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'studio_description', value);
+                    handleSave('Deskripsi studio berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+              </div>
+
+              {/* Footer Content */}
+              <div class="mb-10 pb-10 border-b-2 border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Konten Footer</h3>
+                <EditableText
+                  label="Copyright Text"
+                  value={contentStore.getField('footer', 'copyright_text') || '© 2026 Studio Photography. All rights reserved.'}
+                  section="footer"
+                  field="copyright_text"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'copyright_text', value);
+                    handleSave('Copyright berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+                <EditableText
+                  label="Tagline"
+                  value={contentStore.getField('footer', 'tagline') || 'Made with ♥ for capturing love'}
+                  section="footer"
+                  field="tagline"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'tagline', value);
+                    handleSave('Tagline berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+              </div>
+
+              {/* Contact Information */}
+              <div class="mb-10 pb-10 border-b-2 border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Informasi Kontak</h3>
+                <EditableText
+                  label="Alamat Email"
+                  value={contentStore.getField('footer', 'email') || 'info@studiophoto.com'}
+                  section="footer"
+                  field="email"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'email', value);
+                    handleSave('Email berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+                <EditableText
+                  label="Nomor Telepon"
+                  value={contentStore.getField('footer', 'phone') || '+62 (123) 456-7890'}
+                  section="footer"
+                  field="phone"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'phone', value);
+                    handleSave('Nomor telepon berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+                <EditableText
+                  label="Alamat Fisik"
+                  value={contentStore.getField('footer', 'address') || 'Jl. Studio No. 123, City, Country'}
+                  section="footer"
+                  field="address"
+                  multiline={true}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('footer', 'address', value);
+                    handleSave('Alamat berhasil disimpan');
                   }}
                   onError={handleError}
                 />

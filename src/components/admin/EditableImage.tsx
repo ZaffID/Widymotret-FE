@@ -122,10 +122,10 @@ export const EditableImage = (props: EditableImageProps) => {
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 7MB)
+    if (file.size > 7 * 1024 * 1024) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
-      props.onError?.(`❌ File terlalu besar: ${sizeMB}MB (maksimal 5MB)`);
+      props.onError?.(`❌ File terlalu besar: ${sizeMB}MB (maksimal 7MB)`);
       return;
     }
 

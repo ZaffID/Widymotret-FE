@@ -1,7 +1,32 @@
-import { Component } from 'solid-js';
+import { Component, createMemo } from 'solid-js';
 import { BsInstagram, BsFacebook, BsWhatsapp } from 'solid-icons/bs';
+import { contentStore } from '../stores/contentStore';
 
 const Footer: Component = () => {
+  // Create memos for footer data to track changes
+  const studioDescription = createMemo(() => 
+    contentStore.getField('footer', 'studio_description') || 'Mengabadikan momen abadi dan menciptakan kenangan indah yang bertahan selamanya.'
+  );
+  
+  const contactEmail = createMemo(() => 
+    contentStore.getField('footer', 'email') || 'widymotret@gmail.com'
+  );
+  
+  const contactPhone = createMemo(() => 
+    contentStore.getField('footer', 'phone') || '+62 895-3511-15777'
+  );
+  
+  const contactAddress = createMemo(() => 
+    contentStore.getField('footer', 'address') || 'Jl. Raya Pernasidi No.3, Cilongok, Banyumas – Jawa Tengah'
+  );
+  
+  const copyrightText = createMemo(() => 
+    contentStore.getField('footer', 'copyright_text') || '© 2026 Studio Photography. All rights reserved.'
+  );
+  
+  const tagline = createMemo(() => 
+    contentStore.getField('footer', 'tagline') || 'Made with ♥ for capturing love'
+  );
   return (
     <footer class="bg-black text-white py-16 px-6">
       <div class="container mx-auto max-w-6xl">
@@ -10,7 +35,7 @@ const Footer: Component = () => {
           <div>
             <h3 class="text-sm tracking-widest mb-4 text-gray-300">STUDIO</h3>
             <p class="text-gray-400 text-sm leading-relaxed">
-              Mengabadikan momen abadi dan menciptakan kenangan indah yang bertahan selamanya.
+              {studioDescription()}
             </p>
           </div>
           
@@ -43,13 +68,13 @@ const Footer: Component = () => {
             <h4 class="text-sm tracking-widest mb-6 text-gray-300">KONTAK</h4>
             <ul class="space-y-3 text-gray-400 text-sm">
               <li class="flex items-center gap-2">
-                <span>+62 895-3511-15777</span>
+                <span>{contactPhone()}</span>
               </li>
               <li class="flex items-center gap-2">
-                <span>widymotret@gmail.com</span>
+                <span>{contactEmail()}</span>
               </li>
               <li class="flex items-center gap-2">
-                <span>Jl. Raya Pernasidi No.3, Cilongok, Banyumas – Jawa Tengah</span>
+                <span>{contactAddress()}</span>
               </li>
               <li class="flex gap-3 mt-6">
                 <a href="https://www.facebook.com/dalban.speed.71/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition border border-gray-600 rounded-lg p-2 hover:border-white">
@@ -67,8 +92,8 @@ const Footer: Component = () => {
         </div>
         
         <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
-          <p>© 2026 Studio Photography. All rights reserved.</p>
-          <p class="mt-4 md:mt-0">Made with <span class="text-red-500">♥</span> for capturing love</p>
+          <p>{copyrightText()}</p>
+          <p class="mt-4 md:mt-0">{tagline()}</p>
         </div>
       </div>
     </footer>

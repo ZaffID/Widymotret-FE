@@ -391,34 +391,45 @@ const AdminHome: Component = () => {
     setTimeout(() => setSaveMessage(null), 5000); // Errors stay 5s before auto-dismissing
   };
 
+  // Get appropriate title for new portfolio item
+  const getNewItemTitle = (categorySlug: string, newIndex: number) => {
+    const categoryTitles: Record<string, string> = {
+      portrait: `Studio Portrait Session #${5 + newIndex}`,
+      event: `Event Coverage #${5 + newIndex}`,
+      editorial: `Brand Campaign #${5 + newIndex}`,
+      retouching: `Retouching Edit #${6 + newIndex}`,
+    };
+    return categoryTitles[categorySlug] || `Photo #${newIndex}`;
+  };
+
   // Get all images for category (default + from backend)
   const getPortfolioCategoryImages = (categorySlug: string) => {
     // Get default images from portfolio.ts
     const defaultImages = getImagesByCategory(categorySlug);
     
-    // Force re-evaluation when contentStore state changes
-    // By accessing state directly, Solid.js will track the dependency
+    // Access contentStore to trigger Solid.js dependency tracking
     const portfolioFields = contentStore.getSectionFields('portfolio');
     const categoryFields = portfolioFields.filter(f => f.field.startsWith(`${categorySlug}_`));
-    
-    // Build map of fields for quick lookup
-    const fieldMap = new Map(categoryFields.map(f => [f.field, f]));
     
     // Create complete image list: defaults + any new items not in defaults
     const allImages: Array<{id: string; title: string; url: string; category: string; hasValue?: boolean}> = [...defaultImages];
     
+    // Track how many new items we've added (for proper numbering)
+    let newItemCount = 0;
+    
     // Add any fields that start with "new_" (dynamically added items)
     categoryFields.forEach(field => {
-      if (field.field.startsWith('new_')) {
-        const id = field.field;
+      if (field.field.startsWith(`${categorySlug}_new_`)) {
+        const id = field.field.replace(`${categorySlug}_`, ''); // Extract just 'new_1', 'new_2', etc
         const value = field.value;
         // Only add if it has content
         if (value && value.trim() && value !== '/placeholder.png') {
           // Check if already in defaults
           if (!allImages.find(img => img.id === id)) {
+            newItemCount++;
             allImages.push({
               id,
-              title: `Foto Baru (${id})`,
+              title: getNewItemTitle(categorySlug, newItemCount),
               url: value,
               category: categorySlug as any,
               hasValue: true,
@@ -464,8 +475,13 @@ const AdminHome: Component = () => {
     }
   };
 
-  // Portfolio images memo - properly tracked by Solid.js
-  const portfolioImages = createMemo(() => getPortfolioCategoryImages(activeServicePortfolio()));
+  // Portfolio images memo - track both category AND contentStore changes
+  const portfolioImages = createMemo(() => {
+    // Access contentStore state to make this a dependency
+    // This ensures memo re-runs when portfolio fields change in backend
+    const _storeUpdateTrigger = contentStore.state().lastUpdated?.getTime() || 0;
+    return getPortfolioCategoryImages(activeServicePortfolio());
+  });
 
   const aboutTextValue = (field: string, fallback: string) => {
     return contentStore.getField('about_page', field) || fallback;

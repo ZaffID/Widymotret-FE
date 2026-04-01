@@ -133,10 +133,14 @@ const AdminHome: Component = () => {
 
   onMount(async () => {
     // Load all content on component mount
+    console.log('[AdminHome.onMount] Starting load...');
     await contentStore.loadAll();
+    console.log('[AdminHome.onMount] contentStore.loadAll() complete');
     await loadPackages();
+    console.log('[AdminHome.onMount] loadPackages() complete');
     // Load services after packages are loaded
     loadAllServices();
+    console.log('[AdminHome.onMount] loadAllServices() complete');
   });
 
   const getTemplateImagesByCategory = (category: string, seed = 0): string[] => {
@@ -181,16 +185,28 @@ const AdminHome: Component = () => {
 
   // Load all unique service categories
   const loadAllServices = () => {
+    console.log('[loadAllServices] === START ===');
+    
     // Start with hardcoded services
     const servicesSet = new Map<string, any>();
     
     // Add hardcoded services
     servicesData.forEach(service => {
+      const storedTitle = contentStore.getField('service', `${service.slug}_title`);
+      const storedDesc = contentStore.getField('service', `${service.slug}_description`);
+      const storedImage = contentStore.getField('service', `${service.slug}_image`);
+      
+      console.log(`[loadAllServices] Hardcoded service "${service.slug}":`, {
+        title: storedTitle || service.title,
+        desc: storedDesc || service.description,
+        image: storedImage || service.image,
+      });
+      
       servicesSet.set(service.slug, {
         slug: service.slug,
-        title: contentStore.getField('service', `${service.slug}_title`) || service.title,
-        description: contentStore.getField('service', `${service.slug}_description`) || service.description,
-        image: contentStore.getField('service', `${service.slug}_image`) || service.image,
+        title: storedTitle || service.title,
+        description: storedDesc || service.description,
+        image: storedImage || service.image,
         isCustom: false
       });
     });
@@ -199,17 +215,30 @@ const AdminHome: Component = () => {
     const packageCategories = [...new Set(packages().map(pkg => pkg.category?.toLowerCase()).filter(Boolean))];
     packageCategories.forEach(category => {
       if (!servicesSet.has(category)) {
+        const storedTitle = contentStore.getField('service', `${category}_title`);
+        const storedDesc = contentStore.getField('service', `${category}_description`);
+        const storedImage = contentStore.getField('service', `${category}_image`);
+        
+        console.log(`[loadAllServices] Custom service "${category}":`, {
+          title: storedTitle || category.charAt(0).toUpperCase() + category.slice(1),
+          desc: storedDesc || 'Layanan fotografi',
+          image: storedImage || '/photography.png',
+        });
+        
         servicesSet.set(category, {
           slug: category,
-          title: contentStore.getField('service', `${category}_title`) || category.charAt(0).toUpperCase() + category.slice(1),
-          description: contentStore.getField('service', `${category}_description`) || 'Layanan fotografi',
-          image: contentStore.getField('service', `${category}_image`) || '/photography.png',
+          title: storedTitle || category.charAt(0).toUpperCase() + category.slice(1),
+          description: storedDesc || 'Layanan fotografi',
+          image: storedImage || '/photography.png',
           isCustom: true
         });
       }
     });
 
-    setAllServices(Array.from(servicesSet.values()));
+    const finalServices = Array.from(servicesSet.values());
+    console.log('[loadAllServices] Final services count:', finalServices.length);
+    console.log('[loadAllServices] Final services:', finalServices);
+    setAllServices(finalServices);
   };
 
   // Initialize active service when allServices loads

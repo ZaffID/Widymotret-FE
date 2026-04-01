@@ -450,12 +450,31 @@ const AdminHome: Component = () => {
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log(`[uploadImageForPackage] Starting upload for ${file.name}`);
-    console.log(`[uploadImageForPackage] File size: ${file.size} bytes, Type: ${file.type}`);
-    console.log(`[uploadImageForPackage] Token present: ${!!token}`);
-    console.log(`[uploadImageForPackage] Upload endpoint: ${API_BASE}/upload`);
+    console.log(`[uploadImageForPackage] === UPLOAD START ===`);
+    console.log(`[uploadImageForPackage] File: ${file.name}, Size: ${file.size} bytes, Type: ${file.type}`);
+    console.log(`[uploadImageForPackage] Token exists: ${!!token}`);
+    console.log(`[uploadImageForPackage] Token starts with: ${token?.substring(0, 20)}...`);
+    console.log(`[uploadImageForPackage] Endpoint: ${API_BASE}/upload`);
+
+    // Validate token exists
+    if (!token) {
+      const errMsg = 'Token tidak ditemukan - silakan login ulang';
+      console.error(`[uploadImageForPackage] ${errMsg}`);
+      throw new Error(errMsg);
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      const errMsg = `File terlalu besar (${(file.size / 1024 / 1024).toFixed(2)}MB > 5MB)`;
+      console.error(`[uploadImageForPackage] ${errMsg}`);
+      throw new Error(errMsg);
+    }
 
     try {
+      // Make fetch request
+      console.log(`[uploadImageForPackage] Sending fetch request...`);
+      const startTime = Date.now();
+      
       const res = await fetch(`${API_BASE}/upload`, {
         method: 'POST',
         headers: {
@@ -464,28 +483,47 @@ const AdminHome: Component = () => {
         body: formData,
       });
 
-      console.log(`[uploadImageForPackage] Response status: ${res.status}`);
+      const duration = Date.now() - startTime;
+      console.log(`[uploadImageForPackage] Response received in ${duration}ms, Status: ${res.status}`);
 
+      // Check if response is OK
       if (!res.ok) {
-        const errorText = await res.text();
-        console.error(`[uploadImageForPackage] Upload failed: ${res.status}`, errorText);
-        throw new Error(`Upload gagal dengan status ${res.status}: ${errorText}`);
+        const contentType = res.headers.get('content-type');
+        console.log(`[uploadImageForPackage] Response Content-Type: ${contentType}`);
+        
+        let errorText = '';
+        try {
+          errorText = await res.text();
+        } catch (e) {
+          errorText = `(gagal membaca response body)`;
+        }
+        
+        console.error(`[uploadImageForPackage] HTTP ${res.status}: ${errorText}`);
+        throw new Error(`Upload gagal - Server mengembalikan ${res.status}: ${errorText}`);
       }
 
+      // Parse JSON response
+      console.log(`[uploadImageForPackage] Parsing response JSON...`);
       const responseData = await res.json();
-      console.log(`[uploadImageForPackage] Upload success! Response:`, responseData);
+      console.log(`[uploadImageForPackage] Response data:`, responseData);
       
+      // Validate response
       if (!responseData.success) {
-        throw new Error(responseData.message || 'Upload gagal');
+        throw new Error(responseData.message || 'Respon server tidak valid');
       }
 
       if (!responseData.data?.url) {
         throw new Error('Tidak ada URL gambar dalam response');
       }
       
+      console.log(`[uploadImageForPackage] === UPLOAD SUCCESS ===`);
       return responseData;
+      
     } catch (error) {
-      console.error(`[uploadImageForPackage] Fetch error:`, error);
+      console.error(`[uploadImageForPackage] === UPLOAD FAILED ===`);
+      console.error(`[uploadImageForPackage] Error type:`, error?.constructor?.name);
+      console.error(`[uploadImageForPackage] Error message:`, error instanceof Error ? error.message : String(error));
+      console.error(`[uploadImageForPackage] Full error:`, error);
       throw error;
     }
   };

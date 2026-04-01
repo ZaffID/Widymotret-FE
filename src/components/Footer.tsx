@@ -104,6 +104,22 @@ const Footer: Component = () => {
   const whatsappUrl = createMemo(() => 
     contentStore.getField('footer', 'whatsapp_url') || 'https://api.whatsapp.com/send/?phone=62895351115777%3F&type=phone_number&app_absent=0'
   );
+
+  // Quick links from contentStore
+  const quickLinks = createMemo(() => {
+    const defaultLinks = [
+      { label: 'Home', url: '/' },
+      { label: 'Portfolio', url: '/#portfolio' },
+      { label: 'Harga', url: '/' },
+      { label: 'Tentang', url: '/#about' },
+      { label: 'Hubungi', url: '/#contact' },
+    ];
+    
+    return defaultLinks.map((link, idx) => ({
+      label: contentStore.getField('footer', `quick_link_${idx}_label`) || link.label,
+      url: contentStore.getField('footer', `quick_link_${idx}_url`) || link.url,
+    }));
+  });
   
   return (
     <footer class="bg-black text-white py-16 px-6">
@@ -121,11 +137,11 @@ const Footer: Component = () => {
           <div>
             <h4 class="text-sm tracking-widest mb-6 text-gray-300">TAUTAN CEPAT</h4>
             <ul class="space-y-3 text-gray-400 text-sm">
-              <li><a href="/" class="hover:text-white transition">Home</a></li>
-              <li><a href="/#portfolio" class="hover:text-white transition">Portfolio</a></li>
-              <li><a href="/" class="hover:text-white transition">Harga</a></li>
-              <li><a href="/#about" class="hover:text-white transition">Tentang</a></li>
-              <li><a href="/#contact" class="hover:text-white transition">Hubungi</a></li>
+              <For each={quickLinks()}>
+                {(link) => (
+                  <li><a href={link.url} class="hover:text-white transition">{link.label}</a></li>
+                )}
+              </For>
             </ul>
           </div>
           

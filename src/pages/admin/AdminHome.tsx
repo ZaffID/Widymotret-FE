@@ -2418,6 +2418,43 @@ const AdminHome: Component = () => {
                   onError={handleError}
                 />
               </div>
+
+              {/* Quick Links */}
+              <div class="mb-10 pb-10 border-b-2 border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Tautan Cepat</h3>
+                <p class="text-sm text-gray-600 mb-4">Kelola link navigasi di bagian TAUTAN CEPAT di footer</p>
+                
+                <div class="space-y-4">
+                  {['Home', 'Portfolio', 'Harga', 'Tentang', 'Hubungi'].map((label, idx) => (
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">{label} - Label</label>
+                        <input
+                          type="text"
+                          value={contentStore.getField('footer', `quick_link_${idx}_label`) || label}
+                          onChange={(e) => contentStore.updateFieldLocal('footer', `quick_link_${idx}_label`, e.currentTarget.value)}
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                          placeholder={label}
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">{label} - URL</label>
+                        <input
+                          type="text"
+                          value={contentStore.getField('footer', `quick_link_${idx}_url`) || '#'}
+                          onChange={(e) => contentStore.updateFieldLocal('footer', `quick_link_${idx}_url`, e.currentTarget.value)}
+                          onBlur={(e) => {
+                            updateContent('footer', `quick_link_${idx}_url`, e.currentTarget.value);
+                            handleSave(`Tautan cepat ${label} berhasil disimpan`);
+                          }}
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                          placeholder="https://..."
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </Show>
 

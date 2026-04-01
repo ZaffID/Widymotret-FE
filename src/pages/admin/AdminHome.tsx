@@ -433,16 +433,15 @@ const AdminHome: Component = () => {
       // Persist to backend
       const r1 = await updateContent('service', `${slug}_title`, name);
       console.log(`[addNewService] Backend response 1 (title):`, r1);
+      if (!r1.success) throw new Error(`Title save failed: ${r1.message}`);
       
       const r2 = await updateContent('service', `${slug}_description`, desc);
       console.log(`[addNewService] Backend response 2 (desc):`, r2);
+      if (!r2.success) throw new Error(`Description save failed: ${r2.message}`);
       
       const r3 = await updateContent('service', `${slug}_image`, image);
       console.log(`[addNewService] Backend response 3 (image):`, r3);
-
-      if (!r1.success || !r2.success || !r3.success) {
-        throw new Error('Gagal menyimpan ke backend');
-      }
+      if (!r3.success) throw new Error(`Image save failed: ${r3.message}`);
 
       console.log(`[addNewService] ✓ Backend persist OK`);
 
@@ -462,7 +461,7 @@ const AdminHome: Component = () => {
       handleSave(`Layanan "${name}" berhasil ditambahkan`);
     } catch (error) {
       console.error(`[addNewService] === ERROR ===`);
-      console.error(error);
+      console.error(`[addNewService] Error details:`, error);
       handleError(error instanceof Error ? error.message : 'Gagal menambahkan layanan');
     }
   };

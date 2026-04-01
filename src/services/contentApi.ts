@@ -83,26 +83,35 @@ export const updateContent = async (
       };
     }
 
+    console.log(`[updateContent] PUT /api/content/${section}/${field}`);
+    console.log(`[updateContent] Value: ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`);
+
     const res = await fetch(`${API_BASE}/content/${section}/${field}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({ value }),
     });
 
+    console.log(`[updateContent] Response status: ${res.status}`);
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
+      console.error(`[updateContent] HTTP ${res.status} Error:`, errorData);
       return {
         success: false,
         message: errorData.message || `Server error: ${res.status} ${res.statusText}`,
       };
     }
 
-    return (await res.json()) as ApiResponse<EditableContent>;
+    const responseData = (await res.json()) as ApiResponse<EditableContent>;
+    console.log(`[updateContent] Success response:`, responseData);
+    return responseData;
   } catch (err) {
-    console.error('updateContent error:', err);
+    console.error('[updateContent] Exception:', err instanceof Error ? err.message : String(err));
+    console.error('[updateContent] Full error:', err);
     return {
       success: false,
-      message: 'Gagal menyimpan konten ke server',
+      message: err instanceof Error ? err.message : 'Gagal menyimpan konten ke server',
     };
   }
 };

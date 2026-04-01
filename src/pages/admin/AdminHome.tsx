@@ -1408,7 +1408,7 @@ const AdminHome: Component = () => {
           {/* PRICELIST PAGE */}
           <Show when={currentPage() === 'pricelist'}>
             <div>
-              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillDollarCircle class="inline mr-2" size={24} />Kelola Pricelist</h2>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8"><FaSolidClipboardList class="inline mr-2" size={24} />Kelola Pricelist</h2>
               <p class="text-gray-600 mb-6">Edit paket dan harga untuk setiap jenis layanan fotografi.</p>
 
               {/* Service Type Tabs - Horizontal Scrollable */}

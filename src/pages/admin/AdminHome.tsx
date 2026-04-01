@@ -128,6 +128,7 @@ const AdminHome: Component = () => {
   const [newServiceDescription, setNewServiceDescription] = createSignal('Deskripsi layanan');
   const [newServiceImage, setNewServiceImage] = createSignal('/photography.png');
   const [uploadingServiceImage, setUploadingServiceImage] = createSignal(false);
+  const [serviceImageUploaded, setServiceImageUploaded] = createSignal(false);
   const [allServices, setAllServices] = createSignal<any[]>([]);
 
   onMount(async () => {
@@ -449,28 +450,44 @@ const AdminHome: Component = () => {
     const formData = new FormData();
     formData.append('file', file);
 
-    console.log(`[AdminHome uploadImageForPackage] Starting upload for ${file.name}`);
+    console.log(`[uploadImageForPackage] Starting upload for ${file.name}`);
+    console.log(`[uploadImageForPackage] File size: ${file.size} bytes, Type: ${file.type}`);
+    console.log(`[uploadImageForPackage] Token present: ${!!token}`);
+    console.log(`[uploadImageForPackage] Upload endpoint: ${API_BASE}/upload`);
 
-    const res = await fetch(`${API_BASE}/upload`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-      body: formData,
-    });
+    try {
+      const res = await fetch(`${API_BASE}/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`[AdminHome uploadImageForPackage] Upload failed: ${res.status}`, errorText);
-      throw new Error(`Upload gagal: ${res.status}`);
+      console.log(`[uploadImageForPackage] Response status: ${res.status}`);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error(`[uploadImageForPackage] Upload failed: ${res.status}`, errorText);
+        throw new Error(`Upload gagal dengan status ${res.status}: ${errorText}`);
+      }
+
+      const responseData = await res.json();
+      console.log(`[uploadImageForPackage] Upload success! Response:`, responseData);
+      
+      if (!responseData.success) {
+        throw new Error(responseData.message || 'Upload gagal');
+      }
+
+      if (!responseData.data?.url) {
+        throw new Error('Tidak ada URL gambar dalam response');
+      }
+      
+      return responseData;
+    } catch (error) {
+      console.error(`[uploadImageForPackage] Fetch error:`, error);
+      throw error;
     }
-
-    const responseData = await res.json();
-    console.log(`[AdminHome uploadImageForPackage] Upload response:`, responseData);
-    console.log(`[AdminHome uploadImageForPackage] Response type:`, typeof responseData);
-    console.log(`[AdminHome uploadImageForPackage] Response keys:`, Object.keys(responseData || {}));
-    
-    return responseData;
   };
 
   const handleLogout = () => {
@@ -2341,7 +2358,10 @@ const AdminHome: Component = () => {
       <Show when={showAddServiceModal()}>
         <div
           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50"
-          onClick={() => setShowAddServiceModal(false)}
+          onClick={() => {
+            setShowAddServiceModal(false);
+            setServiceImageUploaded(false);
+          }}
         >
           <div
             class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fadeInScale overflow-y-auto max-h-[90vh]"
@@ -2351,7 +2371,17 @@ const AdminHome: Component = () => {
             <div class="space-y-4">
               {/* Image Preview */}
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Gambar Layanan</label>
+                <div class="flex items-center justify-between mb-2">
+                  <label class="block text-sm font-semibold text-gray-700">Gambar Layanan</label>
+                  <Show when={serviceImageUploaded()}>
+                    <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                      Uploaded
+                    </span>
+                  </Show>
+                </div>
                 <div class="aspect-video bg-gray-100 rounded-lg overflow-hidden border-2 border-gray-300 mb-3">
                   <img 
                     src={resolveMediaUrl(newServiceImage())} 
@@ -2369,10 +2399,12 @@ const AdminHome: Component = () => {
                       if (!file) return;
                       
                       setUploadingServiceImage(true);
+                      setServiceImageUploaded(false);
                       try {
                         const response = await uploadImageForPackage(file);
                         if (response.success && response.data?.url) {
                           setNewServiceImage(response.data.url);
+                          setServiceImageUploaded(true);
                           handleSave('Gambar layanan berhasil diupload');
                         } else {
                           handleError(response.message || 'Upload gambar gagal');

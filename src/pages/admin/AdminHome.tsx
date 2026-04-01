@@ -413,35 +413,57 @@ const AdminHome: Component = () => {
     const desc = newServiceDescription().trim();
     const image = newServiceImage() || '/photography.png';
 
+    console.log(`[addNewService] === START ===`);
+    console.log(`[addNewService] Input: name="${name}", slug="${slug}", desc="${desc}", image="${image}"`);
+
     if (!name || !slug) {
       handleError('Nama dan slug layanan harus diisi');
       return;
     }
 
     try {
+      console.log(`[addNewService] Saving to contentStore...`);
       // Save to contentStore
       contentStore.updateFieldLocal('service', `${slug}_title`, name);
       contentStore.updateFieldLocal('service', `${slug}_description`, desc);
       contentStore.updateFieldLocal('service', `${slug}_image`, image);
+      console.log(`[addNewService] ✓ contentStore updated`);
 
+      console.log(`[addNewService] Persisting to backend...`);
       // Persist to backend
-      await updateContent('service', `${slug}_title`, name);
-      await updateContent('service', `${slug}_description`, desc);
-      await updateContent('service', `${slug}_image`, image);
+      const r1 = await updateContent('service', `${slug}_title`, name);
+      console.log(`[addNewService] Backend response 1 (title):`, r1);
+      
+      const r2 = await updateContent('service', `${slug}_description`, desc);
+      console.log(`[addNewService] Backend response 2 (desc):`, r2);
+      
+      const r3 = await updateContent('service', `${slug}_image`, image);
+      console.log(`[addNewService] Backend response 3 (image):`, r3);
+
+      if (!r1.success || !r2.success || !r3.success) {
+        throw new Error('Gagal menyimpan ke backend');
+      }
+
+      console.log(`[addNewService] ✓ Backend persist OK`);
 
       // Reset form and close modal
       setNewServiceName('Layanan Baru');
       setNewServiceSlug('layanan-baru');
       setNewServiceDescription('Deskripsi layanan');
       setNewServiceImage('/photography.png');
+      setServiceImageUploaded(false);
       setShowAddServiceModal(false);
 
+      console.log(`[addNewService] Reloading services...`);
       // Reload services
       loadAllServices();
+      
+      console.log(`[addNewService] === SUCCESS === Service "${name}" added!`);
       handleSave(`Layanan "${name}" berhasil ditambahkan`);
     } catch (error) {
+      console.error(`[addNewService] === ERROR ===`);
+      console.error(error);
       handleError(error instanceof Error ? error.message : 'Gagal menambahkan layanan');
-      console.error('Add service error:', error);
     }
   };
 
@@ -2497,16 +2519,20 @@ const AdminHome: Component = () => {
 
             <div class="flex gap-3 mt-6">
               <button
-                onClick={() => setShowAddServiceModal(false)}
+                onClick={() => {
+                  setShowAddServiceModal(false);
+                  setServiceImageUploaded(false);
+                }}
                 class="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
               >
                 Batal
               </button>
               <button
                 onClick={addNewService}
-                class="flex-1 py-3 px-4 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium"
+                disabled={!newServiceName().trim() || !newServiceSlug().trim()}
+                class="flex-1 py-3 px-4 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Tambah
+                Tambah Service
               </button>
             </div>
           </div>

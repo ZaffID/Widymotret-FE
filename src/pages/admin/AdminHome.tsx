@@ -898,7 +898,7 @@ const AdminHome: Component = () => {
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            <AiFillDollarCircle size={20} />
+            <FaSolidClipboardList size={20} />
             Kelola Services
           </button>
           <button
@@ -909,7 +909,7 @@ const AdminHome: Component = () => {
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            <FaSolidClipboardList size={20} />
+            <AiFillDollarCircle size={20} />
             Pricelist
           </button>
           <button
@@ -1419,7 +1419,7 @@ const AdminHome: Component = () => {
           {/* SERVICES MANAGEMENT PAGE */}
           <Show when={currentPage() === 'services'}>
             <div>
-              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillDollarCircle class="inline mr-2" size={24} />Kelola Layanan</h2>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8"><FaSolidClipboardList class="inline mr-2" size={24} />Kelola Layanan</h2>
               <p class="text-gray-600 mb-6">Tambah dan kelola kategori layanan fotografi.</p>
 
               <button
@@ -1469,7 +1469,7 @@ const AdminHome: Component = () => {
           {/* PRICELIST PAGE */}
           <Show when={currentPage() === 'pricelist'}>
             <div>
-              <h2 class="text-2xl font-bold text-gray-800 mb-8"><FaSolidClipboardList class="inline mr-2" size={24} />Kelola Pricelist</h2>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillDollarCircle class="inline mr-2" size={24} />Kelola Pricelist</h2>
               <p class="text-gray-600 mb-6">Edit paket dan harga untuk setiap jenis layanan fotografi.</p>
 
               {/* Service Type Tabs - Horizontal Scrollable */}

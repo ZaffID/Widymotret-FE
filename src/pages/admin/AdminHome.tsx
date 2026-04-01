@@ -531,6 +531,58 @@ const AdminHome: Component = () => {
     }
   };
 
+  const deleteService = async (slug: string) => {
+    console.log(`[deleteService] === START === slug="${slug}"`);
+    
+    // Show confirmation
+    if (!confirm(`Apakah Anda yakin ingin menghapus layanan ini? Data tidak dapat dikembalikan.`)) {
+      console.log(`[deleteService] Hapus dibatalkan oleh user`);
+      return;
+    }
+
+    try {
+      console.log(`[deleteService] Deleting from backend...`);
+      
+      // Delete all three fields from backend
+      const r1 = await updateContent('service', `${slug}_title`, '');
+      console.log(`[deleteService] Backend response 1 (title deletion):`, r1);
+      
+      const r2 = await updateContent('service', `${slug}_description`, '');
+      console.log(`[deleteService] Backend response 2 (desc deletion):`, r2);
+      
+      const r3 = await updateContent('service', `${slug}_image`, '');
+      console.log(`[deleteService] Backend response 3 (image deletion):`, r3);
+
+      // Check if all deletions were successful
+      if (!r1.success || !r2.success || !r3.success) {
+        throw new Error('Gagal menghapus beberapa field dari backend');
+      }
+
+      console.log(`[deleteService] ✓ Backend deletion OK`);
+
+      // Remove from local contentStore
+      contentStore.updateFieldLocal('service', `${slug}_title`, '');
+      contentStore.updateFieldLocal('service', `${slug}_description`, '');
+      contentStore.updateFieldLocal('service', `${slug}_image`, '');
+      console.log(`[deleteService] ✓ contentStore cleared`);
+
+      console.log(`[deleteService] Reloading service section from backend...`);
+      // Reload entire service section from backend
+      await contentStore.loadSection('service');
+      
+      console.log(`[deleteService] Reloading services...`);
+      // Reload services
+      loadAllServices();
+      
+      console.log(`[deleteService] === SUCCESS === Service deleted!`);
+      handleSave(`Layanan berhasil dihapus`);
+    } catch (error) {
+      console.error(`[deleteService] === ERROR ===`);
+      console.error(`[deleteService] Error details:`, error);
+      handleError(error instanceof Error ? error.message : 'Gagal menghapus layanan');
+    }
+  };
+
   const uploadImageForPackage = async (file: File) => {
     const token = authStore.getToken();
     const formData = new FormData();
@@ -1386,7 +1438,7 @@ const AdminHome: Component = () => {
                 }>
                   {(service) => (
                     <div class="p-5 bg-gray-50 rounded-lg border border-gray-200">
-                      <div class="flex gap-4">
+                      <div class="flex gap-4 items-start">
                         <div class="w-24 h-24 flex-shrink-0">
                           <img 
                             src={resolveMediaUrl(service.image)} 
@@ -1399,6 +1451,13 @@ const AdminHome: Component = () => {
                           <p class="text-sm text-gray-600 mb-3">{service.description}</p>
                           <p class="text-xs text-gray-500">Slug: <code class="bg-gray-200 px-1 py-0.5 rounded">{service.slug}</code></p>
                         </div>
+                        <button
+                          onClick={() => deleteService(service.slug)}
+                          class="px-3 py-2 text-red-600 hover:bg-red-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-red-200 hover:border-red-300"
+                        >
+                          <FaSolidTrashAlt size={16} />
+                          Hapus
+                        </button>
                       </div>
                     </div>
                   )}

@@ -219,7 +219,7 @@ const AdminHome: Component = () => {
         const storedDesc = contentStore.getField('service', `${category}_description`);
         const storedImage = contentStore.getField('service', `${category}_image`);
         
-        console.log(`[loadAllServices] Custom service "${category}":`, {
+        console.log(`[loadAllServices] Custom service from packages "${category}":`, {
           title: storedTitle || category.charAt(0).toUpperCase() + category.slice(1),
           desc: storedDesc || 'Layanan fotografi',
           image: storedImage || '/photography.png',
@@ -228,6 +228,38 @@ const AdminHome: Component = () => {
         servicesSet.set(category, {
           slug: category,
           title: storedTitle || category.charAt(0).toUpperCase() + category.slice(1),
+          description: storedDesc || 'Layanan fotografi',
+          image: storedImage || '/photography.png',
+          isCustom: true
+        });
+      }
+    });
+
+    // Add custom services created by user (any service with _title field)
+    const allServiceFields = contentStore.getSectionFields('service');
+    console.log('[loadAllServices] All service fields from store:', allServiceFields);
+    
+    const titleFields = allServiceFields.filter(f => f.field.endsWith('_title'));
+    console.log('[loadAllServices] Title fields found:', titleFields);
+    
+    titleFields.forEach(titleField => {
+      const slug = titleField.field.replace('_title', '');
+      
+      // Skip if already in hardcoded or package categories
+      if (!servicesSet.has(slug)) {
+        const storedTitle = titleField.value;
+        const storedDesc = contentStore.getField('service', `${slug}_description`);
+        const storedImage = contentStore.getField('service', `${slug}_image`);
+        
+        console.log(`[loadAllServices] User-created service "${slug}":`, {
+          title: storedTitle,
+          desc: storedDesc,
+          image: storedImage,
+        });
+        
+        servicesSet.set(slug, {
+          slug,
+          title: storedTitle,
           description: storedDesc || 'Layanan fotografi',
           image: storedImage || '/photography.png',
           isCustom: true
@@ -482,6 +514,10 @@ const AdminHome: Component = () => {
       setServiceImageUploaded(false);
       setShowAddServiceModal(false);
 
+      console.log(`[addNewService] Reloading service section from backend...`);
+      // Reload entire service section from backend to get fresh data
+      await contentStore.loadSection('service');
+      
       console.log(`[addNewService] Reloading services...`);
       // Reload services
       loadAllServices();

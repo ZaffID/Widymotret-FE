@@ -2422,37 +2422,49 @@ const AdminHome: Component = () => {
               {/* Quick Links */}
               <div class="mb-10 pb-10 border-b-2 border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Tautan Cepat</h3>
-                <p class="text-sm text-gray-600 mb-4">Kelola link navigasi di bagian TAUTAN CEPAT di footer</p>
+                <p class="text-sm text-gray-600 mb-6">Kelola link navigasi di bagian TAUTAN CEPAT di footer. Edit langsung, otomatis tersimpan saat Anda selesai mengetik.</p>
                 
-                <div class="space-y-4">
-                  {['Home', 'Portfolio', 'Harga', 'Tentang', 'Hubungi'].map((label, idx) => (
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">{label} - Label</label>
-                        <input
-                          type="text"
-                          value={contentStore.getField('footer', `quick_link_${idx}_label`) || label}
-                          onChange={(e) => contentStore.updateFieldLocal('footer', `quick_link_${idx}_label`, e.currentTarget.value)}
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
-                          placeholder={label}
-                        />
+                <div class="space-y-6">
+                  {['Home', 'Portfolio', 'Harga', 'Tentang', 'Hubungi'].map((label, idx) => {
+                    const defaultUrls = ['/', '/#portfolio', '/', '/#about', '/#contact'];
+                    return (
+                      <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                        <h4 class="font-semibold text-gray-700 mb-3">{label}</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Label Tampil</label>
+                            <input
+                              type="text"
+                              value={contentStore.getField('footer', `quick_link_${idx}_label`) || label}
+                              onChange={(e) => contentStore.updateFieldLocal('footer', `quick_link_${idx}_label`, e.currentTarget.value)}
+                              onBlur={(e) => {
+                                updateContent('footer', `quick_link_${idx}_label`, e.currentTarget.value);
+                                handleSave(`Label tautan "${label}" berhasil disimpan`);
+                              }}
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] text-sm"
+                              placeholder="Misal: Halaman Utama"
+                            />
+                            <p class="text-xs text-gray-500 mt-1">Teks yang ditampilkan di footer</p>
+                          </div>
+                          <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">URL/Link</label>
+                            <input
+                              type="text"
+                              value={contentStore.getField('footer', `quick_link_${idx}_url`) || defaultUrls[idx]}
+                              onChange={(e) => contentStore.updateFieldLocal('footer', `quick_link_${idx}_url`, e.currentTarget.value)}
+                              onBlur={(e) => {
+                                updateContent('footer', `quick_link_${idx}_url`, e.currentTarget.value);
+                                handleSave(`Link tautan "${label}" berhasil disimpan`);
+                              }}
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] text-sm font-mono"
+                              placeholder="Misal: / atau /#portfolio atau https://..."
+                            />
+                            <p class="text-xs text-gray-500 mt-1">Gunakan / untuk halaman lokal, /#section untuk anchor, atau https://... untuk link eksternal</p>
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">{label} - URL</label>
-                        <input
-                          type="text"
-                          value={contentStore.getField('footer', `quick_link_${idx}_url`) || '#'}
-                          onChange={(e) => contentStore.updateFieldLocal('footer', `quick_link_${idx}_url`, e.currentTarget.value)}
-                          onBlur={(e) => {
-                            updateContent('footer', `quick_link_${idx}_url`, e.currentTarget.value);
-                            handleSave(`Tautan cepat ${label} berhasil disimpan`);
-                          }}
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
-                          placeholder="https://..."
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

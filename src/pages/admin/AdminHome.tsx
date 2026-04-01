@@ -1411,22 +1411,46 @@ const AdminHome: Component = () => {
               <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillDollarCircle class="inline mr-2" size={24} />Kelola Pricelist</h2>
               <p class="text-gray-600 mb-6">Edit paket dan harga untuk setiap jenis layanan fotografi.</p>
 
-              {/* Service Type Tabs */}
-              <div class="bg-gray-50 rounded-xl p-1 mb-8 flex gap-2 flex-wrap">
-                <For each={allServices()}>
-                  {(service) => (
-                    <button
-                      onClick={() => setActiveServicePricelist(service.slug)}
-                      class={`px-6 py-2 rounded-lg font-medium transition-all ${
-                        activeServicePricelist() === service.slug
-                          ? 'bg-[#576250] text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      {service.title}
-                    </button>
-                  )}
-                </For>
+              {/* Service Type Tabs - Horizontal Scrollable */}
+              <div class="mb-8">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-semibold text-gray-700">Pilih Layanan</h3>
+                  <span class="text-xs text-gray-500 px-3 py-1 bg-gray-100 rounded-full">
+                    {allServices().length} layanan
+                  </span>
+                </div>
+                <div class="relative">
+                  {/* Scroll Container */}
+                  <div class="overflow-x-auto overflow-y-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                    <div class="bg-gradient-to-r from-gray-50 to-gray-50 rounded-xl p-3 flex gap-3 min-w-min">
+                      <For each={allServices()}>
+                        {(service) => (
+                          <button
+                            onClick={() => setActiveServicePricelist(service.slug)}
+                            class={`px-5 py-3 rounded-lg font-medium transition-all whitespace-nowrap flex-shrink-0 border-2 ${
+                              activeServicePricelist() === service.slug
+                                ? 'bg-[#576250] text-white border-[#576250] shadow-md'
+                                : 'bg-white text-gray-700 border-gray-200 hover:border-[#576250] hover:text-[#576250]'
+                            }`}
+                          >
+                            {service.title}
+                            {activeServicePricelist() === service.slug && (
+                              <span class="ml-2 inline-block w-2 h-2 bg-white rounded-full animate-pulse"></span>
+                            )}
+                          </button>
+                        )}
+                      </For>
+                    </div>
+                  </div>
+                  {/* Scroll Indicator */}
+                  <Show when={allServices().length > 3}>
+                    <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none rounded-r-xl flex items-center justify-end pr-2">
+                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </div>
+                  </Show>
+                </div>
               </div>
 
               <Show when={allServices().find(s => s.slug === activeServicePricelist())}>

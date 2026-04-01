@@ -769,9 +769,11 @@ const AdminHome: Component = () => {
               <img src="/LOGO/BIGGER WM NEW PUTIH.png" alt="Widymotret" class="h-10 flex-shrink-0 drop-shadow-lg" />
               <span class="text-xs md:text-sm text-white/70 border-l border-white/30 pl-3 truncate hidden md:block">
                 {currentPage() === 'home' && 'Halaman Utama'}
-                {currentPage() === 'pricelist' && 'Pricelist'}
-                {currentPage() === 'portfolio' && 'Portfolio'}
+                {currentPage() === 'services' && 'Kelola Services'}
+                {currentPage() === 'pricelist' && 'Kelola Pricelist'}
+                {currentPage() === 'portfolio' && 'Kelola Portfolio'}
                 {currentPage() === 'about' && 'Halaman About'}
+                {currentPage() === 'footer' && 'Kelola Footer'}
               </span>
             </div>
 
@@ -855,7 +857,7 @@ const AdminHome: Component = () => {
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
-            <AiFillDollarCircle size={20} />
+            <FaSolidClipboardList size={20} />
             Pricelist
           </button>
           <button

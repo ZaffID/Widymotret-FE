@@ -59,15 +59,24 @@ const Navbar: Component<NavbarProps> = (props) => {
   const loadServices = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      console.log('[Navbar.loadServices] API URL:', apiUrl);
+      console.log('[Navbar.loadServices] Starting fetch...');
+      
       const res = await fetch(`${apiUrl}/api/packages`);
-      if (!res.ok) throw new Error('Failed to fetch packages');
+      console.log('[Navbar.loadServices] Fetch response status:', res.status);
+      
+      if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
       
       const data = await res.json();
+      console.log('[Navbar.loadServices] API response success:', data.success);
+      console.log('[Navbar.loadServices] Data received:', data);
+      
       if (data.success && Array.isArray(data.data)) {
         // Extract unique categories from packages
         const categoriesFromPackages = new Set(
           data.data.map((pkg: any) => pkg.category?.toLowerCase()).filter(Boolean)
         );
+        console.log('[Navbar.loadServices] Categories from packages:', Array.from(categoriesFromPackages));
         
         // Build service list: hardcoded + new categories from packages
         const serviceMap = new Map<string, NavService>();
@@ -79,6 +88,7 @@ const Navbar: Component<NavbarProps> = (props) => {
             title: service.title
           });
         });
+        console.log('[Navbar.loadServices] After hardcoded:', serviceMap.size, 'services');
         
         // Add new categories from packages that aren't in hardcoded
         categoriesFromPackages.forEach(category => {
@@ -90,13 +100,18 @@ const Navbar: Component<NavbarProps> = (props) => {
             });
           }
         });
+        console.log('[Navbar.loadServices] Final service list:', Array.from(serviceMap.values()));
         
         setServices(Array.from(serviceMap.values()));
+      } else {
+        console.log('[Navbar.loadServices] Data not success or not array');
       }
     } catch (err) {
-      console.error('Failed to load navbar services:', err);
+      console.error('[Navbar.loadServices] Error:', err);
       // Fallback to hardcoded
-      setServices(servicesData.map(s => ({ slug: s.slug, title: s.title })));
+      const fallback = servicesData.map(s => ({ slug: s.slug, title: s.title }));
+      console.log('[Navbar.loadServices] Using fallback:', fallback);
+      setServices(fallback);
     }
   };
 

@@ -42,6 +42,8 @@ interface ApiPackage {
   images: string[];
   features: string[];
   isPublished: boolean;
+  whatsappLinkType?: string;
+  customWhatsappUrl?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -18,6 +18,8 @@ interface ApiPackage {
   images: string[];
   features: string[];
   isPublished: boolean;
+  whatsappLinkType?: string;
+  customWhatsappUrl?: string | null;
 }
 
 const ServiceDetail: Component = () => {

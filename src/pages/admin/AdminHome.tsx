@@ -567,17 +567,21 @@ const AdminHome: Component = () => {
       
       // Delete all three fields from backend
       const r1 = await updateContent('service', `${slug}_title`, '');
-      console.log(`[deleteService] Backend response 1 (title deletion):`, r1);
+      console.log(`[deleteService] Backend response 1 (title):`, r1);
+      if (!r1.success) {
+        throw new Error(`Title deletion failed: ${r1.message}`);
+      }
       
       const r2 = await updateContent('service', `${slug}_description`, '');
-      console.log(`[deleteService] Backend response 2 (desc deletion):`, r2);
+      console.log(`[deleteService] Backend response 2 (description):`, r2);
+      if (!r2.success) {
+        throw new Error(`Description deletion failed: ${r2.message}`);
+      }
       
       const r3 = await updateContent('service', `${slug}_image`, '');
-      console.log(`[deleteService] Backend response 3 (image deletion):`, r3);
-
-      // Check if all deletions were successful
-      if (!r1.success || !r2.success || !r3.success) {
-        throw new Error('Gagal menghapus beberapa field dari backend');
+      console.log(`[deleteService] Backend response 3 (image):`, r3);
+      if (!r3.success) {
+        throw new Error(`Image deletion failed: ${r3.message}`);
       }
 
       console.log(`[deleteService] ✓ Backend deletion OK`);
@@ -2002,13 +2006,19 @@ const AdminHome: Component = () => {
                                       onDelete={async () => {
                                         try {
                                           console.log(`[AdminHome] Portfolio delete START: field=${fieldName}`);
-                                          await updateContent('portfolio', fieldName, '');
-                                          console.log(`[AdminHome] Portfolio delete API success`);
+                                          const response = await updateContent('portfolio', fieldName, '');
+                                          console.log(`[AdminHome] Portfolio delete API response:`, response);
+                                          
+                                          if (!response.success) {
+                                            throw new Error(`API error: ${response.message}`);
+                                          }
+                                          
                                           contentStore.updateFieldLocal('portfolio', fieldName, '');
                                           handleSave(`${img.title} berhasil dihapus`);
                                         } catch (error) {
                                           console.error(`[AdminHome] Portfolio delete ERROR:`, error);
-                                          handleError(`Gagal menghapus: ${error instanceof Error ? error.message : 'Unknown error'}`);
+                                          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+                                          handleError(`Gagal menghapus: ${errorMsg}`);
                                         }
                                       }}
                                     />

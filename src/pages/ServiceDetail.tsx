@@ -31,10 +31,55 @@ const ServiceDetail: Component = () => {
   const packagesGridRef = useScrollRevealGroup({ threshold: 0.3, itemDelay: 80 });
   const detailSectionRef = useScrollReveal({ threshold: 0.2 });
   
-  const service = () => servicesData.find(s => s.slug === params.slug);
+  // Dynamic services list (hardcoded + API-fetched)
+  const [allServices, setAllServices] = createSignal<Array<{ slug: string; title: string; description: string; image: string }>>([]);
+  
+  const service = () => allServices().find(s => s.slug === params.slug);
+
+  const loadServices = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const res = await fetch(`${apiUrl}/api/packages`);
+      
+      if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
+      
+      const data = await res.json();
+      
+      if (data.success && Array.isArray(data.data)) {
+        // Build: hardcoded + unique categories from API
+        const servicesMap = new Map(servicesData.map(s => [s.slug, { 
+          slug: s.slug, 
+          title: s.title, 
+          description: s.description, 
+          image: s.image 
+        }]));
+        
+        // Add API categories not in hardcoded
+        data.data.forEach((pkg: any) => {
+          const category = pkg.category?.toLowerCase();
+          if (category && !servicesMap.has(category)) {
+            servicesMap.set(category, {
+              slug: category,
+              title: category.charAt(0).toUpperCase() + category.slice(1),
+              description: 'Layanan fotografi',
+              image: '/photography.png'
+            });
+          }
+        });
+        
+        setAllServices(Array.from(servicesMap.values()));
+      } else {
+        setAllServices(servicesData);
+      }
+    } catch (err) {
+      console.error('[ServiceDetail] Error loading services:', err);
+      setAllServices(servicesData);
+    }
+  };
 
   onMount(async () => {
     await contentStore.loadSection('service');
+    await loadServices();
   });
 
   const serviceTitle = () => {

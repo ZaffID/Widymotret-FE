@@ -371,6 +371,8 @@ const AdminHome: Component = () => {
           images: payloadPkg.images,
           features: payloadPkg.features,
           isPublished: payloadPkg.isPublished,
+          whatsappLinkType: (payloadPkg as any).whatsappLinkType || 'studio',
+          customWhatsappUrl: (payloadPkg as any).customWhatsappUrl || null,
         }),
       });
       const data = await res.json();

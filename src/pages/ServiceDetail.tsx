@@ -53,7 +53,34 @@ const ServiceDetail: Component = () => {
     return contentStore.getField('service', `${svc.slug}_image`) || svc.image;
   };
 
-  // Determine WhatsApp number based on service type
+  // Determine WhatsApp link based on package configuration and settings
+  const getWhatsAppLink = () => {
+    const pkg = selectedPackage();
+    if (!pkg) return getDefaultWhatsAppLink();
+    
+    const linkType = (pkg as any).whatsappLinkType || 'studio';
+    
+    if (linkType === 'wedding') {
+      const weddingLink = contentStore.getField('settings', 'whatsapp_link_2');
+      if (weddingLink) return weddingLink;
+    } else if (linkType === 'custom') {
+      const customLink = (pkg as any).customWhatsappUrl;
+      if (customLink) return customLink;
+    }
+    
+    // Default to studio link
+    const studioLink = contentStore.getField('settings', 'whatsapp_link_1');
+    if (studioLink) return studioLink;
+    
+    return getDefaultWhatsAppLink();
+  };
+  
+  const getDefaultWhatsAppLink = () => {
+    const number = getWhatsAppNumber();
+    return `https://wa.me/${number}`;
+  };
+
+  // Fallback: Determine WhatsApp number based on service type
   const getWhatsAppNumber = () => {
     const slug = params.slug?.toLowerCase() ?? '';
     const weddingServices = ['wedding', 'prewedding', 'engagement'];
@@ -408,7 +435,15 @@ const ServiceDetail: Component = () => {
 
                       {/* CTA Button */}
                       <a 
-                        href={`https://wa.me/${getWhatsAppNumber()}?text=Halo,%20saya%20tertarik%20dengan%20paket%20${encodeURIComponent(selectedPackage()!.name)}%20dari%20layanan%20${encodeURIComponent(serviceTitle())}.%20Bisa%20minta%20informasi%20lebih%20lanjut?`}
+                        href={(() => {
+                          const link = getWhatsAppLink();
+                          const textParam = `text=Halo,%20saya%20tertarik%20dengan%20paket%20${encodeURIComponent(selectedPackage()!.name)}%20dari%20layanan%20${encodeURIComponent(serviceTitle())}.%20Bisa%20minta%20informasi%20lebih%20lanjut?`;
+                          if (link.includes('?')) {
+                            return `${link}&${textParam}`;
+                          } else {
+                            return `${link}?${textParam}`;
+                          }
+                        })()}
                         target="_blank" 
                         rel="noopener noreferrer"
                         class="w-full py-4 bg-[#464C43] text-white rounded-xl hover:bg-[#576250] transition font-medium text-center flex items-center justify-center gap-3 shadow-lg hover:shadow-xl"

@@ -18,7 +18,10 @@ const Navbar: Component<NavbarProps> = (props) => {
   const [showDropdown, setShowDropdown] = createSignal(false);
   const [showMobileMenu, setShowMobileMenu] = createSignal(false);
   const [showMobileDropdown, setShowMobileDropdown] = createSignal(false);
-  const [services, setServices] = createSignal<NavService[]>([]);
+  // Initialize with hardcoded services, will be updated with API data
+  const [services, setServices] = createSignal<NavService[]>(
+    servicesData.map(s => ({ slug: s.slug, title: s.title }))
+  );
   const navigate = useNavigate();
   let dropdownTimeout: number | undefined;
 

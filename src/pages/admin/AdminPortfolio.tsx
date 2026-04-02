@@ -159,10 +159,10 @@ const AdminPortfolio: Component = () => {
               <p class="text-gray-600 mb-6">{category().description}</p>
 
               {/* Portfolio Images Grid */}
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 <For each={currentImages()}>
                   {(image, idx) => (
-                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm aspect-square">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col h-full">
                       <EditableImage
                         label={`Foto #${idx() + 1}`}
                         value={contentStore.getField('portfolio', `${activeCategory()}_${image.id}`) || image.url}

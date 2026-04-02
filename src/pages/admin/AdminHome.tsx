@@ -165,16 +165,26 @@ const AdminHome: Component = () => {
       const res = await fetch(`${API_BASE}/packages`);
       const data = await res.json();
       if (data.success) {
-        const hydrated = (data.data || []).map((pkg: ApiPackage, idx: number) => ({
-          ...pkg,
-          images: Array.isArray(pkg.images) && pkg.images.length > 0
-            ? pkg.images
-            : getTemplateImagesByCategory(pkg.category, idx),
-        }));
+        console.log('[loadPackages] Raw API response (first package):', data.data?.[0]);
+        const hydrated = (data.data || []).map((pkg: ApiPackage, idx: number) => {
+          const result = {
+            ...pkg,
+            images: Array.isArray(pkg.images) && pkg.images.length > 0
+              ? pkg.images
+              : getTemplateImagesByCategory(pkg.category, idx),
+          };
+          if (idx === 0) {
+            console.log('[loadPackages] First package whatsappLinkType:', result.whatsappLinkType);
+            console.log('[loadPackages] First package customWhatsappUrl:', result.customWhatsappUrl);
+          }
+          return result;
+        });
         setPackages(hydrated);
+        console.log('[loadPackages] Packages loaded successfully, count:', hydrated.length);
       }
     } catch (error) {
       handleError('Gagal memuat data package dari backend');
+      console.error('[loadPackages] Error:', error);
     } finally {
       setPackagesLoading(false);
     }
@@ -352,12 +362,19 @@ const AdminHome: Component = () => {
       price: rawPrice ? parseInt(rawPrice) : 0,
       description: description || pkg.description,
       features,
+      whatsappLinkType: (pkg as any).whatsappLinkType,
+      customWhatsappUrl: (pkg as any).customWhatsappUrl,
     };
   };
 
   const savePackage = async (pkg: ApiPackage, silent = false) => {
     const token = authStore.getToken();
     const payloadPkg = buildPackageFromDrafts(pkg);
+    console.log('[savePackage] Building payload with:', {
+      whatsappLinkType: (payloadPkg as any).whatsappLinkType,
+      customWhatsappUrl: (payloadPkg as any).customWhatsappUrl,
+      name: payloadPkg.name,
+    });
     try {
       const res = await fetch(`${API_BASE}/packages/${payloadPkg.id}`, {
         method: 'PUT',
@@ -378,6 +395,7 @@ const AdminHome: Component = () => {
         }),
       });
       const data = await res.json();
+      console.log('[savePackage] API Response:', data);
       if (data.success) {
         updatePackageLocal(payloadPkg.id, () => payloadPkg);
         setFieldDrafts((prev) => ({
@@ -393,6 +411,7 @@ const AdminHome: Component = () => {
       }
     } catch (error) {
       handleError('Terjadi kesalahan koneksi saat menyimpan package');
+      console.error('[savePackage] Error:', error);
     }
   };
 

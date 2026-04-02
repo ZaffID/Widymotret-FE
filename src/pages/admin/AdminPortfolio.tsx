@@ -162,7 +162,7 @@ const AdminPortfolio: Component = () => {
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <For each={currentImages()}>
                   {(image, idx) => (
-                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm aspect-square">
                       <EditableImage
                         label={`Foto #${idx() + 1}`}
                         value={contentStore.getField('portfolio', `${activeCategory()}_${image.id}`) || image.url}

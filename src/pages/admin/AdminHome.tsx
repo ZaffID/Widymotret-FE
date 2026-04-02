@@ -233,15 +233,21 @@ const AdminHome: Component = () => {
         const storedDesc = contentStore.getField('service', `${category}_description`);
         const storedImage = contentStore.getField('service', `${category}_image`);
         
+        // Skip if title is explicitly deleted (empty)
+        if (!storedTitle || storedTitle.trim() === '') {
+          console.log(`[loadAllServices] Skipping category "${category}" - title is empty (deleted)`);
+          return;
+        }
+        
         console.log(`[loadAllServices] Custom service from packages "${category}":`, {
-          title: storedTitle || category.charAt(0).toUpperCase() + category.slice(1),
-          desc: storedDesc || 'Layanan fotografi',
-          image: storedImage || '/photography.png',
+          title: storedTitle,
+          desc: storedDesc,
+          image: storedImage,
         });
         
         servicesSet.set(category, {
           slug: category,
-          title: storedTitle || category.charAt(0).toUpperCase() + category.slice(1),
+          title: storedTitle,
           description: storedDesc || 'Layanan fotografi',
           image: storedImage || '/photography.png',
           isCustom: true

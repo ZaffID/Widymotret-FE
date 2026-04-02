@@ -8,11 +8,17 @@ interface NavbarProps {
   hasWhiteBackground?: boolean; // true jika halaman bg putih
 }
 
+interface NavService {
+  slug: string;
+  title: string;
+}
+
 const Navbar: Component<NavbarProps> = (props) => {
   const [scrollY, setScrollY] = createSignal(0);
   const [showDropdown, setShowDropdown] = createSignal(false);
   const [showMobileMenu, setShowMobileMenu] = createSignal(false);
   const [showMobileDropdown, setShowMobileDropdown] = createSignal(false);
+  const [services, setServices] = createSignal<NavService[]>([]);
   const navigate = useNavigate();
   let dropdownTimeout: number | undefined;
 
@@ -49,9 +55,54 @@ const Navbar: Component<NavbarProps> = (props) => {
     setShowMobileDropdown(false);
   };
 
+  // Load services from API + hardcoded data
+  const loadServices = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const res = await fetch(`${apiUrl}/api/packages`);
+      if (!res.ok) throw new Error('Failed to fetch packages');
+      
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data)) {
+        // Extract unique categories from packages
+        const categoriesFromPackages = new Set(
+          data.data.map((pkg: any) => pkg.category?.toLowerCase()).filter(Boolean)
+        );
+        
+        // Build service list: hardcoded + new categories from packages
+        const serviceMap = new Map<string, NavService>();
+        
+        // Add hardcoded services
+        servicesData.forEach(service => {
+          serviceMap.set(service.slug, {
+            slug: service.slug,
+            title: service.title
+          });
+        });
+        
+        // Add new categories from packages that aren't in hardcoded
+        categoriesFromPackages.forEach(category => {
+          if (!serviceMap.has(category)) {
+            serviceMap.set(category, {
+              slug: category,
+              title: category.charAt(0).toUpperCase() + category.slice(1)
+            });
+          }
+        });
+        
+        setServices(Array.from(serviceMap.values()));
+      }
+    } catch (err) {
+      console.error('Failed to load navbar services:', err);
+      // Fallback to hardcoded
+      setServices(servicesData.map(s => ({ slug: s.slug, title: s.title })));
+    }
+  };
+
   onMount(() => {
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Check initial scroll position
+    loadServices(); // Load services from API
   });
 
   onCleanup(() => {
@@ -105,19 +156,23 @@ const Navbar: Component<NavbarProps> = (props) => {
                 </svg>
               </button>
               
-              {/* Dropdown Menu */}
+              {/* Dropdown Menu - Desktop with scrolling */}
               <div 
-                class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg overflow-hidden transition-all duration-200"
+                class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg transition-all duration-200"
+                style={{
+                  'max-height': '400px',
+                  'overflow-y': 'auto'
+                }}
                 classList={{
                   'opacity-100 visible translate-y-0': showDropdown(),
                   'opacity-0 invisible -translate-y-2': !showDropdown()
                 }}
               >
-                <For each={servicesData}>
+                <For each={services()}>
                   {(service) => (
                     <button 
                       onClick={() => navigate(`/pricelist/${service.slug}`)}
-                      class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm"
+                      class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm whitespace-nowrap overflow-ellipsis"
                     >
                       {service.title}
                     </button>
@@ -191,17 +246,25 @@ const Navbar: Component<NavbarProps> = (props) => {
             </button>
             
             {showMobileDropdown() && (
-              <div class="pl-4 space-y-2 mt-2 border-l border-white/20">
-                <For each={servicesData}>
-                  {(service) => (
-                    <button 
-                      onClick={() => handleMobileNavigate(`/pricelist/${service.slug}`)}
-                      class="block w-full text-left py-2 px-4 text-white/80 hover:text-white hover:bg-white/10 rounded transition text-xs"
-                    >
-                      {service.title}
-                    </button>
-                  )}
-                </For>
+              <div 
+                class="pl-4 mt-2 border-l border-white/20"
+                style={{
+                  'max-height': '300px',
+                  'overflow-y': 'auto'
+                }}
+              >
+                <div class="space-y-2">
+                  <For each={services()}>
+                    {(service) => (
+                      <button 
+                        onClick={() => handleMobileNavigate(`/pricelist/${service.slug}`)}
+                        class="block w-full text-left py-2 px-4 text-white/80 hover:text-white hover:bg-white/10 rounded transition text-xs whitespace-nowrap overflow-ellipsis"
+                      >
+                        {service.title}
+                      </button>
+                    )}
+                  </For>
+                </div>
               </div>
             )}
           </div>

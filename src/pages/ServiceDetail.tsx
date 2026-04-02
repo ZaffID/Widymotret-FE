@@ -55,53 +55,27 @@ const ServiceDetail: Component = () => {
     return contentStore.getField('service', `${svc.slug}_image`) || svc.image;
   };
 
-  // Determine WhatsApp link based on package configuration and settings
+  // Determine WhatsApp link based on package configuration
   const getWhatsAppLink = () => {
     const pkg = selectedPackage();
-    console.log('[ServiceDetail.getWhatsAppLink] selectedPackage:', pkg);
     if (!pkg) {
-      console.log('[ServiceDetail.getWhatsAppLink] No package selected, using default');
-      return getDefaultWhatsAppLink();
+      return 'https://wa.me/62895351115777'; // Default studio
     }
     
     const linkType = (pkg as any).whatsappLinkType || 'studio';
-    console.log('[ServiceDetail.getWhatsAppLink] linkType:', linkType);
-    console.log('[ServiceDetail.getWhatsAppLink] Full package object:', JSON.stringify(pkg, null, 2));
     
     if (linkType === 'wedding') {
-      const weddingLink = contentStore.getField('settings', 'whatsapp_link_2');
-      console.log('[ServiceDetail.getWhatsAppLink] Wedding link from settings:', weddingLink);
-      if (weddingLink) return weddingLink;
+      return 'https://wa.me/62895632522949'; // Wedding studio
     } else if (linkType === 'custom') {
       const customLink = (pkg as any).customWhatsappUrl;
-      console.log('[ServiceDetail.getWhatsAppLink] Custom link:', customLink);
       if (customLink) return customLink;
+      return 'https://wa.me/62895351115777'; // Fallback
     }
     
     // Default to studio link
-    const studioLink = contentStore.getField('settings', 'whatsapp_link_1');
-    console.log('[ServiceDetail.getWhatsAppLink] Studio link from settings:', studioLink);
-    if (studioLink) return studioLink;
-    
-    const defaultLink = getDefaultWhatsAppLink();
-    console.log('[ServiceDetail.getWhatsAppLink] Using default link:', defaultLink);
-    return defaultLink;
+    return 'https://wa.me/62895351115777';
   };
   
-  const getDefaultWhatsAppLink = () => {
-    const number = getWhatsAppNumber();
-    return `https://wa.me/${number}`;
-  };
-
-  // Fallback: Determine WhatsApp number based on service type
-  const getWhatsAppNumber = () => {
-    const slug = params.slug?.toLowerCase() ?? '';
-    const weddingServices = ['wedding', 'prewedding', 'engagement'];
-    return weddingServices.includes(slug) 
-      ? '62895632522949' 
-      : '62895351115777';
-  };
-
   const [packages, setPackages] = createSignal<ApiPackage[]>([]);
   const [selectedPackage, setSelectedPackage] = createSignal<ApiPackage | null>(null);
   const [selectedIndex, setSelectedIndex] = createSignal<number | null>(null);

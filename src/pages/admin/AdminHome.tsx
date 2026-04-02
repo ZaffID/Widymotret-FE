@@ -1756,70 +1756,90 @@ const AdminHome: Component = () => {
                               </div>
 
                               {/* WhatsApp Link Options */}
-                              <div class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <label class="block text-sm font-semibold text-gray-700 mb-3">Link WhatsApp Kontak</label>
+                              <div class="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 shadow-sm">
+                                <div class="flex items-center gap-2 mb-4">
+                                  <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.272-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-5.031 1.378c-3.055 2.286-4.982 5.994-4.982 9.93 0 1.092.145 2.165.43 3.199L1 23l3.294-.547c.93.502 1.985.754 3.057.754 5.523 0 10-4.477 10-10S10.522 3.5 4.998 3.5z"/>
+                                  </svg>
+                                  <label class="text-sm font-bold text-gray-800">Link WhatsApp untuk Kontak</label>
+                                </div>
+                                
                                 <div class="space-y-3">
-                                  <div class="flex items-center gap-3">
+                                  {/* Option 1: Studio Default */}
+                                  <label class="flex items-start gap-3 p-3 rounded-lg border border-transparent hover:border-green-300 hover:bg-white cursor-pointer transition" classList={{ 'bg-white border-green-400 ring-1 ring-green-300': (pkg as any).whatsappLinkType !== 'category' && (pkg as any).whatsappLinkType !== 'custom' }}>
                                     <input
                                       type="radio"
-                                      id={`wa-studio-${pkg.id}`}
                                       name={`wa-type-${pkg.id}`}
                                       value="studio"
                                       checked={(pkg as any).whatsappLinkType !== 'category' && (pkg as any).whatsappLinkType !== 'custom'}
                                       onChange={() => updatePackageLocal(pkg.id, (prev) => ({ ...prev, whatsappLinkType: 'studio', whatsappUrl: '' } as any))}
+                                      class="mt-1 w-4 h-4 text-green-600 cursor-pointer"
                                     />
-                                    <label for={`wa-studio-${pkg.id}`} class="text-sm text-gray-700 cursor-pointer">
-                                      Link Studio (Default) - Gunakan WhatsApp yang ada di footer
-                                    </label>
-                                  </div>
-                                  
-                                  <div class="flex items-center gap-3">
-                                    <input
-                                      type="radio"
-                                      id={`wa-category-${pkg.id}`}
-                                      name={`wa-type-${pkg.id}`}
-                                      value="category"
-                                      checked={(pkg as any).whatsappLinkType === 'category'}
-                                      onChange={() => updatePackageLocal(pkg.id, (prev) => ({ ...prev, whatsappLinkType: 'category' } as any))}
-                                    />
-                                    <label for={`wa-category-${pkg.id}`} class="text-sm text-gray-700 cursor-pointer">
-                                      Link Khusus Kategori ({pkg.category})
-                                    </label>
-                                  </div>
-                                  
-                                  <Show when={(pkg as any).whatsappLinkType === 'category'}>
-                                    <input
-                                      type="text"
-                                      value={(pkg as any).categoryWhatsappUrl || ''}
-                                      onChange={(e) => updatePackageLocal(pkg.id, (prev) => ({ ...prev, categoryWhatsappUrl: e.currentTarget.value } as any))}
-                                      placeholder="Misal: https://api.whatsapp.com/send/?phone=62895123456"
-                                      class="ml-6 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono"
-                                    />
-                                  </Show>
+                                    <div class="flex-1">
+                                      <p class="text-sm font-semibold text-gray-800">📍 Link Studio Utama</p>
+                                      <p class="text-xs text-gray-600 mt-1">Gunakan nomor WhatsApp dari footer (rekomendasi untuk paket umum)</p>
+                                    </div>
+                                  </label>
 
-                                  <div class="flex items-center gap-3">
-                                    <input
-                                      type="radio"
-                                      id={`wa-custom-${pkg.id}`}
-                                      name={`wa-type-${pkg.id}`}
-                                      value="custom"
-                                      checked={(pkg as any).whatsappLinkType === 'custom'}
-                                      onChange={() => updatePackageLocal(pkg.id, (prev) => ({ ...prev, whatsappLinkType: 'custom' } as any))}
-                                    />
-                                    <label for={`wa-custom-${pkg.id}`} class="text-sm text-gray-700 cursor-pointer">
-                                      Link Mandiri (Khusus untuk paket ini)
+                                  {/* Option 2: Category-specific */}
+                                  <div>
+                                    <label class="flex items-start gap-3 p-3 rounded-lg border border-transparent hover:border-blue-300 hover:bg-white cursor-pointer transition" classList={{ 'bg-white border-blue-400 ring-1 ring-blue-300': (pkg as any).whatsappLinkType === 'category' }}>
+                                      <input
+                                        type="radio"
+                                        name={`wa-type-${pkg.id}`}
+                                        value="category"
+                                        checked={(pkg as any).whatsappLinkType === 'category'}
+                                        onChange={() => updatePackageLocal(pkg.id, (prev) => ({ ...prev, whatsappLinkType: 'category' } as any))}
+                                        class="mt-1 w-4 h-4 text-blue-600 cursor-pointer"
+                                      />
+                                      <div class="flex-1">
+                                        <p class="text-sm font-semibold text-gray-800">🏷️ Link Khusus Kategori</p>
+                                        <p class="text-xs text-gray-600 mt-1">Nomor WA berbeda untuk kategori {pkg.category} (mis: wedding, studio)</p>
+                                      </div>
                                     </label>
+                                    <Show when={(pkg as any).whatsappLinkType === 'category'}>
+                                      <div class="ml-7 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                        <p class="text-xs font-semibold text-gray-700 mb-2">Link WhatsApp untuk kategori "{pkg.category}":</p>
+                                        <input
+                                          type="text"
+                                          value={(pkg as any).categoryWhatsappUrl || ''}
+                                          onChange={(e) => updatePackageLocal(pkg.id, (prev) => ({ ...prev, categoryWhatsappUrl: e.currentTarget.value } as any))}
+                                          placeholder="https://api.whatsapp.com/send/?phone=62895123456"
+                                          class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs font-mono bg-white"
+                                        />
+                                      </div>
+                                    </Show>
                                   </div>
-                                  
-                                  <Show when={(pkg as any).whatsappLinkType === 'custom'}>
-                                    <input
-                                      type="text"
-                                      value={(pkg as any).whatsappUrl || ''}
-                                      onChange={(e) => updatePackageLocal(pkg.id, (prev) => ({ ...prev, whatsappUrl: e.currentTarget.value } as any))}
-                                      placeholder="Misal: https://api.whatsapp.com/send/?phone=62895123456"
-                                      class="ml-6 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono"
-                                    />
-                                  </Show>
+
+                                  {/* Option 3: Custom */}
+                                  <div>
+                                    <label class="flex items-start gap-3 p-3 rounded-lg border border-transparent hover:border-purple-300 hover:bg-white cursor-pointer transition" classList={{ 'bg-white border-purple-400 ring-1 ring-purple-300': (pkg as any).whatsappLinkType === 'custom' }}>
+                                      <input
+                                        type="radio"
+                                        name={`wa-type-${pkg.id}`}
+                                        value="custom"
+                                        checked={(pkg as any).whatsappLinkType === 'custom'}
+                                        onChange={() => updatePackageLocal(pkg.id, (prev) => ({ ...prev, whatsappLinkType: 'custom' } as any))}
+                                        class="mt-1 w-4 h-4 text-purple-600 cursor-pointer"
+                                      />
+                                      <div class="flex-1">
+                                        <p class="text-sm font-semibold text-gray-800">⭐ Link Mandiri (Custom)</p>
+                                        <p class="text-xs text-gray-600 mt-1">Nomor WA unik hanya untuk paket "{pkg.name}" (mis: operator tertentu)</p>
+                                      </div>
+                                    </label>
+                                    <Show when={(pkg as any).whatsappLinkType === 'custom'}>
+                                      <div class="ml-7 mt-2 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                                        <p class="text-xs font-semibold text-gray-700 mb-2">Link WhatsApp untuk paket ini saja:</p>
+                                        <input
+                                          type="text"
+                                          value={(pkg as any).whatsappUrl || ''}
+                                          onChange={(e) => updatePackageLocal(pkg.id, (prev) => ({ ...prev, whatsappUrl: e.currentTarget.value } as any))}
+                                          placeholder="https://api.whatsapp.com/send/?phone=62895123456"
+                                          class="w-full px-3 py-2 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs font-mono bg-white"
+                                        />
+                                      </div>
+                                    </Show>
+                                  </div>
                                 </div>
                               </div>
 

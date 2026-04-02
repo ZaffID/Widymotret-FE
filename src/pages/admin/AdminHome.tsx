@@ -977,7 +977,14 @@ const AdminHome: Component = () => {
             Portfolio
           </button>
           <button
-            onClick={() => setCurrentPage('about')}
+            onClick={async () => {
+              setCurrentPage('about');
+              // Load about_page and about sections from backend
+              await Promise.all([
+                contentStore.loadSection('about_page'),
+                contentStore.loadSection('about'),
+              ]);
+            }}
             class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
               currentPage() === 'about'
                 ? 'bg-[#576250] text-white'
@@ -988,7 +995,11 @@ const AdminHome: Component = () => {
             Halaman About
           </button>
           <button
-            onClick={() => setCurrentPage('footer')}
+            onClick={async () => {
+              setCurrentPage('footer');
+              // Load footer section from backend
+              await contentStore.loadSection('footer');
+            }}
             class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
               currentPage() === 'footer'
                 ? 'bg-[#576250] text-white'

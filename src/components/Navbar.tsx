@@ -115,15 +115,15 @@ const Navbar: Component<NavbarProps> = (props) => {
             });
           }
         });
-        console.log('[Navbar.loadServices] Final service list:', Array.from(serviceMap.values()));
         const finalList = Array.from(serviceMap.values());
         console.log('[Navbar.loadServices] Final count:', finalList.length);
         finalList.forEach((s, i) => {
-          console.log(`[Navbar.loadServices] Service ${i + 1}:`, { slug: s.slug, title: s.title });
+          console.log(`[Navbar.loadServices] Service ${i + 1}: slug="${s.slug}", title="${s.title}"`);
         });
         
         setServices(finalList);
-        console.log('[Navbar.loadServices] After setServices, services() returns:', services().length, 'items');
+        console.log('[Navbar.loadServices] After setServices, services() count:', services().length);
+        console.log('[Navbar.loadServices] After setServices detailed:', services().map(s => ({ slug: s.slug, title: s.title })));
       } else {
         console.log('[Navbar.loadServices] Data not success or not array');
       }
@@ -147,7 +147,7 @@ const Navbar: Component<NavbarProps> = (props) => {
     const svc = services();
     console.log('[Navbar.createEffect] Services signal updated:', svc.length, 'items');
     svc.forEach((s, i) => {
-      console.log(`[Navbar.createEffect] Service ${i + 1}:`, { slug: s.slug, title: s.title });
+      console.log(`[Navbar.createEffect] Service ${i + 1}: slug="${s.slug}", title="${s.title}"`);
     });
   });
 

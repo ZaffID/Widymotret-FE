@@ -77,14 +77,19 @@ export const updateContent = async (
   try {
     const token = authStore.getToken();
     if (!token) {
+      console.log(`[updateContent] No token found - user not authenticated`);
       return {
         success: false,
         message: 'Anda harus login terlebih dahulu',
       };
     }
 
+    const isDelete = value === '';
+    const valuePreview = isDelete ? '(empty - delete)' : value.substring(0, 30) + (value.length > 30 ? '...' : '');
+    
     console.log(`[updateContent] PUT /api/content/${section}/${field}`);
-    console.log(`[updateContent] Value: ${value.substring(0, 50)}${value.length > 50 ? '...' : ''}`);
+    console.log(`[updateContent] Is delete: ${isDelete}, Value preview: ${valuePreview}`);
+    console.log(`[updateContent] Token: ${token.substring(0, 20)}... (length: ${token.length})`);
 
     const res = await fetch(`${API_BASE}/content/${section}/${field}`, {
       method: 'PUT',
@@ -92,23 +97,31 @@ export const updateContent = async (
       body: JSON.stringify({ value }),
     });
 
-    console.log(`[updateContent] Response status: ${res.status}`);
+    console.log(`[updateContent] Response status: ${res.status} ${res.statusText}`);
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      console.error(`[updateContent] HTTP ${res.status} Error:`, errorData);
+      let errorData = {};
+      try {
+        errorData = await res.json();
+      } catch (e) {
+        // Response wasn't JSON
+        errorData = { message: `HTTP ${res.status}` };
+      }
+      console.error(`[updateContent] ✗ HTTP Error ${res.status}:`, errorData);
       return {
         success: false,
-        message: errorData.message || `Server error: ${res.status} ${res.statusText}`,
+        message: (errorData as any).message || `Server error: ${res.status} ${res.statusText}`,
       };
     }
 
     const responseData = (await res.json()) as ApiResponse<EditableContent>;
-    console.log(`[updateContent] Success response:`, responseData);
+    console.log(`[updateContent] ✓ Success:`, responseData.success, responseData.message);
     return responseData;
   } catch (err) {
-    console.error('[updateContent] Exception:', err instanceof Error ? err.message : String(err));
-    console.error('[updateContent] Full error:', err);
+    console.error('[updateContent] ✗ Exception:', err instanceof Error ? err.message : String(err));
+    if (err instanceof Error) {
+      console.error('[updateContent] Stack trace:', err.stack);
+    }
     return {
       success: false,
       message: err instanceof Error ? err.message : 'Gagal menyimpan konten ke server',

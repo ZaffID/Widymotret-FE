@@ -563,45 +563,66 @@ const AdminHome: Component = () => {
     }
 
     try {
-      console.log(`[deleteService] Deleting from backend...`);
+      console.log(`[deleteService] Deleting from backend (3 fields: title, desc, image)...`);
       
-      // Delete all three fields from backend
-      const r1 = await updateContent('service', `${slug}_title`, '');
-      console.log(`[deleteService] Backend response 1 (title):`, r1);
-      if (!r1.success) {
-        throw new Error(`Title deletion failed: ${r1.message}`);
+      // Delete with more detailed error tracking
+      const fieldsToDelete = [
+        { name: 'title', key: `${slug}_title` },
+        { name: 'description', key: `${slug}_description` },
+        { name: 'image', key: `${slug}_image` }
+      ];
+      
+      const results: any[] = [];
+      for (const field of fieldsToDelete) {
+        try {
+          console.log(`[deleteService] Deleting field: ${field.name}...`);
+          const response = await updateContent('service', field.key, '');
+          console.log(`[deleteService] Response for ${field.name}:`, response);
+          
+          if (!response.success) {
+            console.error(`[deleteService] Field ${field.name} failed: ${response.message}`);
+            results.push({ field: field.name, success: false, message: response.message });
+          } else {
+            console.log(`[deleteService] ✓ ${field.name} deleted successfully`);
+            results.push({ field: field.name, success: true });
+          }
+        } catch (fieldError) {
+          console.error(`[deleteService] Exception while deleting ${field.name}:`, fieldError);
+          results.push({ 
+            field: field.name, 
+            success: false, 
+            message: fieldError instanceof Error ? fieldError.message : 'Unknown error'
+          });
+        }
       }
       
-      const r2 = await updateContent('service', `${slug}_description`, '');
-      console.log(`[deleteService] Backend response 2 (description):`, r2);
-      if (!r2.success) {
-        throw new Error(`Description deletion failed: ${r2.message}`);
-      }
+      // Check if all deletions were successful
+      const allSuccess = results.every(r => r.success);
+      const failedFields = results.filter(r => !r.success);
       
-      const r3 = await updateContent('service', `${slug}_image`, '');
-      console.log(`[deleteService] Backend response 3 (image):`, r3);
-      if (!r3.success) {
-        throw new Error(`Image deletion failed: ${r3.message}`);
+      if (!allSuccess) {
+        const failedFieldsStr = failedFields.map(f => `${f.field} (${f.message})`).join(', ');
+        throw new Error(`Gagal menghapus fields: ${failedFieldsStr}`);
       }
 
-      console.log(`[deleteService] ✓ Backend deletion OK`);
+      console.log(`[deleteService] ✓ All backend deletions OK`);
 
       // Remove from local contentStore
-      contentStore.updateFieldLocal('service', `${slug}_title`, '');
-      contentStore.updateFieldLocal('service', `${slug}_description`, '');
-      contentStore.updateFieldLocal('service', `${slug}_image`, '');
+      for (const field of fieldsToDelete) {
+        contentStore.updateFieldLocal('service', field.key, '');
+      }
       console.log(`[deleteService] ✓ contentStore cleared`);
 
       console.log(`[deleteService] Reloading service section from backend...`);
       // Reload entire service section from backend
       await contentStore.loadSection('service');
       
-      console.log(`[deleteService] Reloading services...`);
+      console.log(`[deleteService] Reloading services list...`);
       // Reload services
       loadAllServices();
       
       console.log(`[deleteService] === SUCCESS === Service deleted!`);
-      handleSave(`Layanan berhasil dihapus`);
+      handleSave(`Layanan ${slug} berhasil dihapus`);
     } catch (error) {
       console.error(`[deleteService] === ERROR ===`);
       console.error(`[deleteService] Error details:`, error);

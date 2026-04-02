@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, createMemo, For, createEffect } from 'solid-js';
+import { Component, createSignal, onMount, onCleanup, createMemo, For, createEffect, Show, Index } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { servicesData } from '../data/services';
 import { AiOutlineMenu } from 'solid-icons/ai';
@@ -18,10 +18,8 @@ const Navbar: Component<NavbarProps> = (props) => {
   const [showDropdown, setShowDropdown] = createSignal(false);
   const [showMobileMenu, setShowMobileMenu] = createSignal(false);
   const [showMobileDropdown, setShowMobileDropdown] = createSignal(false);
-  // Initialize with hardcoded services, will be updated with API data
-  const [services, setServices] = createSignal<NavService[]>(
-    servicesData.map(s => ({ slug: s.slug, title: s.title }))
-  );
+  // Initialize as empty, will be populated by API or fallback to hardcoded
+  const [services, setServices] = createSignal<NavService[]>([]);
   const navigate = useNavigate();
   let dropdownTimeout: number | undefined;
 
@@ -137,9 +135,14 @@ const Navbar: Component<NavbarProps> = (props) => {
   };
 
   onMount(() => {
+    // First, set hardcoded services as immediate fallback
+    const hardcodedFallback = servicesData.map(s => ({ slug: s.slug, title: s.title }));
+    setServices(hardcodedFallback);
+    console.log('[Navbar.onMount] Set initial hardcoded services:', hardcodedFallback.length);
+    
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Check initial scroll position
-    loadServices(); // Load services from API
+    loadServices(); // Load services from API (will update signal if successful)
   });
 
   // Monitor when services signal changes
@@ -210,16 +213,16 @@ const Navbar: Component<NavbarProps> = (props) => {
                   'opacity-0 invisible -translate-y-2': !showDropdown()
                 }}
               >
-                <For each={services()} key={(service) => service.slug}>
-                  {(service) => (
+                <Index each={services()}>
+                  {(service, index) => (
                     <button 
-                      onClick={() => navigate(`/pricelist/${service.slug}`)}
+                      onClick={() => navigate(`/pricelist/${service().slug}`)}
                       class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm"
                     >
-                      {service.title}
+                      {service().title}
                     </button>
                   )}
-                </For>
+                </Index>
               </div>
             </div>
             
@@ -289,16 +292,16 @@ const Navbar: Component<NavbarProps> = (props) => {
             
             {showMobileDropdown() && (
               <div class="pl-4 space-y-2 mt-2 border-l border-white/20">
-                <For each={services()} key={(service) => service.slug}>
-                  {(service) => (
+                <Index each={services()}>
+                  {(service, index) => (
                     <button 
-                      onClick={() => handleMobileNavigate(`/pricelist/${service.slug}`)}
+                      onClick={() => handleMobileNavigate(`/pricelist/${service().slug}`)}
                       class="block w-full text-left py-2 px-4 text-white/80 hover:text-white hover:bg-white/10 rounded transition text-xs"
                     >
-                      {service.title}
+                      {service().title}
                     </button>
                   )}
-                </For>
+                </Index>
               </div>
             )}
           </div>

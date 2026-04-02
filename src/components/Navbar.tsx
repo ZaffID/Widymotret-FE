@@ -83,6 +83,7 @@ const Navbar: Component<NavbarProps> = (props) => {
         // Add new categories from packages that aren't in hardcoded
         categoriesFromPackages.forEach(category => {
           if (!serviceMap.has(category)) {
+            // Use category name directly as slug (no conversion needed)
             serviceMap.set(category, {
               slug: category,
               title: category.charAt(0).toUpperCase() + category.slice(1)
@@ -156,13 +157,9 @@ const Navbar: Component<NavbarProps> = (props) => {
                 </svg>
               </button>
               
-              {/* Dropdown Menu - Desktop with scrolling */}
+              {/* Dropdown Menu - Desktop */}
               <div 
                 class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg transition-all duration-200"
-                style={{
-                  'max-height': '400px',
-                  'overflow-y': 'auto'
-                }}
                 classList={{
                   'opacity-100 visible translate-y-0': showDropdown(),
                   'opacity-0 invisible -translate-y-2': !showDropdown()
@@ -172,7 +169,7 @@ const Navbar: Component<NavbarProps> = (props) => {
                   {(service) => (
                     <button 
                       onClick={() => navigate(`/pricelist/${service.slug}`)}
-                      class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm whitespace-nowrap overflow-ellipsis"
+                      class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm"
                     >
                       {service.title}
                     </button>
@@ -246,25 +243,17 @@ const Navbar: Component<NavbarProps> = (props) => {
             </button>
             
             {showMobileDropdown() && (
-              <div 
-                class="pl-4 mt-2 border-l border-white/20"
-                style={{
-                  'max-height': '300px',
-                  'overflow-y': 'auto'
-                }}
-              >
-                <div class="space-y-2">
-                  <For each={services()}>
-                    {(service) => (
-                      <button 
-                        onClick={() => handleMobileNavigate(`/pricelist/${service.slug}`)}
-                        class="block w-full text-left py-2 px-4 text-white/80 hover:text-white hover:bg-white/10 rounded transition text-xs whitespace-nowrap overflow-ellipsis"
-                      >
-                        {service.title}
-                      </button>
-                    )}
-                  </For>
-                </div>
+              <div class="pl-4 space-y-2 mt-2 border-l border-white/20">
+                <For each={services()}>
+                  {(service) => (
+                    <button 
+                      onClick={() => handleMobileNavigate(`/pricelist/${service.slug}`)}
+                      class="block w-full text-left py-2 px-4 text-white/80 hover:text-white hover:bg-white/10 rounded transition text-xs"
+                    >
+                      {service.title}
+                    </button>
+                  )}
+                </For>
               </div>
             )}
           </div>

@@ -124,20 +124,11 @@ const ServiceDetail: Component = () => {
 
       const data = await res.json();
       if (data.success) {
-        console.log('[ServiceDetail.loadPackages] Full API response (first 3):', data.data?.slice(0, 3).map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          category: p.category,
-          whatsappLinkType: p.whatsappLinkType,
-          customWhatsappUrl: p.customWhatsappUrl,
-        })));
-        const targetCategory = (categoryMap[slug] || slug).toLowerCase();
+        // Get target category - use map if exists, otherwise use slug directly
+        let targetCategory = categoryMap[slug] || slug;
+        targetCategory = targetCategory.toLowerCase();
+        
         const filtered = data.data.filter((p: ApiPackage) => p.category.toLowerCase() === targetCategory && p.isPublished);
-        console.log('[ServiceDetail.loadPackages] Filtered packages:', filtered.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          whatsappLinkType: p.whatsappLinkType,
-        })));
         setPackages(filtered);
       }
     } catch (err) {

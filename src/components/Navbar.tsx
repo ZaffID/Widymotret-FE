@@ -204,7 +204,7 @@ const Navbar: Component<NavbarProps> = (props) => {
                   'opacity-0 invisible -translate-y-2': !showDropdown()
                 }}
               >
-                <For each={services()}>
+                <For each={services()} key={(service) => service.slug}>
                   {(service) => (
                     <button 
                       onClick={() => navigate(`/pricelist/${service.slug}`)}
@@ -283,7 +283,7 @@ const Navbar: Component<NavbarProps> = (props) => {
             
             {showMobileDropdown() && (
               <div class="pl-4 space-y-2 mt-2 border-l border-white/20">
-                <For each={services()}>
+                <For each={services()} key={(service) => service.slug}>
                   {(service) => (
                     <button 
                       onClick={() => handleMobileNavigate(`/pricelist/${service.slug}`)}

@@ -253,7 +253,7 @@ const AdminHome: Component = () => {
     const allServiceFields = contentStore.getSectionFields('service');
     console.log('[loadAllServices] All service fields from store:', allServiceFields);
     
-    const titleFields = allServiceFields.filter(f => f.field.endsWith('_title'));
+    const titleFields = allServiceFields.filter(f => f.field.endsWith('_title') && f.value.trim() !== '');
     console.log('[loadAllServices] Title fields found:', titleFields);
     
     titleFields.forEach(titleField => {

@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, createMemo, For } from 'solid-js';
+import { Component, createSignal, onMount, onCleanup, createMemo, For, createEffect } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { servicesData } from '../data/services';
 import { AiOutlineMenu } from 'solid-icons/ai';
@@ -69,7 +69,18 @@ const Navbar: Component<NavbarProps> = (props) => {
       
       const data = await res.json();
       console.log('[Navbar.loadServices] API response success:', data.success);
+      console.log('[Navbar.loadServices] Total packages count:', data.data?.length);
       console.log('[Navbar.loadServices] Data received:', data);
+      
+      // Log ALL categories from all packages
+      if (data.data && Array.isArray(data.data)) {
+        console.log('[Navbar.loadServices] ALL packages:', data.data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          isPublished: p.isPublished
+        })));
+      }
       
       if (data.success && Array.isArray(data.data)) {
         // Extract unique categories from packages
@@ -77,6 +88,7 @@ const Navbar: Component<NavbarProps> = (props) => {
           data.data.map((pkg: any) => pkg.category?.toLowerCase()).filter(Boolean)
         );
         console.log('[Navbar.loadServices] Categories from packages:', Array.from(categoriesFromPackages));
+        console.log('[Navbar.loadServices] Categories detailed:', Array.from(categoriesFromPackages).map(c => ({ category: c })));
         
         // Build service list: hardcoded + new categories from packages
         const serviceMap = new Map<string, NavService>();
@@ -101,8 +113,10 @@ const Navbar: Component<NavbarProps> = (props) => {
           }
         });
         console.log('[Navbar.loadServices] Final service list:', Array.from(serviceMap.values()));
+        console.log('[Navbar.loadServices] Final service list DETAILED:', Array.from(serviceMap.values()).map(s => ({ slug: s.slug, title: s.title })));
         
         setServices(Array.from(serviceMap.values()));
+        console.log('[Navbar.loadServices] Services signal updated, current:', services());
       } else {
         console.log('[Navbar.loadServices] Data not success or not array');
       }
@@ -119,6 +133,13 @@ const Navbar: Component<NavbarProps> = (props) => {
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Check initial scroll position
     loadServices(); // Load services from API
+  });
+
+  // Monitor when services signal changes
+  createEffect(() => {
+    const svc = services();
+    console.log('[Navbar.createEffect] Services signal updated:', svc.length, 'items');
+    console.log('[Navbar.createEffect] Services:', svc.map(s => ({ slug: s.slug, title: s.title })));
   });
 
   onCleanup(() => {

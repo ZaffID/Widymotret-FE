@@ -58,23 +58,34 @@ const ServiceDetail: Component = () => {
   // Determine WhatsApp link based on package configuration and settings
   const getWhatsAppLink = () => {
     const pkg = selectedPackage();
-    if (!pkg) return getDefaultWhatsAppLink();
+    console.log('[ServiceDetail.getWhatsAppLink] selectedPackage:', pkg);
+    if (!pkg) {
+      console.log('[ServiceDetail.getWhatsAppLink] No package selected, using default');
+      return getDefaultWhatsAppLink();
+    }
     
     const linkType = (pkg as any).whatsappLinkType || 'studio';
+    console.log('[ServiceDetail.getWhatsAppLink] linkType:', linkType);
+    console.log('[ServiceDetail.getWhatsAppLink] Full package object:', JSON.stringify(pkg, null, 2));
     
     if (linkType === 'wedding') {
       const weddingLink = contentStore.getField('settings', 'whatsapp_link_2');
+      console.log('[ServiceDetail.getWhatsAppLink] Wedding link from settings:', weddingLink);
       if (weddingLink) return weddingLink;
     } else if (linkType === 'custom') {
       const customLink = (pkg as any).customWhatsappUrl;
+      console.log('[ServiceDetail.getWhatsAppLink] Custom link:', customLink);
       if (customLink) return customLink;
     }
     
     // Default to studio link
     const studioLink = contentStore.getField('settings', 'whatsapp_link_1');
+    console.log('[ServiceDetail.getWhatsAppLink] Studio link from settings:', studioLink);
     if (studioLink) return studioLink;
     
-    return getDefaultWhatsAppLink();
+    const defaultLink = getDefaultWhatsAppLink();
+    console.log('[ServiceDetail.getWhatsAppLink] Using default link:', defaultLink);
+    return defaultLink;
   };
   
   const getDefaultWhatsAppLink = () => {
@@ -139,8 +150,20 @@ const ServiceDetail: Component = () => {
 
       const data = await res.json();
       if (data.success) {
+        console.log('[ServiceDetail.loadPackages] Full API response (first 3):', data.data?.slice(0, 3).map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          whatsappLinkType: p.whatsappLinkType,
+          customWhatsappUrl: p.customWhatsappUrl,
+        })));
         const targetCategory = (categoryMap[slug] || slug).toLowerCase();
         const filtered = data.data.filter((p: ApiPackage) => p.category.toLowerCase() === targetCategory && p.isPublished);
+        console.log('[ServiceDetail.loadPackages] Filtered packages:', filtered.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          whatsappLinkType: p.whatsappLinkType,
+        })));
         setPackages(filtered);
       }
     } catch (err) {

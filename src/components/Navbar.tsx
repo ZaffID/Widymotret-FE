@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, createMemo, For, createEffect, Show, Index } from 'solid-js';
+import { Component, createSignal, onMount, onCleanup, createMemo, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { servicesData } from '../data/services';
 import { AiOutlineMenu } from 'solid-icons/ai';
@@ -18,7 +18,6 @@ const Navbar: Component<NavbarProps> = (props) => {
   const [showDropdown, setShowDropdown] = createSignal(false);
   const [showMobileMenu, setShowMobileMenu] = createSignal(false);
   const [showMobileDropdown, setShowMobileDropdown] = createSignal(false);
-  // Initialize as empty, will be populated by API or fallback to hardcoded
   const [services, setServices] = createSignal<NavService[]>([]);
   const navigate = useNavigate();
   let dropdownTimeout: number | undefined;
@@ -56,103 +55,48 @@ const Navbar: Component<NavbarProps> = (props) => {
     setShowMobileDropdown(false);
   };
 
-  // Load services from API + hardcoded data
+  // Load services from API
   const loadServices = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
-      console.log('[Navbar.loadServices] API URL:', apiUrl);
-      console.log('[Navbar.loadServices] Starting fetch...');
-      
       const res = await fetch(`${apiUrl}/api/packages`);
-      console.log('[Navbar.loadServices] Fetch response status:', res.status);
       
       if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
       
       const data = await res.json();
-      console.log('[Navbar.loadServices] API response success:', data.success);
-      console.log('[Navbar.loadServices] Total packages count:', data.data?.length);
-      console.log('[Navbar.loadServices] Data received:', data);
-      
-      // Log ALL categories from all packages
-      if (data.data && Array.isArray(data.data)) {
-        console.log('[Navbar.loadServices] ALL packages:', data.data.map((p: any) => ({
-          id: p.id,
-          name: p.name,
-          category: p.category,
-          isPublished: p.isPublished
-        })));
-      }
       
       if (data.success && Array.isArray(data.data)) {
-        // Extract unique categories from packages
-        const categoriesFromPackages = new Set(
-          data.data.map((pkg: any) => pkg.category?.toLowerCase()).filter(Boolean)
-        );
-        console.log('[Navbar.loadServices] Categories from packages:', Array.from(categoriesFromPackages));
-        console.log('[Navbar.loadServices] Categories detailed:', Array.from(categoriesFromPackages).map(c => ({ category: c })));
+        // Build: hardcoded + unique categories from API
+        const hardcodedMap = new Map(servicesData.map(s => [s.slug, { slug: s.slug, title: s.title }]));
         
-        // Build service list: hardcoded + new categories from packages
-        const serviceMap = new Map<string, NavService>();
-        
-        // Add hardcoded services
-        servicesData.forEach(service => {
-          serviceMap.set(service.slug, {
-            slug: service.slug,
-            title: service.title
-          });
-        });
-        console.log('[Navbar.loadServices] After hardcoded:', serviceMap.size, 'services');
-        
-        // Add new categories from packages that aren't in hardcoded
-        categoriesFromPackages.forEach(category => {
-          if (!serviceMap.has(category)) {
-            // Use category name directly as slug (no conversion needed)
-            serviceMap.set(category, {
+        // Add API categories not in hardcoded
+        data.data.forEach((pkg: any) => {
+          const category = pkg.category?.toLowerCase();
+          if (category && !hardcodedMap.has(category)) {
+            hardcodedMap.set(category, {
               slug: category,
               title: category.charAt(0).toUpperCase() + category.slice(1)
             });
           }
         });
-        const finalList = Array.from(serviceMap.values());
-        console.log('[Navbar.loadServices] Final count:', finalList.length);
-        finalList.forEach((s, i) => {
-          console.log(`[Navbar.loadServices] Service ${i + 1}: slug="${s.slug}", title="${s.title}"`);
-        });
         
-        setServices(finalList);
-        console.log('[Navbar.loadServices] After setServices, services() count:', services().length);
-        console.log('[Navbar.loadServices] After setServices detailed:', services().map(s => ({ slug: s.slug, title: s.title })));
+        setServices(Array.from(hardcodedMap.values()));
       } else {
-        console.log('[Navbar.loadServices] Data not success or not array');
+        setServices(servicesData.map(s => ({ slug: s.slug, title: s.title })));
       }
     } catch (err) {
-      console.error('[Navbar.loadServices] Error:', err);
-      // Fallback to hardcoded
-      const fallback = servicesData.map(s => ({ slug: s.slug, title: s.title }));
-      console.log('[Navbar.loadServices] Using fallback:', fallback);
-      setServices(fallback);
+      console.error('[Navbar] Error loading services:', err);
+      setServices(servicesData.map(s => ({ slug: s.slug, title: s.title })));
     }
   };
 
   onMount(() => {
-    // First, set hardcoded services as immediate fallback
-    const hardcodedFallback = servicesData.map(s => ({ slug: s.slug, title: s.title }));
-    setServices(hardcodedFallback);
-    console.log('[Navbar.onMount] Set initial hardcoded services:', hardcodedFallback.length);
-    
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Check initial scroll position
-    loadServices(); // Load services from API (will update signal if successful)
+    handleScroll();
+    loadServices();
   });
 
-  // Monitor when services signal changes
-  createEffect(() => {
-    const svc = services();
-    console.log('[Navbar.createEffect] Services signal updated:', svc.length, 'items');
-    svc.forEach((s, i) => {
-      console.log(`[Navbar.createEffect] Service ${i + 1}: slug="${s.slug}", title="${s.title}"`);
-    });
-  });
+  // No need for effect, For loop will handle reactivity
 
   onCleanup(() => {
     window.removeEventListener('scroll', handleScroll);
@@ -213,16 +157,16 @@ const Navbar: Component<NavbarProps> = (props) => {
                   'opacity-0 invisible -translate-y-2': !showDropdown()
                 }}
               >
-                <Index each={services()}>
-                  {(service, index) => (
+                <For each={services()}>
+                  {(service) => (
                     <button 
-                      onClick={() => navigate(`/pricelist/${service().slug}`)}
+                      onClick={() => navigate(`/pricelist/${service.slug}`)}
                       class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm"
                     >
-                      {service().title}
+                      {service.title}
                     </button>
                   )}
-                </Index>
+                </For>
               </div>
             </div>
             
@@ -292,16 +236,16 @@ const Navbar: Component<NavbarProps> = (props) => {
             
             {showMobileDropdown() && (
               <div class="pl-4 space-y-2 mt-2 border-l border-white/20">
-                <Index each={services()}>
-                  {(service, index) => (
+                <For each={services()}>
+                  {(service) => (
                     <button 
-                      onClick={() => handleMobileNavigate(`/pricelist/${service().slug}`)}
+                      onClick={() => handleMobileNavigate(`/pricelist/${service.slug}`)}
                       class="block w-full text-left py-2 px-4 text-white/80 hover:text-white hover:bg-white/10 rounded transition text-xs"
                     >
-                      {service().title}
+                      {service.title}
                     </button>
                   )}
-                </Index>
+                </For>
               </div>
             )}
           </div>

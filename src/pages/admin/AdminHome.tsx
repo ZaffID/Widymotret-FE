@@ -165,7 +165,7 @@ const AdminHome: Component = () => {
       const res = await fetch(`${API_BASE}/packages`);
       const data = await res.json();
       if (data.success) {
-        console.log('[loadPackages] Raw API response (first package):', data.data?.[0]);
+        console.log('[loadPackages] FULL Raw API response (first package):', JSON.stringify(data.data?.[0], null, 2));
         const hydrated = (data.data || []).map((pkg: ApiPackage, idx: number) => {
           const result = {
             ...pkg,
@@ -174,8 +174,10 @@ const AdminHome: Component = () => {
               : getTemplateImagesByCategory(pkg.category, idx),
           };
           if (idx === 0) {
+            console.log('[loadPackages] First package after loading:', JSON.stringify(result, null, 2));
             console.log('[loadPackages] First package whatsappLinkType:', result.whatsappLinkType);
             console.log('[loadPackages] First package customWhatsappUrl:', result.customWhatsappUrl);
+            console.log('[loadPackages] All fields in first package:', Object.keys(result));
           }
           return result;
         });
@@ -370,11 +372,18 @@ const AdminHome: Component = () => {
   const savePackage = async (pkg: ApiPackage, silent = false) => {
     const token = authStore.getToken();
     const payloadPkg = buildPackageFromDrafts(pkg);
-    console.log('[savePackage] Building payload with:', {
-      whatsappLinkType: (payloadPkg as any).whatsappLinkType,
-      customWhatsappUrl: (payloadPkg as any).customWhatsappUrl,
+    const payload = {
       name: payloadPkg.name,
-    });
+      description: payloadPkg.description,
+      price: payloadPkg.price,
+      category: payloadPkg.category,
+      images: payloadPkg.images,
+      features: payloadPkg.features,
+      isPublished: payloadPkg.isPublished,
+      whatsappLinkType: (payloadPkg as any).whatsappLinkType || 'studio',
+      customWhatsappUrl: (payloadPkg as any).customWhatsappUrl || null,
+    };
+    console.log('[savePackage] FULL Payload being sent:', JSON.stringify(payload, null, 2));
     try {
       const res = await fetch(`${API_BASE}/packages/${payloadPkg.id}`, {
         method: 'PUT',
@@ -382,20 +391,10 @@ const AdminHome: Component = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          name: payloadPkg.name,
-          description: payloadPkg.description,
-          price: payloadPkg.price,
-          category: payloadPkg.category,
-          images: payloadPkg.images,
-          features: payloadPkg.features,
-          isPublished: payloadPkg.isPublished,
-          whatsappLinkType: (payloadPkg as any).whatsappLinkType || 'studio',
-          customWhatsappUrl: (payloadPkg as any).customWhatsappUrl || null,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
-      console.log('[savePackage] API Response:', data);
+      console.log('[savePackage] FULL API Response:', JSON.stringify(data, null, 2));
       if (data.success) {
         updatePackageLocal(payloadPkg.id, () => payloadPkg);
         setFieldDrafts((prev) => ({

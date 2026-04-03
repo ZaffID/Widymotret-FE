@@ -1295,6 +1295,18 @@ const AdminHome: Component = () => {
                   }}
                   onError={handleError}
                 />
+                <EditableText
+                  label="SubJudul/Deskripsi"
+                  value={contentStore.getField('testimonials', 'subtitle')}
+                  section="testimonials"
+                  field="subtitle"
+                  multiline={true}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('testimonials', 'subtitle', value);
+                    handleSave('Testimoni subtitle berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
                 
                 <div class="mt-6 space-y-4">
                   <div class="flex items-center justify-between">

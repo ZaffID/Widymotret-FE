@@ -478,8 +478,8 @@ const Home: Component = () => {
       <section class="py-32 px-6" style={{ 'background-color': '#464C43' }}>
         <div class="container mx-auto max-w-5xl">
           <div class="text-center mb-16 text-white">
-            <h2 class="text-4xl md:text-5xl font-bold mb-4">Testimoni</h2>
-            <p class="text-lg opacity-90 mb-8">dari pasangan bahagia dan puas</p>
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">{t('testimonials', 'title', 'Testimoni')}</h2>
+            <p class="text-lg opacity-90 mb-8">{t('testimonials', 'subtitle', 'dari pasangan bahagia dan puas')}</p>
           </div>
 
           <div class="relative px-8">

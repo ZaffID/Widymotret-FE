@@ -26,7 +26,7 @@ import { AiFillFileImage } from 'solid-icons/ai';
 import { RiWeatherSparkling2Fill } from 'solid-icons/ri';
 import { FaSolidClipboardList } from 'solid-icons/fa';
 import { FiPackage } from 'solid-icons/fi';
-import { FaSolidTrashAlt } from 'solid-icons/fa';
+import { FaSolidTrashAlt, FaSolidEdit } from 'solid-icons/fa';
 import { FaSolidLightbulb } from 'solid-icons/fa';
 import { FaRegularCalendarAlt } from 'solid-icons/fa';
 import { AiFillStar } from 'solid-icons/ai';
@@ -125,6 +125,8 @@ const AdminHome: Component = () => {
 
   // Services Management
   const [showAddServiceModal, setShowAddServiceModal] = createSignal(false);
+  const [isEditingService, setIsEditingService] = createSignal(false);
+  const [editingServiceSlug, setEditingServiceSlug] = createSignal<string | null>(null);
   const [newServiceName, setNewServiceName] = createSignal('Layanan Baru');
   const [newServiceSlug, setNewServiceSlug] = createSignal('layanan-baru');
   const [newServiceDescription, setNewServiceDescription] = createSignal('Deskripsi layanan');
@@ -633,6 +635,67 @@ const AdminHome: Component = () => {
       console.error(`[deleteService] === ERROR ===`);
       console.error(`[deleteService] Error details:`, error);
       handleError(error instanceof Error ? error.message : 'Gagal menghapus layanan');
+    }
+  };
+
+  const editService = async () => {
+    const oldSlug = editingServiceSlug();
+    const newSlug = newServiceSlug().trim().toLowerCase().replace(/\s+/g, '-');
+    const name = newServiceName().trim();
+    const desc = newServiceDescription().trim();
+    const image = newServiceImage() || '/photography.png';
+
+    console.log(`[editService] === START === oldSlug="${oldSlug}", newSlug="${newSlug}"`);
+
+    if (!name || !newSlug) {
+      handleError('Nama dan slug layanan harus diisi');
+      return;
+    }
+
+    try {
+      // If slug changed, delete old fields and create new ones
+      if (oldSlug !== newSlug) {
+        console.log(`[editService] Slug berubah, menghapus fields lama...`);
+        await updateContent('service', `${oldSlug}_title`, '');
+        await updateContent('service', `${oldSlug}_description`, '');
+        await updateContent('service', `${oldSlug}_image`, '');
+      }
+
+      console.log(`[editService] Saving ke backend dengan slug baru...`);
+      // Save to contentStore
+      contentStore.updateFieldLocal('service', `${newSlug}_title`, name);
+      contentStore.updateFieldLocal('service', `${newSlug}_description`, desc);
+      contentStore.updateFieldLocal('service', `${newSlug}_image`, image);
+
+      // Persist to backend
+      const r1 = await updateContent('service', `${newSlug}_title`, name);
+      if (!r1.success) throw new Error(`Title save failed: ${r1.message}`);
+      
+      const r2 = await updateContent('service', `${newSlug}_description`, desc);
+      if (!r2.success) throw new Error(`Description save failed: ${r2.message}`);
+      
+      const r3 = await updateContent('service', `${newSlug}_image`, image);
+      if (!r3.success) throw new Error(`Image save failed: ${r3.message}`);
+
+      // Reset form and close modal
+      setNewServiceName('Layanan Baru');
+      setNewServiceSlug('layanan-baru');
+      setNewServiceDescription('Deskripsi layanan');
+      setNewServiceImage('/photography.png');
+      setServiceImageUploaded(false);
+      setShowAddServiceModal(false);
+      setIsEditingService(false);
+      setEditingServiceSlug(null);
+
+      // Reload services
+      await contentStore.loadSection('service');
+      loadAllServices();
+      
+      console.log(`[editService] === SUCCESS ===`);
+      handleSave(`Layanan "${name}" berhasil diperbarui`);
+    } catch (error) {
+      console.error(`[editService] === ERROR ===`, error);
+      handleError(error instanceof Error ? error.message : 'Gagal memperbarui layanan');
     }
   };
 
@@ -1527,6 +1590,21 @@ const AdminHome: Component = () => {
                           <p class="text-sm text-gray-600 mb-3">{service.description}</p>
                           <p class="text-xs text-gray-500">Slug: <code class="bg-gray-200 px-1 py-0.5 rounded">{service.slug}</code></p>
                         </div>
+                        <button
+                          onClick={() => {
+                            setIsEditingService(true);
+                            setEditingServiceSlug(service.slug);
+                            setNewServiceName(service.title);
+                            setNewServiceSlug(service.slug);
+                            setNewServiceDescription(service.description);
+                            setNewServiceImage(service.image);
+                            setShowAddServiceModal(true);
+                          }}
+                          class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-blue-200 hover:border-blue-300"
+                        >
+                          <FaSolidEdit size={16} />
+                          Edit
+                        </button>
                         <button
                           onClick={() => deleteService(service.slug)}
                           class="px-3 py-2 text-red-600 hover:bg-red-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-red-200 hover:border-red-300"
@@ -2789,7 +2867,7 @@ const AdminHome: Component = () => {
             class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 animate-fadeInScale overflow-y-auto max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 class="text-2xl font-bold text-[#464C43] mb-6">Tambah Layanan Baru</h3>
+            <h3 class="text-2xl font-bold text-[#464C43] mb-6">{isEditingService() ? 'Edit Layanan' : 'Tambah Layanan Baru'}</h3>
             <div class="space-y-4">
               {/* Image Preview */}
               <div>
@@ -2884,17 +2962,19 @@ const AdminHome: Component = () => {
                 onClick={() => {
                   setShowAddServiceModal(false);
                   setServiceImageUploaded(false);
+                  setIsEditingService(false);
+                  setEditingServiceSlug(null);
                 }}
                 class="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
               >
                 Batal
               </button>
               <button
-                onClick={addNewService}
+                onClick={() => isEditingService() ? editService() : addNewService()}
                 disabled={!newServiceName().trim() || !newServiceSlug().trim()}
                 class="flex-1 py-3 px-4 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                Tambah Service
+                {isEditingService() ? 'Simpan Perubahan' : 'Tambah Service'}
               </button>
             </div>
           </div>

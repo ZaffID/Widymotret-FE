@@ -2166,17 +2166,17 @@ const AdminHome: Component = () => {
                       }}
                       onError={handleError}
                     />
-                    <For each={[1, 2, 3]}>
+                    <For each={[0, 1, 2]}>
                       {(idx) => (
                         <EditableText
-                          label={`Paragraf ${idx}`}
-                          value={aboutTextValue(`story_paragraph${idx}`, aboutData.myStory.paragraphs[idx - 1] || '')}
+                          label={`Paragraf ${idx + 1}`}
+                          value={aboutTextValue(`story_paragraph${idx}`, aboutData.myStory.paragraphs[idx] || '')}
                           section="about_page"
                           field={`story_paragraph${idx}`}
                           multiline={true}
                           onSave={(value) => {
                             contentStore.updateFieldLocal('about_page', `story_paragraph${idx}`, value);
-                            handleSave(`Paragraf ${idx} berhasil disimpan`);
+                            handleSave(`Paragraf ${idx + 1} berhasil disimpan`);
                           }}
                           onError={handleError}
                         />

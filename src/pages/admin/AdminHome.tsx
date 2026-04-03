@@ -1874,38 +1874,41 @@ const AdminHome: Component = () => {
                                   </For>
 
                                   {/* Add New Image Button */}
-                                  <button
-                                    class="aspect-video rounded-lg border-2 border-gray-300 flex flex-col items-center justify-center text-sm text-gray-600 hover:border-[#576250] hover:text-[#576250] hover:bg-gray-50 transition cursor-pointer font-medium"
-                                    onClick={() => {
-                                      const fileInput = document.createElement('input');
-                                      fileInput.type = 'file';
-                                      fileInput.accept = 'image/*';
-                                      fileInput.addEventListener('change', async (e) => {
-                                        const input = e.target as HTMLInputElement;
-                                        const file = input.files?.[0];
-                                        if (!file) return;
+                                  <div class="flex flex-col gap-2">
+                                    <p class="text-sm font-semibold text-gray-700">Foto #{(pkg.images?.length || 0) + 1}</p>
+                                    <button
+                                      class="aspect-video rounded-lg border-2 border-gray-300 flex flex-col items-center justify-center text-sm text-gray-600 hover:border-[#576250] hover:text-[#576250] hover:bg-gray-50 transition cursor-pointer font-medium"
+                                      onClick={() => {
+                                        const fileInput = document.createElement('input');
+                                        fileInput.type = 'file';
+                                        fileInput.accept = 'image/*';
+                                        fileInput.addEventListener('change', async (e) => {
+                                          const input = e.target as HTMLInputElement;
+                                          const file = input.files?.[0];
+                                          if (!file) return;
 
-                                        try {
-                                          const response = await uploadImageForPackage(file);
-                                          if (response.success && response.data?.url) {
-                                            const newImages = [...(pkg.images || []), response.data.url];
-                                            updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
-                                            handleSave(`Gambar ditambahkan. Klik SIMPAN untuk menyimpan ke server.`);
-                                          } else {
-                                            handleError(response.message || 'Upload gagal');
+                                          try {
+                                            const response = await uploadImageForPackage(file);
+                                            if (response.success && response.data?.url) {
+                                              const newImages = [...(pkg.images || []), response.data.url];
+                                              updatePackageLocal(pkg.id, (p) => ({ ...p, images: newImages }));
+                                              handleSave(`Gambar ditambahkan. Klik SIMPAN untuk menyimpan ke server.`);
+                                            } else {
+                                              handleError(response.message || 'Upload gagal');
+                                            }
+                                          } catch (err) {
+                                            handleError(err instanceof Error ? err.message : 'Upload gagal');
                                           }
-                                        } catch (err) {
-                                          handleError(err instanceof Error ? err.message : 'Upload gagal');
-                                        }
-                                      });
-                                      fileInput.click();
-                                    }}
-                                  >
-                                    <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                    <span>Tambah Foto</span>
-                                  </button>
+                                        });
+                                        fileInput.click();
+                                      }}
+                                    >
+                                      <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                      </svg>
+                                      <span>Tambah Foto</span>
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
 

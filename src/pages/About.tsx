@@ -112,11 +112,11 @@ const About: Component = () => {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center scroll-reveal" ref={storyRef}>
             {/* Left: Text */}
             <div>
-              <h2 class="text-4xl font-bold text-gray-900 mb-8">Our Story</h2>
+              <h2 class="text-4xl font-bold text-gray-900 mb-8">{t('story_heading', 'Our Story')}</h2>
               <div class="space-y-6">
-                <p class="text-gray-700 text-lg leading-relaxed">Cinta saya pada fotografi dimulai dengan kamera pinjaman dan matahari terbenam.</p>
-                <p class="text-gray-700 text-lg leading-relaxed">Sejak saat itu, saya mengejar cahaya, tawa, dan momen-momen di antara yang membuat hidup terasa nyata.</p>
-                <p class="text-gray-700 text-lg leading-relaxed">Saya memotret untuk melestarikan cerita—cerita yang sedang Anda jalani sekarang.</p>
+                <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph0', 'Cinta saya pada fotografi dimulai dengan kamera pinjaman dan matahari terbenam.')}</p>
+                <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph1', 'Sejak saat itu, saya mengejar cahaya, tawa, dan momen-momen di antara yang membuat hidup terasa nyata.')}</p>
+                <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph2', 'Saya memotret untuk melestarikan cerita—cerita yang sedang Anda jalani sekarang.')}</p>
               </div>
             </div>
 
@@ -146,7 +146,7 @@ const About: Component = () => {
       {/* Philosophy Quote Section */}
       <section class="py-20 px-6 bg-gray-50">
         <div class="container mx-auto max-w-3xl text-center scroll-reveal" ref={philosophyRef}>
-          <h2 class="text-4xl font-bold text-gray-900 mb-8">Filosofi</h2>
+          <h2 class="text-4xl font-bold text-gray-900 mb-8">{t('philosophy_title', 'Filosofi')}</h2>
           <p class="text-3xl md:text-4xl font-bold text-gray-900 leading-relaxed">
             {t('philosophy_quote', aboutData.philosophyQuote)}
           </p>
@@ -213,7 +213,7 @@ const About: Component = () => {
           </div>
 
           <div class="text-center">
-            <p class="text-gray-600 text-lg">Setiap momen yang tertangkap adalah cerita yang terpelihara seumur hidup.</p>
+            <p class="text-gray-600 text-lg">{t('btl_closing_text', 'Setiap momen yang tertangkap adalah cerita yang terpelihara seumur hidup.')}</p>
           </div>
         </div>
       </section>
@@ -222,8 +222,8 @@ const About: Component = () => {
       <section class="py-20 px-6 bg-gray-50">
         <div class="container mx-auto max-w-4xl">
           <div class="text-center mb-12 scroll-reveal" ref={teamRef}>
-            <h2 class="text-4xl font-bold text-gray-900 mb-4">Our Team</h2>
-            <p class="text-lg text-gray-600">Temui pikiran kreatif di balik setiap bidikan yang menakjubkan. Tim dedicated kami membawa passion, expertise, dan komitmen untuk mengabadikan momen paling berharga Anda.</p>
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">{t('team_heading', 'Our Team')}</h2>
+            <p class="text-lg text-gray-600">{t('team_description', 'Temui pikiran kreatif di balik setiap bidikan yang menakjubkan. Tim dedicated kami membawa passion, expertise, dan komitmen untuk mengabadikan momen paling berharga Anda.')}</p>
           </div>
 
           {/* Team Photo - Full Width */}
@@ -240,13 +240,13 @@ const About: Component = () => {
       {/* CTA Section */}
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-3xl text-center scroll-reveal" ref={ctaRef}>
-          <h2 class="text-4xl font-bold text-gray-900 mb-4">Made up your mind yet?</h2>
-          <p class="text-lg text-gray-600 mb-10">Mari kita bicarakan visi Anda dan bagaimana saya bisa mewujudkannya</p>
+          <h2 class="text-4xl font-bold text-gray-900 mb-4">{t('cta_heading', 'Made up your mind yet?')}</h2>
+          <p class="text-lg text-gray-600 mb-10">{t('cta_subheading', 'Mari kita bicarakan visi Anda dan bagaimana saya bisa mewujudkannya')}</p>
           <button
             onClick={() => setIsContactModalOpen(true)}
             class="px-8 py-4 bg-gray-900 text-white font-semibold rounded-lg hover:bg-gray-800 transition duration-300 shadow-lg"
           >
-            Contact me
+            {t('cta_button', 'Contact me')}
           </button>
         </div>
       </section>

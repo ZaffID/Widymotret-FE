@@ -2213,6 +2213,18 @@ const AdminHome: Component = () => {
               <div class="mb-10 pb-10 border-b-2 border-gray-200">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Filosofi</h3>
                 <EditableText
+                  label="Judul"
+                  value={aboutTextValue('philosophy_title', 'Filosofi')}
+                  section="about_page"
+                  field="philosophy_title"
+                  multiline={false}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('about_page', 'philosophy_title', value);
+                    handleSave('Judul filosofi berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
+                <EditableText
                   label="Kutipan"
                   value={aboutTextValue('philosophy_quote', aboutData.philosophyQuote)}
                   section="about_page"
@@ -2325,6 +2337,18 @@ const AdminHome: Component = () => {
                     </For>
                   </div>
                 </div>
+                <EditableText
+                  label="Text Penutup (di bawah galeri)"
+                  value={aboutTextValue('btl_closing_text', 'Setiap momen yang tertangkap adalah cerita yang terpelihara seumur hidup.')}
+                  section="about_page"
+                  field="btl_closing_text"
+                  multiline={true}
+                  onSave={(value) => {
+                    contentStore.updateFieldLocal('about_page', 'btl_closing_text', value);
+                    handleSave('Text penutup berhasil disimpan');
+                  }}
+                  onError={handleError}
+                />
               </div>
 
               {/* Team */}

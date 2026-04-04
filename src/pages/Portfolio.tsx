@@ -260,72 +260,40 @@ const Portfolio: Component = () => {
           </Show>
 
           <Show when={!loadError()}>
-            <div class="space-y-6 max-w-2xl mx-auto" ref={portfolioGridRef}>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto" ref={portfolioGridRef}>
             <For each={currentImages()}>
-              {(image, index) => {
-                const [imageLoaded, setImageLoaded] = createSignal(false);
-                const [imageError, setImageError] = createSignal(false);
+              {(image, index) => (
+                <div 
+                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-100 scroll-reveal-item"
+                  onClick={() => handleImageClick(index())}
+                  style={{"aspect-ratio": "1/1"}}
+                >
+                  {/* Image */}
+                  <img
+                    src={image.url}
+                    alt={image.title}
+                    loading="lazy"
+                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
 
-                return (
-                  <div 
-                    class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-200 scroll-reveal-item"
-                    onClick={() => handleImageClick(index())}
-                    style={{"min-height": "300px"}}
-                  >
-                    {/* Loading skeleton */}
-                    <Show when={!imageLoaded() && !imageError()}>
-                      <div class="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
-                    </Show>
-
-                    {/* Error state */}
-                    <Show when={imageError()}>
-                      <div class="absolute inset-0 bg-gray-300 flex items-center justify-center flex-col gap-2">
-                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span class="text-xs text-gray-600">Gambar tidak bisa dimuat</span>
-                      </div>
-                    </Show>
-
-                    {/* Image */}
-                    <img
-                      src={image.url}
-                      alt={image.title}
-                      loading="eager"
-                      onLoad={() => {
-                        setImageLoaded(true);
-                        console.log(`[Portfolio] Image loaded: ${image.id}`, image.url);
-                      }}
-                      onError={(e) => {
-                        setImageError(true);
-                        console.error(`[Portfolio] Image failed to load: ${image.id}`, image.url, e);
-                      }}
-                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      style={{"display": imageLoaded() && !imageError() ? "block" : "none"}}
                     />
 
-                    {/* Overlay */}
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                    <h3 class="text-white font-medium text-sm md:text-base mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                      {image.title}
-                    </h3>
-                    <div class="flex items-center gap-2 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 13H7" />
-                      </svg>
-                      <span>Click to view</span>
+                  {/* Overlay */}
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                    <div>
+                      <h3 class="text-white font-medium text-sm line-clamp-2">
+                        {image.title}
+                      </h3>
                     </div>
                   </div>
 
-                  {/* Corner Icon */}
-                  <div class="absolute top-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4m-4-4l6-6m0 0H9m7 0v7" />
+                  {/* Zoom Icon */}
+                  <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 13H7" />
                     </svg>
                   </div>
                 </div>
-                );
-              }}
+              )}
             </For>
             </div>
           </Show>
@@ -333,7 +301,27 @@ const Portfolio: Component = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* Stats Section - Only Total Photos & Categories (No Title) */}
+      <section class="py-16 px-6 bg-gray-50">
+        <div class="container mx-auto max-w-6xl">
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-8 max-w-md mx-auto">
+            <div class="text-center">
+              <div class="text-4xl font-bold text-[#576250] mb-2">
+                {portfolioImages.length}+
+              </div>
+              <p class="text-gray-600 text-sm">Total Photos</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-bold text-[#576250] mb-2">
+                {portfolioCategories.length}
+              </div>
+              <p class="text-gray-600 text-sm">Categories</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */
       <section class="py-20 px-6 bg-[#464C43]">
         <div class="container mx-auto max-w-4xl text-center">
           <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">

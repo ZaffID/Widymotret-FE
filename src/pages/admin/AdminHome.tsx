@@ -2175,6 +2175,69 @@ const AdminHome: Component = () => {
                   </Show>
                 );
               })()}
+
+              {/* Portfolio Stats - Editable Section */}
+              <div class="mt-12 bg-white rounded-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Statistik Portfolio</h3>
+                <p class="text-sm text-gray-600 mb-6">Atur statistik yang tampil di halaman portfolio. Total Photos & Categories auto-update dari database.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Happy Clients (Editable)</label>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        value={contentStore.getField('portfolio', 'happy_clients') || '500+'}
+                        onChange={(e) => contentStore.updateFieldLocal('portfolio', 'happy_clients', e.currentTarget.value)}
+                        onBlur={(e) => {
+                          updateContent('portfolio', 'happy_clients', e.currentTarget.value);
+                          handleSave('Happy Clients berhasil disimpan');
+                        }}
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Contoh: 500+"
+                      />
+                      <svg class="absolute top-3 right-3 w-4 h-4 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 9V7a1 1 0 011-1h8a1 1 0 011 1v2M5 9a2 2 0 002 2h6a2 2 0 002-2m-6 4a1 1 0 100-2 1 1 0 000 2z" />
+                      </svg>
+                    </div>
+                    <p class="text-xs text-blue-700 mt-2">⚠️ Perubahan langsung tersimpan</p>
+                  </div>
+
+                  <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Years Experience (Editable)</label>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        value={contentStore.getField('portfolio', 'years_experience') || '5+'}
+                        onChange={(e) => contentStore.updateFieldLocal('portfolio', 'years_experience', e.currentTarget.value)}
+                        onBlur={(e) => {
+                          updateContent('portfolio', 'years_experience', e.currentTarget.value);
+                          handleSave('Years Experience berhasil disimpan');
+                        }}
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Contoh: 5+"
+                      />
+                      <svg class="absolute top-3 right-3 w-4 h-4 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 9V7a1 1 0 011-1h8a1 1 0 011 1v2M5 9a2 2 0 002 2h6a2 2 0 002-2m-6 4a1 1 0 100-2 1 1 0 000 2z" />
+                      </svg>
+                    </div>
+                    <p class="text-xs text-blue-700 mt-2">⚠️ Perubahan langsung tersimpan</p>
+                  </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                  <p class="text-xs text-gray-700 mb-3"><strong>Total Photos</strong> & <strong>Categories</strong> ditampilkan secara otomatis dari database.</p>
+                  <button
+                    onClick={() => contentStore.loadSection('portfolio')}
+                    class="text-sm text-[#576250] hover:text-[#464C43] font-medium flex items-center gap-2"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Perbarui Total Photos & Categories
+                  </button>
+                </div>
+              </div>
             </div>
           </Show>
 

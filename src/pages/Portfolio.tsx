@@ -20,6 +20,7 @@ const Portfolio: Component = () => {
   const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
   const [loadError, setLoadError] = createSignal(false);
   const [isLoading, setIsLoading] = createSignal(true);
+  const [isRefreshing, setIsRefreshing] = createSignal(false);
 
   // Check BE health and load all portfolio data on mount
   onMount(async () => {
@@ -136,6 +137,28 @@ const Portfolio: Component = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedImageIndex(null);
+  };
+
+  // Stats from contentStore (editable in admin)
+  const happyClients = createMemo(() => 
+    contentStore.getField('portfolio', 'happy_clients') || '500+'
+  );
+
+  const yearsExperience = createMemo(() => 
+    contentStore.getField('portfolio', 'years_experience') || '5+'
+  );
+
+  // Refresh stats from backend
+  const refreshStats = async () => {
+    setIsRefreshing(true);
+    try {
+      await contentStore.loadSection('portfolio');
+      console.log('[Portfolio] Stats refreshed from backend');
+    } catch (error) {
+      console.error('[Portfolio] Failed to refresh stats:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   return (
@@ -280,6 +303,16 @@ const Portfolio: Component = () => {
       {/* Stats Section */}
       <section class="py-16 px-6 bg-gray-50">
         <div class="container mx-auto max-w-6xl">
+          <div class="flex justify-between items-center mb-8">
+            <h3 class="text-2xl font-bold text-gray-800">Statistik</h3>
+            <button
+              onClick={refreshStats}
+              disabled={isRefreshing()}
+              class="px-4 py-2 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition disabled:opacity-60 disabled:cursor-not-allowed text-sm font-medium"
+            >
+              {isRefreshing() ? 'Memperbarui...' : 'Perbarui Data'}
+            </button>
+          </div>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div class="text-center">
               <div class="text-4xl font-bold text-[#576250] mb-2">
@@ -295,13 +328,13 @@ const Portfolio: Component = () => {
             </div>
             <div class="text-center">
               <div class="text-4xl font-bold text-[#576250] mb-2">
-                500+
+                {happyClients()}
               </div>
               <p class="text-gray-600">Happy Clients</p>
             </div>
             <div class="text-center">
               <div class="text-4xl font-bold text-[#576250] mb-2">
-                5+
+                {yearsExperience()}
               </div>
               <p class="text-gray-600">Years Experience</p>
             </div>

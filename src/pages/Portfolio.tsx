@@ -235,18 +235,18 @@ const Portfolio: Component = () => {
           </Show>
 
           <Show when={!loadError()}>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" ref={portfolioGridRef}>
+            <div class="space-y-6 max-w-2xl mx-auto" ref={portfolioGridRef}>
             <For each={currentImages()}>
               {(image, index) => (
                 <div 
-                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full h-80 bg-gray-100 scroll-reveal-item scroll-reveal-hidden"
+                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-100 scroll-reveal-item scroll-reveal-hidden"
                   onClick={() => handleImageClick(index())}
                 >
                   {/* Image */}
                   <img
                     src={image.url}
                     alt={image.title}
-                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    class="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
                   />
 
                   {/* Overlay */}

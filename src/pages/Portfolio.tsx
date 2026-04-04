@@ -264,14 +264,16 @@ const Portfolio: Component = () => {
             <For each={currentImages()}>
               {(image, index) => (
                 <div 
-                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-100 scroll-reveal-item scroll-reveal-hidden"
+                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-100 scroll-reveal-item"
                   onClick={() => handleImageClick(index())}
+                  style={{"min-height": "300px"}}
                 >
                   {/* Image */}
                   <img
                     src={image.url}
                     alt={image.title}
-                    class="w-full h-auto object-contain transition-transform duration-500 group-hover:scale-105"
+                    loading="lazy"
+                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
 
                   {/* Overlay */}
@@ -302,7 +304,28 @@ const Portfolio: Component = () => {
         </div>
       </section>
 
-      {/* Stats Section - REMOVED (now only in admin) */}
+      {/* Stats Section - Only Total Photos & Categories */}
+      <section class="py-16 px-6 bg-gray-50">
+        <div class="container mx-auto max-w-6xl">
+          <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center">Statistik</h3>
+          <div class="grid grid-cols-2 md:grid-cols-2 gap-8 max-w-md mx-auto">
+            <div class="text-center">
+              <div class="text-4xl font-bold text-[#576250] mb-2">
+                {portfolioImages.length}+
+              </div>
+              <p class="text-gray-600">Total Photos</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-bold text-[#576250] mb-2">
+                {portfolioCategories.length}
+              </div>
+              <p class="text-gray-600">Categories</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
 
       {/* CTA Section */}
       <section class="py-20 px-6 bg-[#464C43]">

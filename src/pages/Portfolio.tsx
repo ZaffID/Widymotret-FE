@@ -5,10 +5,10 @@ import Footer from '../components/Footer';
 import ContactModal from '../components/ContactModal';
 import ScrollToTop from '../components/ScrollToTop';
 import { GalleryModal } from '../components/portfolio/GalleryModal';
+import { ScrollRevealImage } from '../components/portfolio/ScrollRevealImage';
 import { portfolioCategories, portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
 import { contentStore } from '../stores/contentStore';
 import { resolveMediaUrl } from '../utils/mediaUrl';
-import { useScrollRevealGroup } from '../hooks/useScrollReveal';
 import '../styles/scroll-reveal.css';
 import './Portfolio.css';
 
@@ -58,10 +58,8 @@ const Portfolio: Component = () => {
     }
   });
 
-  // Scroll reveal ref for image grid
-  const portfolioGridRef = useScrollRevealGroup({ threshold: 0.3, itemDelay: 80 });
 
-  // Read category from query parameter
+  // Category filter initialization
   createEffect(() => {
     const category = searchParams.category as 'portrait' | 'event' | 'editorial' | 'retouching' | undefined;
     if (category && ['portrait', 'event', 'editorial', 'retouching'].includes(category)) {
@@ -304,37 +302,15 @@ const Portfolio: Component = () => {
 
           <Show when={!loadError()}>
             {/* Instagram-style vertical feed */}
-            <div class="max-w-3xl mx-auto space-y-6" ref={portfolioGridRef}>
+            <div class="max-w-3xl mx-auto space-y-6">
               <For each={currentImages()}>
                 {(image, index) => (
-                  <div 
-                    class="group relative overflow-hidden rounded-lg cursor-pointer bg-gray-100 scroll-reveal-item w-full"
+                  <ScrollRevealImage
+                    src={image.url}
+                    alt={image.title}
+                    title={image.title}
                     onClick={() => handleImageClick(index())}
-                  >
-                    {/* Image - with natural aspect ratio, full width */}
-                    <img
-                      src={image.url}
-                      alt={image.title}
-                      loading="lazy"
-                      class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-
-                    {/* Overlay */}
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
-                      <div>
-                        <h3 class="text-white font-medium text-base line-clamp-2">
-                          {image.title}
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Zoom Icon */}
-                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <svg class="w-10 h-10 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 13H7" />
-                      </svg>
-                    </div>
-                  </div>
+                  />
                 )}
               </For>
             </div>

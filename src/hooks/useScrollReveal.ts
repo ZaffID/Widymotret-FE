@@ -143,3 +143,59 @@ export const useScrollRevealGroup = (options: ScrollRevealOptions & { itemDelay?
     container = el;
   };
 };
+
+/**
+ * Hook for per-item scroll reveal animation
+ * Each item animates individually as it enters viewport (not batched)
+ * 
+ * Usage:
+ * const revealItem = useScrollRevealPerItem({ threshold: 0.2 });
+ * <div ref={revealItem} class="scroll-reveal-item">...</div>
+ */
+export const useScrollRevealPerItem = (options: ScrollRevealOptions = {}) => {
+  const {
+    threshold = 0.2,
+    rootMargin = '0px 0px -50px 0px',
+    duration = 600,
+  } = options;
+
+  let element: HTMLElement | undefined;
+  let isInitialized = false;
+
+  onMount(() => {
+    if (!element || isInitialized) return;
+    isInitialized = true;
+
+    // Set initial state
+    element.classList.add('scroll-reveal-hidden');
+    element.style.setProperty('--reveal-duration', `${duration}ms`);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Item is in viewport - reveal it
+            entry.target.classList.remove('scroll-reveal-hidden');
+            entry.target.classList.add('reveal-visible');
+            // Stop observing after reveal - don't re-animate
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold,
+        rootMargin,
+      }
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  });
+
+  return (el: HTMLElement) => {
+    element = el;
+  };
+};

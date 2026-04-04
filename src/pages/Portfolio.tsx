@@ -321,7 +321,7 @@ const Portfolio: Component = () => {
         </div>
       </section>
 
-      {/* CTA Section */
+      {/* CTA Section */}
       <section class="py-20 px-6 bg-[#464C43]">
         <div class="container mx-auto max-w-4xl text-center">
           <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">

@@ -258,7 +258,7 @@ const ServiceDetail: Component = () => {
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-end justify-center pb-16">
               <div class="text-center text-white px-6">
-                <h1 class="text-4xl md:text-5xl mb-3">{serviceTitle()}</h1>
+                <h1 class="text-3xl md:text-4xl mb-3">{serviceTitle()}</h1>
                 <p class="text-base md:text-lg max-w-2xl mx-auto opacity-90">{serviceDescription()}</p>
               </div>
             </div>
@@ -268,7 +268,7 @@ const ServiceDetail: Component = () => {
           <section class="py-16 px-6 bg-white">
             <div class="container mx-auto max-w-6xl">
               <div class="text-center mb-12 scroll-reveal" ref={packagesTitleRef}>
-                <h2 class="text-3xl md:text-4xl text-[#464C43] mb-3">Pilih Paket</h2>
+                <h2 class="text-2xl md:text-3xl text-[#464C43] mb-3">Pilih Paket</h2>
                 <p class="text-gray-500">Klik untuk melihat detail dan benefit</p>
               </div>
 

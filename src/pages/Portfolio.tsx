@@ -151,7 +151,7 @@ const Portfolio: Component = () => {
         />
         <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-end justify-center pb-16">
           <div class="text-center text-white px-6">
-            <h1 class="text-4xl md:text-5xl mb-3 font-bold">Our Portfolio</h1>
+            <h1 class="text-3xl md:text-4xl mb-3 font-bold">Our Portfolio</h1>
             <p class="text-base md:text-lg max-w-2xl mx-auto opacity-90">Jelajahi koleksi karya terbaik kami dari berbagai kategori fotografi</p>
           </div>
         </div>
@@ -179,7 +179,7 @@ const Portfolio: Component = () => {
 
           {/* Category Description */}
           <div class="text-center mt-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+            <h2 class="text-xl font-bold text-gray-800 mb-2">
               {portfolioCategories.find(c => c.slug === activeCategory())?.name}
             </h2>
             <p class="text-gray-600">
@@ -312,7 +312,7 @@ const Portfolio: Component = () => {
       {/* CTA Section */}
       <section class="py-20 px-6 bg-[#464C43]">
         <div class="container mx-auto max-w-4xl text-center">
-          <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">
             Suka dengan karya kami?
           </h2>
           <p class="text-xl text-white/80 mb-8">

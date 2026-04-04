@@ -310,7 +310,7 @@ const Home: Component = () => {
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12 scroll-reveal" ref={bookingTitleRef}>
-            <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">{t('booking', 'title', 'Alur Booking')}</h2>
+            <h2 class="text-3xl md:text-4xl text-gray-800 mb-4">{t('booking', 'title', 'Alur Booking')}</h2>
             <p class="text-lg text-gray-600">{t('booking', 'subtitle', 'Mulai dari konsultasi, pemilihan paket, hingga hari H — semua kami siapkan dengan profesional.')}</p>
           </div>
 
@@ -350,7 +350,7 @@ const Home: Component = () => {
       <section id="portfolio" class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">Our portofolios</h2>
+            <h2 class="text-3xl md:text-4xl text-gray-800 mb-4">Our portofolios</h2>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6" ref={portfolioGridRef}>
             <For each={portfolioImages()}>
@@ -409,7 +409,7 @@ const Home: Component = () => {
       <section class="py-20 md:py-28 px-4 md:px-6 bg-white">
         <div class="container mx-auto max-w-5xl">
           <div class="text-center mb-12 md:mb-16">
-            <h2 class="text-3xl md:text-5xl font-bold text-gray-800 mb-4">{t('featured', 'title', 'Potret Unggulan')}</h2>
+            <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-4">{t('featured', 'title', 'Potret Unggulan')}</h2>
             <p class="text-base md:text-lg text-gray-600">{t('featured', 'subtitle', 'Sekilas pandang dari beberapa karya terbaik kami.')}</p>
           </div>
           <div class="relative mt-2 md:mt-4">
@@ -478,7 +478,7 @@ const Home: Component = () => {
       <section class="py-32 px-6" style={{ 'background-color': '#464C43' }}>
         <div class="container mx-auto max-w-5xl">
           <div class="text-center mb-16 text-white">
-            <h2 class="text-4xl md:text-5xl font-bold mb-4">{t('testimonials', 'title', 'Testimoni')}</h2>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">{t('testimonials', 'title', 'Testimoni')}</h2>
             <p class="text-lg opacity-90 mb-8">{t('testimonials', 'subtitle', 'dari pasangan bahagia dan puas')}</p>
           </div>
 
@@ -569,7 +569,7 @@ const Home: Component = () => {
       {/* CTA Booking Section */}
       <section class="py-20 px-6 bg-gradient-to-r from-[#464C43] to-[#576250]">
         <div class="container mx-auto max-w-4xl text-center scroll-reveal" ref={ctaRef}>
-          <h2 class="text-4xl md:text-5xl text-white mb-4">{t('home', 'cta_heading', 'Siap Mengabadikan Momen Spesial Anda?')}</h2>
+          <h2 class="text-3xl md:text-4xl text-white mb-4">{t('home', 'cta_heading', 'Siap Mengabadikan Momen Spesial Anda?')}</h2>
           <p class="text-white/90 text-lg mb-8">{t('home', 'cta_subheading', 'Hubungi kami sekarang dan jadwalkan sesi pemotretan Anda')}</p>
           <button
             onClick={() => setIsBookingModalOpen(true)}

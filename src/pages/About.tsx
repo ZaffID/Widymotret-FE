@@ -112,7 +112,7 @@ const About: Component = () => {
           <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center scroll-reveal" ref={storyRef}>
             {/* Left: Text */}
             <div>
-              <h2 class="text-4xl font-bold text-gray-900 mb-8">{t('story_heading', 'Our Story')}</h2>
+              <h2 class="text-3xl font-bold text-gray-900 mb-8">{t('story_heading', 'Our Story')}</h2>
               <div class="space-y-6">
                 <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph0', 'Cinta saya pada fotografi dimulai dengan kamera pinjaman dan matahari terbenam.')}</p>
                 <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph1', 'Sejak saat itu, saya mengejar cahaya, tawa, dan momen-momen di antara yang membuat hidup terasa nyata.')}</p>
@@ -146,8 +146,8 @@ const About: Component = () => {
       {/* Philosophy Quote Section */}
       <section class="py-20 px-6 bg-gray-50">
         <div class="container mx-auto max-w-3xl text-center scroll-reveal" ref={philosophyRef}>
-          <h2 class="text-4xl font-bold text-gray-900 mb-8">{t('philosophy_title', 'Filosofi')}</h2>
-          <p class="text-3xl md:text-4xl font-bold text-gray-900 leading-relaxed">
+          <h2 class="text-3xl font-bold text-gray-900 mb-8">{t('philosophy_title', 'Filosofi')}</h2>
+          <p class="text-2xl md:text-3xl font-bold text-gray-900 leading-relaxed">
             {t('philosophy_quote', aboutData.philosophyQuote)}
           </p>
         </div>
@@ -157,7 +157,7 @@ const About: Component = () => {
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12 scroll-reveal" ref={behindTheLensRef}>
-            <h2 class="text-4xl font-bold text-gray-900 mb-4">{t('behind_lens_heading', 'Behind the Lens')}</h2>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">{t('behind_lens_heading', 'Behind the Lens')}</h2>
             <p class="text-lg text-gray-600 mb-4">{t('behind_lens_tagline', 'Ketika kami tidak berada di belakang kamera, kami mendaki, menyeruput kopi, atau mengejar matahari terbenam.')}</p>
             <p class="text-gray-600">{t('behind_lens_description', 'Setiap momen yang tertangkap adalah cerita yang terpelihara seumur hidup.')}</p>
           </div>
@@ -222,7 +222,7 @@ const About: Component = () => {
       <section class="py-20 px-6 bg-gray-50">
         <div class="container mx-auto max-w-4xl">
           <div class="text-center mb-12 scroll-reveal" ref={teamRef}>
-            <h2 class="text-4xl font-bold text-gray-900 mb-4">{t('team_heading', 'Our Team')}</h2>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">{t('team_heading', 'Our Team')}</h2>
             <p class="text-lg text-gray-600">{t('team_description', 'Temui pikiran kreatif di balik setiap bidikan yang menakjubkan. Tim dedicated kami membawa passion, expertise, dan komitmen untuk mengabadikan momen paling berharga Anda.')}</p>
           </div>
 
@@ -240,7 +240,7 @@ const About: Component = () => {
       {/* CTA Section */}
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-3xl text-center scroll-reveal" ref={ctaRef}>
-          <h2 class="text-4xl font-bold text-gray-900 mb-4">{t('cta_heading', 'Made up your mind yet?')}</h2>
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">{t('cta_heading', 'Made up your mind yet?')}</h2>
           <p class="text-lg text-gray-600 mb-10">{t('cta_subheading', 'Mari kita bicarakan visi Anda dan bagaimana saya bisa mewujudkannya')}</p>
           <button
             onClick={() => setIsContactModalOpen(true)}

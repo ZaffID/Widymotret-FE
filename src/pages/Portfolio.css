@@ -245,6 +245,37 @@
   }
 }
 
+/* Horizontal Scroll Gallery */
+.portfolio-gallery-horizontal {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.portfolio-gallery-horizontal::-webkit-scrollbar {
+  height: 8px;
+}
+
+.portfolio-gallery-horizontal::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.portfolio-gallery-horizontal::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.portfolio-gallery-horizontal::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Firefox scrollbar */
+.portfolio-gallery-horizontal {
+  scrollbar-color: #cbd5e1 #f1f5f9;
+  scrollbar-width: thin;
+}
+
 /* Horizontal Scroll Category Tabs */
 .portfolio-category-tabs {
   overflow-x: auto;

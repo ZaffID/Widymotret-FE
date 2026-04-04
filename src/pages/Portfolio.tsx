@@ -262,22 +262,50 @@ const Portfolio: Component = () => {
           <Show when={!loadError()}>
             <div class="space-y-6 max-w-2xl mx-auto" ref={portfolioGridRef}>
             <For each={currentImages()}>
-              {(image, index) => (
-                <div 
-                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-100 scroll-reveal-item"
-                  onClick={() => handleImageClick(index())}
-                  style={{"min-height": "300px"}}
-                >
-                  {/* Image */}
-                  <img
-                    src={image.url}
-                    alt={image.title}
-                    loading="lazy"
-                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
+              {(image, index) => {
+                const [imageLoaded, setImageLoaded] = createSignal(false);
+                const [imageError, setImageError] = createSignal(false);
 
-                  {/* Overlay */}
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                return (
+                  <div 
+                    class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-200 scroll-reveal-item"
+                    onClick={() => handleImageClick(index())}
+                    style={{"min-height": "300px"}}
+                  >
+                    {/* Loading skeleton */}
+                    <Show when={!imageLoaded() && !imageError()}>
+                      <div class="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
+                    </Show>
+
+                    {/* Error state */}
+                    <Show when={imageError()}>
+                      <div class="absolute inset-0 bg-gray-300 flex items-center justify-center flex-col gap-2">
+                        <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-xs text-gray-600">Gambar tidak bisa dimuat</span>
+                      </div>
+                    </Show>
+
+                    {/* Image */}
+                    <img
+                      src={image.url}
+                      alt={image.title}
+                      loading="eager"
+                      onLoad={() => {
+                        setImageLoaded(true);
+                        console.log(`[Portfolio] Image loaded: ${image.id}`, image.url);
+                      }}
+                      onError={(e) => {
+                        setImageError(true);
+                        console.error(`[Portfolio] Image failed to load: ${image.id}`, image.url, e);
+                      }}
+                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      style={{"display": imageLoaded() && !imageError() ? "block" : "none"}}
+                    />
+
+                    {/* Overlay */}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-black/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                     <h3 class="text-white font-medium text-sm md:text-base mb-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                       {image.title}
                     </h3>
@@ -296,36 +324,14 @@ const Portfolio: Component = () => {
                     </svg>
                   </div>
                 </div>
-              )}
+                );
+              }}
             </For>
             </div>
           </Show>
 
         </div>
       </section>
-
-      {/* Stats Section - Only Total Photos & Categories */}
-      <section class="py-16 px-6 bg-gray-50">
-        <div class="container mx-auto max-w-6xl">
-          <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center">Statistik</h3>
-          <div class="grid grid-cols-2 md:grid-cols-2 gap-8 max-w-md mx-auto">
-            <div class="text-center">
-              <div class="text-4xl font-bold text-[#576250] mb-2">
-                {portfolioImages.length}+
-              </div>
-              <p class="text-gray-600">Total Photos</p>
-            </div>
-            <div class="text-center">
-              <div class="text-4xl font-bold text-[#576250] mb-2">
-                {portfolioCategories.length}
-              </div>
-              <p class="text-gray-600">Categories</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
 
       {/* CTA Section */}
       <section class="py-20 px-6 bg-[#464C43]">

@@ -2038,45 +2038,6 @@ const AdminHome: Component = () => {
               <h2 class="text-2xl font-bold text-gray-800 mb-2"><AiFillCamera class="inline mr-2" size={24} />Manajemen Portfolio</h2>
               <p class="text-gray-600 mb-6">Kelola foto galeri per kategori. Unlimited, tapi disarankan max 20 per kategori.</p>
 
-              {/* Refresh Button */}
-              <div class="mb-6 flex gap-2">
-                <button
-                  onClick={() => setShowRefreshConfirmModal(true)}
-                  class="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium text-sm flex items-center gap-2"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  Muat Ulang Data
-                </button>
-              </div>
-
-              {/* Refresh Confirmation Modal */}
-              <Show when={showRefreshConfirmModal()}>
-                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                  <div class="bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">⚠️ Muat Ulang Data Portfolio</h3>
-                    <p class="text-gray-600 text-sm mb-6">
-                      Jumlah data akan kembali sesuai isi database. Yakin ingin mengubah?
-                    </p>
-                    <div class="flex gap-3">
-                      <button
-                        onClick={() => setShowRefreshConfirmModal(false)}
-                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
-                      >
-                        Tidak
-                      </button>
-                      <button
-                        onClick={handleRefreshPortfolioData}
-                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                      >
-                        Ya, Muat Ulang
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </Show>
-
               {/* Hero Image Section */}
               <div class="bg-white rounded-lg border border-gray-200 p-6 mb-8">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Hero Image - Portfolio Page</h3>
@@ -2438,6 +2399,45 @@ const AdminHome: Component = () => {
                         class="flex-1 px-4 py-2 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium"
                       >
                         Ya, Ubah
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Show>
+
+              {/* Refresh Button - Below Stats */}
+              <div class="mt-8 pt-6 border-t-2 border-gray-200 flex gap-2">
+                <button
+                  onClick={() => setShowRefreshConfirmModal(true)}
+                  class="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 transition font-medium text-sm flex items-center gap-2"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Muat Ulang Data
+                </button>
+              </div>
+
+              {/* Refresh Confirmation Modal */}
+              <Show when={showRefreshConfirmModal()}>
+                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div class="bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">⚠️ Muat Ulang Data Portfolio</h3>
+                    <p class="text-gray-600 text-sm mb-6">
+                      Jumlah data akan kembali sesuai isi database. Yakin ingin mengubah?
+                    </p>
+                    <div class="flex gap-3">
+                      <button
+                        onClick={() => setShowRefreshConfirmModal(false)}
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                      >
+                        Tidak
+                      </button>
+                      <button
+                        onClick={handleRefreshPortfolioData}
+                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                      >
+                        Ya, Muat Ulang
                       </button>
                     </div>
                   </div>

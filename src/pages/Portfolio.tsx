@@ -163,6 +163,32 @@ const Portfolio: Component = () => {
     contentStore.getField('portfolio', 'years_experience') || '5+'
   );
 
+  // Count total photos from all categories (including new items from contentStore)
+  const totalPhotosCount = createMemo(() => {
+    const allFields = contentStore.getSectionFields('portfolio');
+    let totalCount = 0;
+    
+    // Count all images for each category
+    portfolioCategories.forEach(cat => {
+      const categorySlug = cat.slug;
+      // Count default images
+      const defaultImages = getImagesByCategory(categorySlug);
+      totalCount += defaultImages.length;
+      
+      // Count new items from contentStore
+      const newItems = allFields.filter(f => f.field.startsWith(`${categorySlug}_new_`) && f.value);
+      totalCount += newItems.length;
+    });
+    
+    return totalCount > 21 ? '21+' : totalCount.toString();
+  });
+
+  // Get categories count from contentStore or use static count
+  const categoriesCount = createMemo(() => {
+    const fromStore = contentStore.getField('portfolio', 'categories');
+    return fromStore || portfolioCategories.length.toString();
+  });
+
   return (
     <div class="min-h-screen bg-white">
       <Navbar />
@@ -307,13 +333,13 @@ const Portfolio: Component = () => {
           <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             <div class="text-center">
               <div class="text-4xl font-bold text-[#576250] mb-2">
-                {portfolioImages.length}+
+                {totalPhotosCount()}+
               </div>
               <p class="text-gray-600 text-sm">Total Photos</p>
             </div>
             <div class="text-center">
               <div class="text-4xl font-bold text-[#576250] mb-2">
-                {portfolioCategories.length}
+                {categoriesCount()}
               </div>
               <p class="text-gray-600 text-sm">Categories</p>
             </div>

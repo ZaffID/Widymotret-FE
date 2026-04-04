@@ -945,7 +945,7 @@ const AdminHome: Component = () => {
   // Format portfolio count: show "21+" if more than 21 photos
   const portfolioPhotoCountDisplay = createMemo(() => {
     const count = portfolioImages().length;
-    return count > 21 ? '21+' : count.toString();
+    return count > 31 ? '31' : count.toString();
   });
 
   const aboutTextValue = (field: string, fallback: string) => {
@@ -2220,66 +2220,20 @@ const AdminHome: Component = () => {
                 <p class="text-sm text-gray-600 mb-6">Atur statistik. Total Photos & Categories adalah jumlah sebenarnya dari database - konfirmasi jika ingin mengubah.</p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Total Photos - Editable with Modal */}
-                  <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total Photos (Editable)</label>
-                    <p class="text-sm text-gray-600 mb-2">Kategori: {portfolioCategories.find(c => c.slug === activeServicePortfolio())?.name || 'Unknown'}</p>
+                  {/* Total Photos - Read-Only, Shows Keseluruhan Foto */}
+                  <div class="p-4 bg-gray-50 rounded-lg border border-gray-300">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total Photos (Keseluruhan)</label>
+                    <p class="text-sm text-gray-600 mb-2">Jumlah otomatis dari semua foto di semua kategori</p>
                     <div class="relative">
-                      {!isEditingTotalPhotos() ? (
-                        <input
-                          type="text"
-                          value={contentStore.getField('portfolio', 'total_photos') || portfolioPhotoCountDisplay()}
-                          disabled
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                          title="Klik Edit untuk mengubah nilai"
-                        />
-                      ) : (
-                        <input
-                          type="text"
-                          value={editTotalPhotosValue()}
-                          onInput={(e) => setEditTotalPhotosValue(e.currentTarget.value)}
-                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                          placeholder="Masukkan jumlah"
-                          autofocus
-                        />
-                      )}
-                      <div class="absolute top-3 right-3 w-4 h-4 text-yellow-600">
-                        <svg viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 105.11 2.36a6 6 0 008.367 12.529z" clip-rule="evenodd" />
-                        </svg>
-                      </div>
+                      <input
+                        type="text"
+                        value={portfolioPhotoCountDisplay()}
+                        disabled
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed font-semibold text-lg"
+                        title="Nilai ini otomatis dihitung"
+                      />
                     </div>
-                    <div class="mt-2 flex gap-2">
-                      {!isEditingTotalPhotos() ? (
-                        <button
-                          onClick={() => {
-                            setEditTotalPhotosValue(contentStore.getField('portfolio', 'total_photos') || portfolioPhotoCountDisplay());
-                            setIsEditingTotalPhotos(true);
-                          }}
-                          class="text-xs text-yellow-700 hover:text-yellow-800 font-medium underline"
-                        >
-                          Edit
-                        </button>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => {
-                              setPendingStatEdit({field: 'total_photos', value: editTotalPhotosValue()});
-                              setShowConfirmStatModal(true);
-                            }}
-                            class="text-xs bg-yellow-600 text-white px-3 py-1 rounded hover:bg-yellow-700 font-medium"
-                          >
-                            Simpan
-                          </button>
-                          <button
-                            onClick={() => setIsEditingTotalPhotos(false)}
-                            class="text-xs border border-gray-300 text-gray-700 px-3 py-1 rounded hover:bg-gray-50"
-                          >
-                            Batal
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    <p class="text-xs text-gray-600 mt-2">🔄 Ter-update otomatis saat foto ditambah/dihapus</p>
                   </div>
 
                   {/* Categories - Editable with Modal */}

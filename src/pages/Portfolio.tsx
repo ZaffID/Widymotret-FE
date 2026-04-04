@@ -163,7 +163,7 @@ const Portfolio: Component = () => {
     contentStore.getField('portfolio', 'years_experience') || '5+'
   );
 
-  // Count total photos from all categories (ALL images in contentStore for each category)
+  // Count total photos from ALL categories in admin tab portfolio (keseluruhan foto)
   const totalPhotosCount = createMemo(() => {
     // Depend on lastUpdated to ensure memo re-runs when refresh button clicked
     const _refreshTrigger = contentStore.state().lastUpdated?.getTime() || 0;
@@ -183,7 +183,8 @@ const Portfolio: Component = () => {
       totalCount += categoryImages.length;
     });
     
-    return totalCount > 21 ? '21+' : totalCount.toString();
+    // Return string without '+', will add '+' in display template if > 31
+    return totalCount > 31 ? '31' : totalCount.toString();
   });
 
   // Get categories count from contentStore (actual DB value)
@@ -340,7 +341,7 @@ const Portfolio: Component = () => {
           <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             <div class="text-center">
               <div class="text-4xl font-bold text-[#576250] mb-2">
-                {totalPhotosCount()}+
+                {totalPhotosCount()}{parseInt(totalPhotosCount()) > 31 ? '' : '+'}
               </div>
               <p class="text-gray-600 text-sm">Total Photos</p>
             </div>

@@ -2574,7 +2574,10 @@ const AdminHome: Component = () => {
               <p class="text-gray-600 mb-6">Kelola jenis-jenis portfolio yang akan ditampilkan di halaman portofolio.</p>
 
               <button
-                onClick={() => resetCategoryModal() || setShowAddCategoryModal(true)}
+                onClick={() => {
+                  resetCategoryModal();
+                  setShowAddCategoryModal(true);
+                }}
                 class="mb-8 px-5 py-2.5 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium text-sm"
               >
                 + Tambah Kategori Baru

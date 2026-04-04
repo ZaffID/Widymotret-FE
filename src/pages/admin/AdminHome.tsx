@@ -823,13 +823,24 @@ const AdminHome: Component = () => {
     }
   };
 
-  // Refresh portfolio data from database
+  // Refresh portfolio data from database and reset edit states
   const handleRefreshPortfolioData = async () => {
     try {
       setShowRefreshConfirmModal(false);
+      // Reset all edit states before reload
+      setIsEditingTotalPhotos(false);
+      setIsEditingCategories(false);
+      
       // Reload portfolio section from backend
       await contentStore.loadSection('portfolio');
+      
+      // Reset edit values to empty
+      setEditTotalPhotosValue('');
+      setEditCategoriesValue('');
+      setPendingStatEdit(null);
+      
       handleSave('Data portfolio berhasil dimuat ulang dari database');
+      console.log('[AdminHome] Portfolio data refreshed successfully');
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Gagal memuat ulang data';
       handleError(errorMsg);

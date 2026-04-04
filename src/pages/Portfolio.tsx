@@ -163,30 +163,37 @@ const Portfolio: Component = () => {
     contentStore.getField('portfolio', 'years_experience') || '5+'
   );
 
-  // Count total photos from all categories (including new items from contentStore)
+  // Count total photos from all categories (ALL images in contentStore for each category)
   const totalPhotosCount = createMemo(() => {
+    // Depend on lastUpdated to ensure memo re-runs when refresh button clicked
+    const _refreshTrigger = contentStore.state().lastUpdated?.getTime() || 0;
+    
     const allFields = contentStore.getSectionFields('portfolio');
     let totalCount = 0;
     
-    // Count all images for each category
+    // Count all images for each category (ALL fields, not just defaults+new)
     portfolioCategories.forEach(cat => {
       const categorySlug = cat.slug;
-      // Count default images
-      const defaultImages = getImagesByCategory(categorySlug);
-      totalCount += defaultImages.length;
-      
-      // Count new items from contentStore
-      const newItems = allFields.filter(f => f.field.startsWith(`${categorySlug}_new_`) && f.value);
-      totalCount += newItems.length;
+      // Count ALL fields for this category that have values (portrait_p1, portrait_p2, portrait_new_1, etc)
+      const categoryImages = allFields.filter(f => 
+        f.field.startsWith(`${categorySlug}_`) && 
+        f.value && 
+        !f.field.endsWith('_count') // exclude meta fields
+      );
+      totalCount += categoryImages.length;
     });
     
     return totalCount > 21 ? '21+' : totalCount.toString();
   });
 
-  // Get categories count from contentStore or use static count
+  // Get categories count from contentStore (actual DB value)
   const categoriesCount = createMemo(() => {
+    // Depend on lastUpdated to ensure memo re-runs when refresh button clicked
+    const _refreshTrigger = contentStore.state().lastUpdated?.getTime() || 0;
+    
     const fromStore = contentStore.getField('portfolio', 'categories');
-    return fromStore || portfolioCategories.length.toString();
+    // Only return if it exists, otherwise use actual portfolio categories length
+    return fromStore ? fromStore : portfolioCategories.length.toString();
   });
 
   return (

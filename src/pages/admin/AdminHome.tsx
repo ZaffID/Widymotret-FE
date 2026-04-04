@@ -834,10 +834,23 @@ const AdminHome: Component = () => {
       // Reload portfolio section from backend
       await contentStore.loadSection('portfolio');
       
+      // Auto-sync Categories: if stored value differs from actual category count, fix it
+      const storedCategories = contentStore.getField('portfolio', 'categories');
+      const actualCategories = portfolioCategories.length.toString();
+      if (storedCategories && storedCategories !== actualCategories) {
+        console.log(`[AdminHome] Auto-syncing Categories: ${storedCategories} → ${actualCategories}`);
+        await updateContent('portfolio', 'categories', actualCategories);
+        contentStore.updateFieldLocal('portfolio', 'categories', actualCategories);
+      }
+      
       // Reset edit values to empty
       setEditTotalPhotosValue('');
       setEditCategoriesValue('');
       setPendingStatEdit(null);
+      
+      // Reset tab to home and scroll to top
+      setCurrentPage('home');
+      window.scrollTo(0, 0);
       
       handleSave('Data portfolio berhasil dimuat ulang dari database');
       console.log('[AdminHome] Portfolio data refreshed successfully');

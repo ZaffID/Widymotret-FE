@@ -187,14 +187,21 @@ const Portfolio: Component = () => {
     return totalCount > 31 ? '31' : totalCount.toString();
   });
 
-  // Get categories count from contentStore (actual DB value)
+  // Get categories count from contentStore (actual DB value, with fallback to actual count)
   const categoriesCount = createMemo(() => {
     // Depend on lastUpdated to ensure memo re-runs when refresh button clicked
     const _refreshTrigger = contentStore.state().lastUpdated?.getTime() || 0;
     
     const fromStore = contentStore.getField('portfolio', 'categories');
-    // Only return if it exists, otherwise use actual portfolio categories length
-    return fromStore ? fromStore : portfolioCategories.length.toString();
+    const actualCount = portfolioCategories.length.toString();
+    
+    // If store has value, validate it's reasonable (not 0, not negative)
+    if (fromStore && parseInt(fromStore) > 0) {
+      return fromStore;
+    }
+    
+    // Fallback to actual portfolio categories length
+    return actualCount;
   });
 
   return (

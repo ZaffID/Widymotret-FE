@@ -109,6 +109,8 @@ const AdminHome: Component = () => {
   const [activeServicePricelist, setActiveServicePricelist] = createSignal<string>('studio');
   const [activeServicePortfolio, setActiveServicePortfolio] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
+  const [showConfirmStatModal, setShowConfirmStatModal] = createSignal(false);
+  const [pendingStatEdit, setPendingStatEdit] = createSignal<{field: string; value: string} | null>(null);
   const [packages, setPackages] = createSignal<ApiPackage[]>([]);
   const [packagesLoading, setPackagesLoading] = createSignal(false);
   const [addingPackage, setAddingPackage] = createSignal(false);
@@ -2179,65 +2181,134 @@ const AdminHome: Component = () => {
               {/* Portfolio Stats - Editable Section */}
               <div class="mt-12 bg-white rounded-lg border border-gray-200 p-6">
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Statistik Portfolio</h3>
-                <p class="text-sm text-gray-600 mb-6">Atur statistik yang tampil di halaman portfolio. Total Photos & Categories auto-update dari database.</p>
+                <p class="text-sm text-gray-600 mb-6">Atur statistik. Total Photos & Categories adalah jumlah sebenarnya dari database - konfirmasi jika ingin mengubah.</p>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Total Photos - Editable with Modal */}
+                  <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Total Photos (Editable)</label>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        value={contentStore.getField('portfolio', 'total_photos') || portfolioImages().length.toString()}
+                        onClick={() => setPendingStatEdit({field: 'total_photos', value: contentStore.getField('portfolio', 'total_photos') || portfolioImages().length.toString()})}
+                        onFocus={() => setPendingStatEdit({field: 'total_photos', value: contentStore.getField('portfolio', 'total_photos') || portfolioImages().length.toString()})}
+                        disabled
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        title="Klik untuk mengedit dengan konfirmasi"
+                      />
+                      <div class="absolute top-3 right-3 w-4 h-4 text-yellow-600">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 105.11 2.36a6 6 0 008.367 12.529z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowConfirmStatModal(true) || setPendingStatEdit({field: 'total_photos', value: contentStore.getField('portfolio', 'total_photos') || ''})}
+                      class="mt-2 text-xs text-yellow-700 hover:text-yellow-800 font-medium underline"
+                    >
+                      Klik untuk edit
+                    </button>
+                  </div>
+
+                  {/* Categories - Editable with Modal */}
+                  <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Categories (Editable)</label>
+                    <div class="relative">
+                      <input
+                        type="text"
+                        value={contentStore.getField('portfolio', 'categories') || portfolioCategories.length.toString()}
+                        disabled
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                        title="Klik untuk mengedit dengan konfirmasi"
+                      />
+                      <div class="absolute top-3 right-3 w-4 h-4 text-yellow-600">
+                        <svg viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M13.477 14.89A6 6 0 105.11 2.36a6 6 0 008.367 12.529z" clip-rule="evenodd" />
+                        </svg>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setShowConfirmStatModal(true);
+                        setPendingStatEdit({field: 'categories', value: contentStore.getField('portfolio', 'categories') || ''});
+                      }}
+                      class="mt-2 text-xs text-yellow-700 hover:text-yellow-800 font-medium underline"
+                    >
+                      Klik untuk edit
+                    </button>
+                  </div>
+
+                  {/* Happy Clients - Simple Editable */}
                   <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Happy Clients (Editable)</label>
-                    <div class="relative">
-                      <input
-                        type="text"
-                        value={contentStore.getField('portfolio', 'happy_clients') || '500+'}
-                        onChange={(e) => contentStore.updateFieldLocal('portfolio', 'happy_clients', e.currentTarget.value)}
-                        onBlur={(e) => {
-                          updateContent('portfolio', 'happy_clients', e.currentTarget.value);
-                          handleSave('Happy Clients berhasil disimpan');
-                        }}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Contoh: 500+"
-                      />
-                      <svg class="absolute top-3 right-3 w-4 h-4 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M5 9V7a1 1 0 011-1h8a1 1 0 011 1v2M5 9a2 2 0 002 2h6a2 2 0 002-2m-6 4a1 1 0 100-2 1 1 0 000 2z" />
-                      </svg>
-                    </div>
-                    <p class="text-xs text-blue-700 mt-2">⚠️ Perubahan langsung tersimpan</p>
+                    <input
+                      type="text"
+                      value={contentStore.getField('portfolio', 'happy_clients') || '500+'}
+                      onChange={(e) => contentStore.updateFieldLocal('portfolio', 'happy_clients', e.currentTarget.value)}
+                      onBlur={(e) => {
+                        updateContent('portfolio', 'happy_clients', e.currentTarget.value);
+                        handleSave('Happy Clients berhasil disimpan');
+                      }}
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Contoh: 500+"
+                    />
+                    <p class="text-xs text-blue-700 mt-2">✓ Langsung tersimpan</p>
                   </div>
 
+                  {/* Years Experience - Simple Editable */}
                   <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Years Experience (Editable)</label>
-                    <div class="relative">
-                      <input
-                        type="text"
-                        value={contentStore.getField('portfolio', 'years_experience') || '5+'}
-                        onChange={(e) => contentStore.updateFieldLocal('portfolio', 'years_experience', e.currentTarget.value)}
-                        onBlur={(e) => {
-                          updateContent('portfolio', 'years_experience', e.currentTarget.value);
-                          handleSave('Years Experience berhasil disimpan');
-                        }}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Contoh: 5+"
-                      />
-                      <svg class="absolute top-3 right-3 w-4 h-4 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M5 9V7a1 1 0 011-1h8a1 1 0 011 1v2M5 9a2 2 0 002 2h6a2 2 0 002-2m-6 4a1 1 0 100-2 1 1 0 000 2z" />
-                      </svg>
-                    </div>
-                    <p class="text-xs text-blue-700 mt-2">⚠️ Perubahan langsung tersimpan</p>
+                    <input
+                      type="text"
+                      value={contentStore.getField('portfolio', 'years_experience') || '5+'}
+                      onChange={(e) => contentStore.updateFieldLocal('portfolio', 'years_experience', e.currentTarget.value)}
+                      onBlur={(e) => {
+                        updateContent('portfolio', 'years_experience', e.currentTarget.value);
+                        handleSave('Years Experience berhasil disimpan');
+                      }}
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Contoh: 5+"
+                    />
+                    <p class="text-xs text-blue-700 mt-2">✓ Langsung tersimpan</p>
                   </div>
                 </div>
-
-                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-                  <p class="text-xs text-gray-700 mb-3"><strong>Total Photos</strong> & <strong>Categories</strong> ditampilkan secara otomatis dari database.</p>
-                  <button
-                    onClick={() => contentStore.loadSection('portfolio')}
-                    class="text-sm text-[#576250] hover:text-[#464C43] font-medium flex items-center gap-2"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    Perbarui Total Photos & Categories
-                  </button>
-                </div>
               </div>
+
+              {/* Modal Confirmation for Stats */}
+              <Show when={showConfirmStatModal()}>
+                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div class="bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">⚠️ Konfirmasi Perubahan</h3>
+                    <p class="text-gray-600 text-sm mb-6">
+                      {pendingStatEdit()?.field === 'total_photos' 
+                        ? 'Total Photos sudah terhubung dengan jumlah asli dari database. Yakin mau mengubahnya?' 
+                        : 'Categories sudah terhubung dengan jumlah asli dari database. Yakin mau mengubahnya?'}
+                    </p>
+                    <div class="flex gap-3">
+                      <button
+                        onClick={() => setShowConfirmStatModal(false)}
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                      >
+                        Tidak
+                      </button>
+                      <button
+                        onClick={async () => {
+                          if (pendingStatEdit()) {
+                            await updateContent('portfolio', pendingStatEdit()!.field, pendingStatEdit()!.value);
+                            handleSave(`${pendingStatEdit()!.field} berhasil diubah`);
+                          }
+                          setShowConfirmStatModal(false);
+                          setPendingStatEdit(null);
+                        }}
+                        class="flex-1 px-4 py-2 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium"
+                      >
+                        Ya, Ubah
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Show>
             </div>
           </Show>
 

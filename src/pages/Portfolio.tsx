@@ -223,24 +223,26 @@ const Portfolio: Component = () => {
         </div>
       </section>
 
-      {/* Category Tabs */}
+      {/* Category Tabs - Horizontal Scroll */}
       <section class="py-8 px-6 bg-white shadow-sm">
         <div class="container mx-auto max-w-6xl">
-          <div class="flex flex-wrap gap-3 justify-center md:justify-start">
-            <For each={portfolioCategories}>
-              {(category) => (
-                <button
-                  onClick={() => setActiveCategory(category.slug)}
-                  class="px-6 py-2 rounded-lg font-medium transition-all duration-300 text-sm md:text-base"
-                  classList={{
-                    'bg-[#576250] text-white shadow-md': activeCategory() === category.slug,
-                    'bg-gray-200 text-gray-700 hover:bg-gray-300': activeCategory() !== category.slug,
-                  }}
-                >
-                  {category.name}
-                </button>
-              )}
-            </For>
+          <div class="portfolio-category-tabs -mx-6 px-6">
+            <div class="flex gap-3 pb-2 min-w-min">
+              <For each={portfolioCategories}>
+                {(category) => (
+                  <button
+                    onClick={() => setActiveCategory(category.slug)}
+                    class="px-6 py-2 rounded-lg font-medium transition-all duration-300 text-sm md:text-base whitespace-nowrap flex-shrink-0"
+                    classList={{
+                      'bg-[#576250] text-white shadow-md': activeCategory() === category.slug,
+                      'bg-gray-200 text-gray-700 hover:bg-gray-300': activeCategory() !== category.slug,
+                    }}
+                  >
+                    {category.name}
+                  </button>
+                )}
+              </For>
+            </div>
           </div>
 
           {/* Category Description */}
@@ -317,14 +319,14 @@ const Portfolio: Component = () => {
 
                     />
 
-                  {/* Overlay */}
-                  <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                    <div>
-                      <h3 class="text-white font-medium text-sm line-clamp-2">
-                        {image.title}
-                      </h3>
-                    </div>
-                  </div>
+                      {/* Overlay */}
+                      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                        <div>
+                          <h3 class="text-white font-medium text-sm line-clamp-2">
+                            {image.title}
+                          </h3>
+                        </div>
+                      </div>
 
                   {/* Zoom Icon */}
                   <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">

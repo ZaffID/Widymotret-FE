@@ -1044,85 +1044,117 @@ const AdminHome: Component = () => {
           onClose={() => setSaveMessage(null)}
         />
 
-      {/* Tab Navigation */}
-        <div class="bg-white rounded-xl shadow-sm p-1 mb-8 flex gap-2 flex-wrap">
-          <button
-            onClick={() => setCurrentPage('home')}
-            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-              currentPage() === 'home'
-                ? 'bg-[#576250] text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <AiFillHome size={20} />
-            Halaman Utama
-          </button>
-          <button
-            onClick={() => setCurrentPage('services')}
-            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-              currentPage() === 'services'
-                ? 'bg-[#576250] text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <FaSolidClipboardList size={20} />
-            Kelola Services
-          </button>
-          <button
-            onClick={() => setCurrentPage('pricelist')}
-            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-              currentPage() === 'pricelist'
-                ? 'bg-[#576250] text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <AiFillDollarCircle size={20} />
-            Pricelist
-          </button>
-          <button
-            onClick={() => setCurrentPage('portfolio')}
-            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-              currentPage() === 'portfolio'
-                ? 'bg-[#576250] text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <AiFillCamera size={20} />
-            Portfolio
-          </button>
-          <button
-            onClick={async () => {
-              setCurrentPage('about');
-              // Load about_page and about sections from backend
-              await Promise.all([
-                contentStore.loadSection('about_page'),
-                contentStore.loadSection('about'),
-              ]);
-            }}
-            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-              currentPage() === 'about'
-                ? 'bg-[#576250] text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <AiFillBook size={20} />
-            Halaman About
-          </button>
-          <button
-            onClick={async () => {
-              setCurrentPage('footer');
-              // Load footer section from backend
-              await contentStore.loadSection('footer');
-            }}
-            class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
-              currentPage() === 'footer'
-                ? 'bg-[#576250] text-white'
-                : 'text-gray-600 hover:bg-gray-100'
-            }`}
-          >
-            <AiFillFileImage size={20} />
-            Footer
-          </button>
+      {/* Tab Navigation - Responsive: Buttons on desktop, Dropdown on mobile */}
+        <div class="bg-white rounded-xl shadow-sm p-1 mb-8">
+          {/* Mobile Dropdown */}
+          <div class="md:hidden px-4 py-2">
+            <select
+              value={currentPage()}
+              onChange={(e) => {
+                const page = e.currentTarget.value as 'home' | 'services' | 'pricelist' | 'portfolio' | 'about' | 'footer';
+                setCurrentPage(page);
+                
+                // Load data for about/footer if needed
+                if (page === 'about') {
+                  Promise.all([
+                    contentStore.loadSection('about_page'),
+                    contentStore.loadSection('about'),
+                  ]);
+                } else if (page === 'footer') {
+                  contentStore.loadSection('footer');
+                }
+              }}
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg font-medium bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#576250]"
+            >
+              <option value="home">🏠 Halaman Utama</option>
+              <option value="services">📋 Kelola Services</option>
+              <option value="pricelist">💰 Pricelist</option>
+              <option value="portfolio">📷 Portfolio</option>
+              <option value="about">📖 Halaman About</option>
+              <option value="footer">🔗 Kelola Footer</option>
+            </select>
+          </div>
+
+          {/* Desktop Horizontal Scroll Tabs */}
+          <div class="hidden md:flex gap-2 flex-wrap overflow-x-auto pb-1">
+            <button
+              onClick={() => setCurrentPage('home')}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'home'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillHome size={20} />
+              Halaman Utama
+            </button>
+            <button
+              onClick={() => setCurrentPage('services')}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'services'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <FaSolidClipboardList size={20} />
+              Kelola Services
+            </button>
+            <button
+              onClick={() => setCurrentPage('pricelist')}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'pricelist'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillDollarCircle size={20} />
+              Pricelist
+            </button>
+            <button
+              onClick={() => setCurrentPage('portfolio')}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'portfolio'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillCamera size={20} />
+              Portfolio
+            </button>
+            <button
+              onClick={async () => {
+                setCurrentPage('about');
+                // Load about_page and about sections from backend
+                await Promise.all([
+                  contentStore.loadSection('about_page'),
+                  contentStore.loadSection('about'),
+                ]);
+              }}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'about'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillBook size={20} />
+              Halaman About
+            </button>
+            <button
+              onClick={async () => {
+                setCurrentPage('footer');
+                // Load footer section from backend
+                await contentStore.loadSection('footer');
+              }}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'footer'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillFileImage size={20} />
+              Kelola Footer
+            </button>
+          </div>
         </div>
 
         {/* Content Management */}

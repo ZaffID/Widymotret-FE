@@ -105,7 +105,7 @@ const TestimoniCounter = () => {
 const AdminHome: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
-  const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio' | 'about' | 'footer'>('home');
+  const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio' | 'portfolio-categories' | 'about' | 'footer'>('home');
   const [activeServicePricelist, setActiveServicePricelist] = createSignal<string>('studio');
   const [activeServicePortfolio, setActiveServicePortfolio] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
@@ -142,6 +142,18 @@ const AdminHome: Component = () => {
   const [serviceImageUploaded, setServiceImageUploaded] = createSignal(false);
   const [allServices, setAllServices] = createSignal<any[]>([]);
 
+  // Portfolio Categories Management
+  const [portfolioCategoriesData, setPortfolioCategoriesData] = createSignal<any[]>([]);
+  const [showAddCategoryModal, setShowAddCategoryModal] = createSignal(false);
+  const [isEditingCategory, setIsEditingCategory] = createSignal(false);
+  const [editingCategoryId, setEditingCategoryId] = createSignal<number | null>(null);
+  const [newCategoryName, setNewCategoryName] = createSignal('Kategori Baru');
+  const [newCategorySlug, setNewCategorySlug] = createSignal('kategori-baru');
+  const [newCategoryDescription, setNewCategoryDescription] = createSignal('Deskripsi kategori');
+  const [newCategoryTagExample, setNewCategoryTagExample] = createSignal('Category #1');
+  const [newCategoryExamplePhoto, setNewCategoryExamplePhoto] = createSignal('');
+  const [uploadingCategoryPhoto, setUploadingCategoryPhoto] = createSignal(false);
+
   onMount(async () => {
     // Load all content on component mount
     console.log('[AdminHome.onMount] Starting load...');
@@ -149,6 +161,8 @@ const AdminHome: Component = () => {
     console.log('[AdminHome.onMount] contentStore.loadAll() complete');
     await loadPackages();
     console.log('[AdminHome.onMount] loadPackages() complete');
+    await loadPortfolioCategories();
+    console.log('[AdminHome.onMount] loadPortfolioCategories() complete');
     // Load services after packages are loaded
     loadAllServices();
     console.log('[AdminHome.onMount] loadAllServices() complete');
@@ -209,6 +223,137 @@ const AdminHome: Component = () => {
     const category = activeServicePricelist().toLowerCase();
     return packages().filter((pkg) => pkg.category?.toLowerCase() === category);
   });
+
+  // Portfolio Categories Functions
+  const loadPortfolioCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/portfolio-categories`);
+      const data = await res.json();
+      if (data.success) {
+        setPortfolioCategoriesData(data.data || []);
+      }
+    } catch (error) {
+      console.error('[loadPortfolioCategories] Error:', error);
+    }
+  };
+
+  const savePortfolioCategory = async () => {
+    const token = authStore.getToken();
+    if (!token) {
+      handleError('Token tidak ditemukan');
+      return;
+    }
+
+    try {
+      const payload = {
+        name: newCategoryName(),
+        slug: newCategorySlug(),
+        description: newCategoryDescription(),
+        tagExample: newCategoryTagExample(),
+        examplePhotoUrl: newCategoryExamplePhoto(),
+      };
+
+      const url = isEditingCategory()
+        ? `${API_BASE}/portfolio-categories/${editingCategoryId()}`
+        : `${API_BASE}/portfolio-categories`;
+
+      const method = isEditingCategory() ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        handleSave(isEditingCategory() ? 'Kategori berhasil diperbarui' : 'Kategori berhasil dibuat');
+        await loadPortfolioCategories();
+        resetCategoryModal();
+      } else {
+        handleError(data.message || 'Gagal menyimpan kategori');
+      }
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Gagal menyimpan kategori');
+      console.error('[savePortfolioCategory] Error:', error);
+    }
+  };
+
+  const deletePortfolioCategory = async (id: number) => {
+    const token = authStore.getToken();
+    if (!token) {
+      handleError('Token tidak ditemukan');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/portfolio-categories/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        handleSave('Kategori berhasil dihapus');
+        await loadPortfolioCategories();
+      } else {
+        handleError(data.message || 'Gagal menghapus kategori');
+      }
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Gagal menghapus kategori');
+      console.error('[deletePortfolioCategory] Error:', error);
+    }
+  };
+
+  const resetCategoryModal = () => {
+    setShowAddCategoryModal(false);
+    setIsEditingCategory(false);
+    setEditingCategoryId(null);
+    setNewCategoryName('Kategori Baru');
+    setNewCategorySlug('kategori-baru');
+    setNewCategoryDescription('Deskripsi kategori');
+    setNewCategoryTagExample('Category #1');
+    setNewCategoryExamplePhoto('');
+  };
+
+  const openEditCategoryModal = (category: any) => {
+    setIsEditingCategory(true);
+    setEditingCategoryId(category.id);
+    setNewCategoryName(category.name);
+    setNewCategorySlug(category.slug);
+    setNewCategoryDescription(category.description);
+    setNewCategoryTagExample(category.tagExample);
+    setNewCategoryExamplePhoto(category.examplePhotoUrl || '');
+    setShowAddCategoryModal(true);
+  };
+
+  const uploadCategoryPhoto = async (file: File) => {
+    setUploadingCategoryPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(`${API_BASE}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.data?.url) {
+        setNewCategoryExamplePhoto(data.data.url);
+        handleSave('Foto berhasil diupload');
+      } else {
+        handleError(data.message ||'Upload gagal');
+      }
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Upload gagal');
+    } finally {
+      setUploadingCategoryPhoto(false);
+    }
+  };
 
   // Load all unique service categories
   const loadAllServices = () => {
@@ -1120,6 +1265,17 @@ const AdminHome: Component = () => {
             >
               <AiFillCamera size={20} />
               Portfolio
+            </button>
+            <button
+              onClick={() => setCurrentPage('portfolio-categories')}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'portfolio-categories'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillFileImage size={20} />
+              Kategori Portfolio
             </button>
             <button
               onClick={async () => {
@@ -2403,6 +2559,187 @@ const AdminHome: Component = () => {
                         class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                       >
                         Ya, Muat Ulang
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Show>
+            </div>
+          </Show>
+
+          {/* PORTFOLIO CATEGORIES MANAGEMENT */}
+          <Show when={currentPage() === 'portfolio-categories'}>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillFileImage class="inline mr-2" size={24} />Manajemen Kategori Portfolio</h2>
+              <p class="text-gray-600 mb-6">Kelola jenis-jenis portfolio yang akan ditampilkan di halaman portofolio.</p>
+
+              <button
+                onClick={() => resetCategoryModal() || setShowAddCategoryModal(true)}
+                class="mb-8 px-5 py-2.5 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium text-sm"
+              >
+                + Tambah Kategori Baru
+              </button>
+
+              {/* Categories List */}
+              <div class="space-y-4">
+                <For each={portfolioCategoriesData()} fallback={
+                  <div class="p-5 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-500">
+                    Belum ada kategori. Buat kategori baru untuk memulai.
+                  </div>
+                }>
+                  {(category) => (
+                    <div class="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex gap-4 items-start">
+                        <Show when={category.examplePhotoUrl}>
+                          <div class="w-24 h-24 flex-shrink-0">
+                            <img 
+                              src={resolveMediaUrl(category.examplePhotoUrl)} 
+                              alt={category.name}
+                              class="w-full h-full object-cover rounded"
+                            />
+                          </div>
+                        </Show>
+                        <div class="flex-grow">
+                          <h3 class="font-bold text-gray-800 mb-2">{category.name}</h3>
+                          <p class="text-sm text-gray-600 mb-2">{category.description}</p>
+                          <div class="flex gap-4 text-xs text-gray-500">
+                            <span>Tag: <code class="bg-gray-200 px-1 py-0.5 rounded">{category.tagExample}</code></span>
+                            <span>Slug: <code class="bg-gray-200 px-1 py-0.5 rounded">{category.slug}</code></span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => openEditCategoryModal(category)}
+                          class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-blue-200 hover:border-blue-300"
+                        >
+                          <FaSolidEdit size={16} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deletePortfolioCategory(category.id)}
+                          class="px-3 py-2 text-red-600 hover:bg-red-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-red-200 hover:border-red-300"
+                        >
+                          <FaSolidTrashAlt size={16} />
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </For>
+              </div>
+
+              {/* Add/Edit Category Modal */}
+              <Show when={showAddCategoryModal()}>
+                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                      {isEditingCategory() ? 'Edit Kategori Portfolio' : 'Tambah Kategori Portfolio Baru'}
+                    </h3>
+
+                    <div class="space-y-4 mb-6">
+                      {/* Name Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Kategori</label>
+                        <input
+                          type="text"
+                          value={newCategoryName()}
+                          onInput={(e) => setNewCategoryName(e.currentTarget.value)}
+                          placeholder="Misal: Portrait Photography"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                        />
+                      </div>
+
+                      {/* Slug Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Slug</label>
+                        <input
+                          type="text"
+                          value={newCategorySlug()}
+                          onInput={(e) => setNewCategorySlug(e.currentTarget.value)}
+                          placeholder="Misal: portrait"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] font-mono text-sm"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">URL-friendly identifier, gunakan huruf kecil dan tanda hubung</p>
+                      </div>
+
+                      {/* Description Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi</label>
+                        <textarea
+                          value={newCategoryDescription()}
+                          onInput={(e) => setNewCategoryDescription(e.currentTarget.value)}
+                          placeholder="Deskripsi kategori portfolio ini..."
+                          rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] resize-none"
+                        />
+                      </div>
+
+                      {/* Tag Example Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Tag Contoh</label>
+                        <input
+                          type="text"
+                          value={newCategoryTagExample()}
+                          onInput={(e) => setNewCategoryTagExample(e.currentTarget.value)}
+                          placeholder="Misal: Portrait #1"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tipe #Nomor</p>
+                      </div>
+
+                      {/* Example Photo Upload */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">Foto Contoh</label>
+                        <div class="flex items-start gap-4">
+                          <div class="flex-1">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const fileInput = document.createElement('input');
+                                fileInput.type = 'file';
+                                fileInput.accept = 'image/*';
+                                fileInput.onchange = async (e) => {
+                                  const file = (e.target as HTMLInputElement).files?.[0];
+                                  if (file) await uploadCategoryPhoto(file);
+                                };
+                                fileInput.click();
+                              }}
+                              disabled={uploadingCategoryPhoto()}
+                              class="w-full h-32 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#576250] hover:bg-gray-50 transition flex flex-col items-center justify-center text-gray-600 hover:text-[#576250] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                              <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                              </svg>
+                              <span class="text-sm font-medium">
+                                {uploadingCategoryPhoto() ? 'Uploading...' : 'Upload Foto'}
+                              </span>
+                            </button>
+                          </div>
+                          <Show when={newCategoryExamplePhoto()}>
+                            <div class="w-32 h-32 flex-shrink-0">
+                              <img
+                                src={resolveMediaUrl(newCategoryExamplePhoto())}
+                                alt="Preview"
+                                class="w-full h-full object-cover rounded-lg border border-gray-200"
+                              />
+                            </div>
+                          </Show>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div class="flex gap-3">
+                      <button
+                        onClick={() => resetCategoryModal()}
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        onClick={savePortfolioCategory}
+                        class="flex-1 px-4 py-2 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium"
+                      >
+                        {isEditingCategory() ? 'Perbarui Kategori' : 'Buat Kategori'}
                       </button>
                     </div>
                   </div>

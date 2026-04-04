@@ -1196,7 +1196,7 @@ const AdminHome: Component = () => {
             <select
               value={currentPage()}
               onChange={(e) => {
-                const page = e.currentTarget.value as 'home' | 'services' | 'pricelist' | 'portfolio' | 'about' | 'footer';
+                const page = e.currentTarget.value as 'home' | 'services' | 'pricelist' | 'portfolio' | 'portfolio-categories' | 'about' | 'footer';
                 setCurrentPage(page);
                 
                 // Load data for about/footer if needed
@@ -1211,12 +1211,13 @@ const AdminHome: Component = () => {
               }}
               class="w-full px-4 py-2 border border-gray-300 rounded-lg font-medium bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#576250]"
             >
-              <option value="home">🏠 Halaman Utama</option>
-              <option value="services">📋 Kelola Services</option>
-              <option value="pricelist">💰 Pricelist</option>
-              <option value="portfolio">📷 Portfolio</option>
-              <option value="about">📖 Halaman About</option>
-              <option value="footer">🔗 Kelola Footer</option>
+              <option value="home">Halaman Utama</option>
+              <option value="services">Kelola Services</option>
+              <option value="pricelist">Pricelist</option>
+              <option value="portfolio">Portfolio</option>
+              <option value="portfolio-categories">Kategori Portfolio</option>
+              <option value="about">Halaman About</option>
+              <option value="footer">Kelola Footer</option>
             </select>
           </div>
 
@@ -1307,7 +1308,7 @@ const AdminHome: Component = () => {
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              <AiFillFileImage size={20} />
+              <FaSolidPhoneAlt size={20} />
               Kelola Footer
             </button>
           </div>

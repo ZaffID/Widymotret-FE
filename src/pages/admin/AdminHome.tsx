@@ -152,6 +152,10 @@ const AdminHome: Component = () => {
     // Load services after packages are loaded
     loadAllServices();
     console.log('[AdminHome.onMount] loadAllServices() complete');
+    
+    // Reset to home tab and scroll to top on page load/refresh
+    setCurrentPage('home');
+    window.scrollTo(0, 0);
   });
 
   const getTemplateImagesByCategory = (category: string, seed = 0): string[] => {
@@ -847,10 +851,6 @@ const AdminHome: Component = () => {
       setEditTotalPhotosValue('');
       setEditCategoriesValue('');
       setPendingStatEdit(null);
-      
-      // Reset tab to home and scroll to top
-      setCurrentPage('home');
-      window.scrollTo(0, 0);
       
       handleSave('Data portfolio berhasil dimuat ulang dari database');
       console.log('[AdminHome] Portfolio data refreshed successfully');

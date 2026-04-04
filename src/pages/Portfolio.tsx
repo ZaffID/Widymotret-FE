@@ -305,16 +305,15 @@ const Portfolio: Component = () => {
             <For each={currentImages()}>
               {(image, index) => (
                 <div 
-                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-100 scroll-reveal-item"
+                  class="group relative overflow-hidden rounded-lg cursor-pointer w-full bg-gray-100 scroll-reveal-item flex items-center justify-center min-h-[200px]"
                   onClick={() => handleImageClick(index())}
-                  style={{"aspect-ratio": "1/1"}}
                 >
-                  {/* Image */}
+                  {/* Image - with natural aspect ratio */}
                   <img
                     src={image.url}
                     alt={image.title}
                     loading="lazy"
-                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
 
                     />
 

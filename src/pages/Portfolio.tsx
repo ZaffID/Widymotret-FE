@@ -303,44 +303,40 @@ const Portfolio: Component = () => {
           </Show>
 
           <Show when={!loadError()}>
-            {/* Horizontal Scroll Gallery - One Row */}
-            <div class="portfolio-gallery-horizontal -mx-6 px-6">
-              <div class="flex gap-6 pb-4 min-w-min" ref={portfolioGridRef}>
-                <For each={currentImages()}>
-                  {(image, index) => (
-                    <div 
-                      class="group relative overflow-hidden rounded-lg cursor-pointer bg-gray-100 scroll-reveal-item flex items-center justify-center flex-shrink-0"
-                      onClick={() => handleImageClick(index())}
-                      style={{"width": "280px", "height": "280px"}}
-                    >
-                      {/* Image - with natural aspect ratio */}
-                      <img
-                        src={image.url}
-                        alt={image.title}
-                        loading="lazy"
-                        class="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110"
+            {/* Gallery with natural aspect ratios */}
+            <div class="columns-1 md:columns-2 lg:columns-3 gap-6 max-w-6xl mx-auto" ref={portfolioGridRef}>
+              <For each={currentImages()}>
+                {(image, index) => (
+                  <div 
+                    class="group relative overflow-hidden rounded-lg cursor-pointer bg-gray-100 scroll-reveal-item mb-6 break-inside-avoid"
+                    onClick={() => handleImageClick(index())}
+                  >
+                    {/* Image - with natural aspect ratio */}
+                    <img
+                      src={image.url}
+                      alt={image.title}
+                      loading="lazy"
+                      class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
 
-                        />
-
-                      {/* Overlay */}
-                      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                        <div>
-                          <h3 class="text-white font-medium text-sm line-clamp-2">
-                            {image.title}
-                          </h3>
-                        </div>
-                      </div>
-
-                      {/* Zoom Icon */}
-                      <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 13H7" />
-                        </svg>
+                    {/* Overlay */}
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                      <div>
+                        <h3 class="text-white font-medium text-sm line-clamp-2">
+                          {image.title}
+                        </h3>
                       </div>
                     </div>
-                  )}
-                </For>
-              </div>
+
+                    {/* Zoom Icon */}
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 13H7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </For>
             </div>
           </Show>
 

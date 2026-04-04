@@ -304,7 +304,7 @@ const Portfolio: Component = () => {
       {/* Stats Section - Only Total Photos & Categories (No Title) */}
       <section class="py-16 px-6 bg-gray-50">
         <div class="container mx-auto max-w-6xl">
-          <div class="grid grid-cols-2 md:grid-cols-2 gap-8 max-w-md mx-auto">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
             <div class="text-center">
               <div class="text-4xl font-bold text-[#576250] mb-2">
                 {portfolioImages.length}+
@@ -316,6 +316,18 @@ const Portfolio: Component = () => {
                 {portfolioCategories.length}
               </div>
               <p class="text-gray-600 text-sm">Categories</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-bold text-[#576250] mb-2">
+                {happyClients()}
+              </div>
+              <p class="text-gray-600 text-sm">Happy Clients</p>
+            </div>
+            <div class="text-center">
+              <div class="text-4xl font-bold text-[#576250] mb-2">
+                {yearsExperience()}
+              </div>
+              <p class="text-gray-600 text-sm">Years Experience</p>
             </div>
           </div>
         </div>

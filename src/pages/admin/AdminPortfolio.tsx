@@ -65,7 +65,7 @@ const AdminPortfolio: Component = () => {
   };
 
   const currentCategory = () => 
-    portfolioCategories.find(c => c.slug === activeCategory());
+    portfolioCategories().find((c: PortfolioCategory) => c.slug === activeCategory());
 
   const currentImages = () => {
     // Always use stable portfolio IDs from portfolio.ts so field mapping stays consistent.
@@ -162,7 +162,7 @@ const AdminPortfolio: Component = () => {
         <div class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Kategori:</h2>
           <div class="flex gap-3 flex-wrap">
-            <For each={portfolioCategories}>
+            <For each={portfolioCategories()}>
               {(category) => (
                 <button
                   onClick={() => setActiveCategory(category.slug)}

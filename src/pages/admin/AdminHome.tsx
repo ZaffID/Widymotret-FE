@@ -31,12 +31,12 @@ interface ApiPackage {
 }
 
 interface PortfolioCategory {
-  id?: number;
+  id: number;
   name: string;
   slug: string;
   description: string;
-  tagExample?: string;
-  examplePhotoUrl?: string;
+  tagExample: string;
+  examplePhotoUrl: string | null;
 }
 
 import { AiFillHome } from 'solid-icons/ai';
@@ -399,7 +399,7 @@ const AdminHome: Component = () => {
     setNewCategoryExamplePhoto('');
   };
 
-  const openEditCategoryModal = (category: any) => {
+  const openEditCategoryModal = (category: PortfolioCategory) => {
     setIsEditingCategory(true);
     setEditingCategoryId(category.id);
     setNewCategoryName(category.name);
@@ -1073,7 +1073,7 @@ const AdminHome: Component = () => {
       
       // Auto-sync Categories: if stored value differs from actual category count, fix it
       const storedCategories = contentStore.getField('portfolio', 'categories');
-      const actualCategories = portfolioCategories.length.toString();
+      const actualCategories = portfolioCategoriesData().length.toString();
       if (storedCategories && storedCategories !== actualCategories) {
         console.log(`[AdminHome] Auto-syncing Categories: ${storedCategories} → ${actualCategories}`);
         await updateContent('portfolio', 'categories', actualCategories);
@@ -2366,7 +2366,7 @@ const AdminHome: Component = () => {
 
               {/* Tabs Kategori */}
               <div class="bg-gray-50 rounded-xl p-1 mb-8 flex gap-2 flex-wrap">
-                <For each={portfolioCategories}>
+                <For each={portfolioCategoriesData()}>
                   {(cat) => (
                     <button
                       onClick={() => setActiveServicePortfolio(cat.slug)}
@@ -2384,7 +2384,7 @@ const AdminHome: Component = () => {
 
               {/* Portfolio Images for selected category */}
               {(() => {
-                const cat = () => portfolioCategories.find(c => c.slug === activeServicePortfolio());
+                const cat = () => portfolioCategoriesData().find((c: PortfolioCategory) => c.slug === activeServicePortfolio());
                 return (
                   <Show when={cat()}>
                     {(category) => (
@@ -2533,7 +2533,7 @@ const AdminHome: Component = () => {
                     <div class="relative">
                       <input
                         type="text"
-                        value={portfolioCategories.length.toString()}
+                        value={portfolioCategoriesData().length.toString()}
                         disabled
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed font-semibold text-lg"
                         title="Nilai ini otomatis dihitung dari jumlah kategori"
@@ -2685,7 +2685,7 @@ const AdminHome: Component = () => {
                         <Show when={category.examplePhotoUrl}>
                           <div class="w-24 h-24 flex-shrink-0">
                             <img 
-                              src={resolveMediaUrl(category.examplePhotoUrl)} 
+                              src={resolveMediaUrl(category.examplePhotoUrl || '')} 
                               alt={category.name}
                               class="w-full h-full object-cover rounded"
                             />

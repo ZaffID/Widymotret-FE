@@ -44,10 +44,16 @@ const Portfolio: Component = () => {
       
       if (catData.success && Array.isArray(catData.data)) {
         console.log('[Portfolio] Categories fetched:', catData.data);
-        setPortfolioCategories(catData.data);
+        // Sort categories by createdAt ascending (oldest first, newest last)
+        const sortedCategories = [...catData.data].sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return dateA - dateB; // Ascending: oldest first, newest last
+        });
+        setPortfolioCategories(sortedCategories);
         // Set first category as active if available
-        if (catData.data.length > 0) {
-          setActiveCategory(catData.data[0].slug);
+        if (sortedCategories.length > 0) {
+          setActiveCategory(sortedCategories[0].slug);
         }
       } else {
         console.warn('[Portfolio] No categories found in response');
@@ -271,11 +277,11 @@ const Portfolio: Component = () => {
           </div>
 
           {/* Category Description */}
-          <div class="text-center mt-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-2">
+          <div class="w-full text-center mt-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-2 inline-block">
               {portfolioCategories().find(c => c.slug === activeCategory())?.name}
             </h2>
-            <p class="text-gray-600">
+            <p class="text-gray-600 inline-block w-full">
               {portfolioCategories().find(c => c.slug === activeCategory())?.description}
             </p>
           </div>

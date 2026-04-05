@@ -2777,46 +2777,6 @@ const AdminHome: Component = () => {
                         />
                         <p class="text-xs text-gray-500 mt-1">Format: Nama Tipe #Nomor</p>
                       </div>
-
-                      {/* Example Photo Upload */}
-                      <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-3">Foto Contoh</label>
-                        <div class="flex items-start gap-4">
-                          <div class="flex-1">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const fileInput = document.createElement('input');
-                                fileInput.type = 'file';
-                                fileInput.accept = 'image/*';
-                                fileInput.onchange = async (e) => {
-                                  const file = (e.target as HTMLInputElement).files?.[0];
-                                  if (file) await uploadCategoryPhoto(file);
-                                };
-                                fileInput.click();
-                              }}
-                              disabled={uploadingCategoryPhoto()}
-                              class="w-full h-32 rounded-lg border-2 border-dashed border-gray-300 hover:border-[#576250] hover:bg-gray-50 transition flex flex-col items-center justify-center text-gray-600 hover:text-[#576250] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                            >
-                              <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                              </svg>
-                              <span class="text-sm font-medium">
-                                {uploadingCategoryPhoto() ? 'Uploading...' : 'Upload Foto'}
-                              </span>
-                            </button>
-                          </div>
-                          <Show when={newCategoryExamplePhoto()}>
-                            <div class="w-32 h-32 flex-shrink-0">
-                              <img
-                                src={resolveMediaUrl(newCategoryExamplePhoto())}
-                                alt="Preview"
-                                class="w-full h-full object-cover rounded-lg border border-gray-200"
-                              />
-                            </div>
-                          </Show>
-                        </div>
-                      </div>
                     </div>
 
                     {/* Action Buttons */}

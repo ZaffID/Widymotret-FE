@@ -285,27 +285,14 @@ const Portfolio: Component = () => {
       {/* Category Tabs - Horizontal Scroll */}
       <section class="py-8 px-6 bg-white shadow-sm">
         <div class="container mx-auto max-w-6xl">
-          <div class="portfolio-category-tabs -mx-6 px-6">
-            {/* Mobile Select Dropdown */}
-            <select 
-              class="block md:hidden w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 focus:outline-none focus:border-[#576250] mb-4"
-              value={activeCategory()}
-              onChange={(e) => setActiveCategory(e.target.value)}
-            >
-              <For each={portfolioCategories()}>
-                {(category) => (
-                  <option value={category.slug}>{category.name}</option>
-                )}
-              </For>
-            </select>
-
-            {/* Desktop Horizontal Scroll */}
-            <div class="hidden md:flex gap-3 pb-2 min-w-min">
+          <div class="portfolio-category-tabs overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 -mx-6 px-6">
+            {/* Horizontal Scroll Buttons - All Screen Sizes */}
+            <div class="flex gap-2 pb-2 min-w-min">
               <For each={portfolioCategories()}>
                 {(category) => (
                   <button
                     onClick={() => setActiveCategory(category.slug)}
-                    class="px-6 py-2 rounded-lg font-medium transition-all duration-300 text-sm md:text-base whitespace-nowrap flex-shrink-0"
+                    class="px-4 md:px-6 py-2 rounded-lg font-medium transition-all duration-300 text-xs md:text-sm whitespace-nowrap flex-shrink-0"
                     classList={{
                       'bg-[#576250] text-white shadow-md': activeCategory() === category.slug,
                       'bg-gray-200 text-gray-700 hover:bg-gray-300': activeCategory() !== category.slug,

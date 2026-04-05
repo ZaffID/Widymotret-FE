@@ -203,14 +203,13 @@ const AdminPortfolio: Component = () => {
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 <For each={currentImages()}>
                   {(image, idx) => {
-                    // Get label from DB tagExample, dynamically numbered
+                    // Get label: categoryName + tagExample (which is now #X format only)
                     const getImageLabel = () => {
                       const cat = currentCategory();
                       if (!cat?.tagExample) return `Foto #${idx() + 1}`;
-                      // Extract base text from tag (e.g., "Portrait Photography #1" -> "Portrait Photography")
-                      const match = cat.tagExample.match(/^(.+?)\s*#\d+$/);
-                      const baseText = match ? match[1] : cat.tagExample;
-                      return `${baseText} #${idx() + 1}`;
+                      // tagExample format: "#1", "#2", etc (just the number part)
+                      // Display: "{category.name} #{index}"
+                      return `${cat.name} #${idx() + 1}`;
                     };
 
                     return (

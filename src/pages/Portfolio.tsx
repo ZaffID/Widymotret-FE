@@ -33,10 +33,8 @@ const Portfolio: Component = () => {
   const [isLoading, setIsLoading] = createSignal(true);
 
   // Check BE health and load all portfolio data on mount
-  onMount(async () => {
-    setIsLoading(true);
+  const fetchCategories = async () => {
     try {
-      // Fetch portfolio categories from API
       console.log('[Portfolio] Fetching categories from API...');
       const catRes = await fetch(`${API_BASE}/portfolio-categories`);
       if (!catRes.ok) throw new Error('Failed to fetch categories');
@@ -48,16 +46,27 @@ const Portfolio: Component = () => {
         const sortedCategories = [...catData.data].sort((a: any, b: any) => {
           const dateA = new Date(a.createdAt).getTime();
           const dateB = new Date(b.createdAt).getTime();
-          return dateA - dateB; // Ascending: oldest first, newest last
+          return dateA - dateB;
         });
         setPortfolioCategories(sortedCategories);
         // Set first category as active if available
-        if (sortedCategories.length > 0) {
+        if (sortedCategories.length > 0 && !activeCategory()) {
           setActiveCategory(sortedCategories[0].slug);
         }
       } else {
         console.warn('[Portfolio] No categories found in response');
       }
+      setLoadError(false);
+    } catch (err) {
+      console.error('[Portfolio] Failed to fetch categories:', err);
+      setLoadError(true);
+    }
+  };
+
+  onMount(async () => {
+    setIsLoading(true);
+    try {
+      await fetchCategories();
 
       // Try fetch from BE - if fails, show warning
       const res = await fetch(`${API_BASE}/packages`, { method: 'HEAD' });
@@ -66,7 +75,14 @@ const Portfolio: Component = () => {
       // Load portfolio section - gets ALL fields including new items added by admin
       await contentStore.loadSection('portfolio');
       console.log('[Portfolio] Loaded all portfolio fields from backend');
-      setLoadError(false);
+
+      // Re-fetch categories every 3 seconds to sync tag changes
+      const interval = setInterval(() => {
+        console.log('[Portfolio] Auto-refreshing categories...');
+        fetchCategories();
+      }, 3000);
+
+      return () => clearInterval(interval);
     } catch (err) {
       console.error('Backend unavailable:', err);
       setLoadError(true);
@@ -139,13 +155,11 @@ const Portfolio: Component = () => {
       const getImageLabel = () => {
         const dbCategory = portfolioCategories().find(c => c.slug === category);
         if (!dbCategory?.tagExample) return img.title;
-        // Extract base text from tag (e.g., "Portrait Photography #1" -> "Portrait Photography")
-        const match = dbCategory.tagExample.match(/^(.+?)\s*#\d+$/);
-        const baseText = match ? match[1] : dbCategory.tagExample;
-        // Calculate index (1-based) for numbering
+        // tagExample format: "#1", "#2", etc (just the number part)
+        // Display: "{category.name} #{index}"
         const allCategoryImages = allImages;
         const imageIndex = allCategoryImages.findIndex(i => i.id === img.id);
-        return `${baseText} #${imageIndex + 1}`;
+        return `${dbCategory.name} #${imageIndex + 1}`;
       };
       
       return {

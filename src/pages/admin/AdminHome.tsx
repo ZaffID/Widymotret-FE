@@ -202,13 +202,32 @@ const AdminHome: Component = () => {
       const data = await res.json();
       if (data.success) {
         console.log('[loadPackages] FULL Raw API response (first package):', JSON.stringify(data.data?.[0], null, 2));
+        
+        // Build service slug to category map for image restoration
+        const serviceMap = new Map(allServices().map(s => [s.slug, s]));
+        
         const hydrated = (data.data || []).map((pkg: ApiPackage, idx: number) => {
-          const result = {
-            ...pkg,
-            images: Array.isArray(pkg.images) && pkg.images.length > 0
-              ? pkg.images
-              : getTemplateImagesByCategory(pkg.category, idx),
-          };
+          // Try to find service for this package category
+          const categoryService = allServices().find(s => s.slug === pkg.category?.toLowerCase());
+          
+          let images = Array.isArray(pkg.images) && pkg.images.length > 0
+            ? pkg.images
+            : getTemplateImagesByCategory(pkg.category, idx);
+          
+          // Try to restore images from contentStore (saved by EditableImage)
+          if (categoryService) {
+            const restoredImages: string[] = [];
+            for (let i = 0; i < (images?.length || 4); i++) {
+              const field = `${categoryService.slug}_pkg_image_${i}`;
+              const savedImage = contentStore.getField('service', field);
+              restoredImages.push(savedImage || images[i] || getTemplateImagesByCategory(pkg.category, i)[i]);
+            }
+            images = restoredImages;
+            console.log(`[loadPackages] Restored ${restoredImages.length} images for category "${pkg.category}"`);
+          }
+          
+          const result = { ...pkg, images };
+          
           if (idx === 0) {
             console.log('[loadPackages] First package after loading:', JSON.stringify(result, null, 2));
             console.log('[loadPackages] First package whatsappLinkType:', result.whatsappLinkType);
@@ -2243,8 +2262,8 @@ const AdminHome: Component = () => {
                                       <EditableImage
                                         label={`Foto #${imgIdx() + 1}`}
                                         value={img}
-                                        section={`package-${pkg.id}`}
-                                        field={`image-${imgIdx()}`}
+                                        section="service"
+                                        field={`${service().slug}_pkg_image_${imgIdx()}`}
                                         aspectClass="aspect-video"
                                         onUpload={uploadImageForPackage}
                                         onSave={(newValue) => {

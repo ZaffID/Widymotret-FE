@@ -227,10 +227,17 @@ const AdminHome: Component = () => {
   // Portfolio Categories Functions
   const loadPortfolioCategories = async () => {
     try {
-      const res = await fetch(`${API_BASE}/portfolio-categories`);
+      const url = `${API_BASE}/portfolio-categories`;
+      console.log('[loadPortfolioCategories] Fetching from URL:', url);
+      const res = await fetch(url);
+      console.log('[loadPortfolioCategories] Response status:', res.status);
       const data = await res.json();
+      console.log('[loadPortfolioCategories] Response data:', data);
       if (data.success) {
+        console.log('[loadPortfolioCategories] Setting categories:', data.data);
         setPortfolioCategoriesData(data.data || []);
+      } else {
+        console.error('[loadPortfolioCategories] API returned success=false');
       }
     } catch (error) {
       console.error('[loadPortfolioCategories] Error:', error);

@@ -203,10 +203,10 @@ const AdminPortfolio: Component = () => {
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 <For each={currentImages()}>
                   {(image, idx) => {
-                    // Get label from tagExample: replace #X with actual index
+                    // Get label from tagExample or image.title: replace #X with actual index
                     const getImageLabel = () => {
                       const cat = currentCategory();
-                      if (!cat?.tagExample) return `Foto #${idx() + 1}`;
+                      if (!cat?.tagExample) return image.title || `Foto #${idx() + 1}`;
                       // tagExample format: "Wedding #X" - replace X with index
                       return cat.tagExample.replace(/#X$/i, `#${idx() + 1}`);
                     };

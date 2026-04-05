@@ -173,8 +173,8 @@ const AdminPortfolio: Component = () => {
 
         {/* Category Tabs */}
         <div class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Kategori:</h2>
-          <div class="flex gap-3 flex-wrap">
+          <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">Pilih Kategori:</h2>
+          <div class="flex gap-3 flex-wrap justify-center">
             <For each={portfolioCategories()}>
               {(category) => (
                 <button
@@ -202,10 +202,21 @@ const AdminPortfolio: Component = () => {
               {/* Portfolio Images Grid */}
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 <For each={currentImages()}>
-                  {(image, idx) => (
+                  {(image, idx) => {
+                    // Get label from DB tagExample, dynamically numbered
+                    const getImageLabel = () => {
+                      const cat = currentCategory();
+                      if (!cat?.tagExample) return `Foto #${idx() + 1}`;
+                      // Extract base text from tag (e.g., "Portrait Photography #1" -> "Portrait Photography")
+                      const match = cat.tagExample.match(/^(.+?)\s*#\d+$/);
+                      const baseText = match ? match[1] : cat.tagExample;
+                      return `${baseText} #${idx() + 1}`;
+                    };
+
+                    return (
                     <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col h-full">
                       <EditableImage
-                        label={`Foto #${idx() + 1}`}
+                        label={getImageLabel()}
                         value={contentStore.getField('portfolio', `${activeCategory()}_${image.id}`) || image.url}
                         section="portfolio"
                         field={`${activeCategory()}_${image.id}`}
@@ -218,7 +229,8 @@ const AdminPortfolio: Component = () => {
                         onError={handleError}
                       />
                     </div>
-                  )}
+                    );
+                  }}
                 </For>
 
                 {/* Add New Image Button */}

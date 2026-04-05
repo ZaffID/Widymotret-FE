@@ -21,7 +21,7 @@ const Home: Component = () => {
   const [isPriceListOpen, setIsPriceListOpen] = createSignal(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = createSignal(false);
   const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
-  const [allServices, setAllServices] = createSignal<Array<{ slug: string; title: string; description: string; image: string }>>([]);
+  const [allServices, setAllServices] = createSignal<Array<{ slug: string; title: string; description: string; image: string }>>(servicesData);
 
   // Scroll reveal refs for each section
   const introRef = useScrollReveal({ threshold: 0.5 });

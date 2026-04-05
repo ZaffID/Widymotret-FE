@@ -21,6 +21,7 @@ const Home: Component = () => {
   const [isPriceListOpen, setIsPriceListOpen] = createSignal(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = createSignal(false);
   const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
+  const [allServices, setAllServices] = createSignal<Array<{ slug: string; title: string; description: string; image: string }>>([]);
 
   // Scroll reveal refs for each section
   const introRef = useScrollReveal({ threshold: 0.5 });
@@ -41,6 +42,48 @@ const Home: Component = () => {
   const serviceTitle = (slug: string, fallback: string): string =>
     contentStore.getField('service', `${slug}_title`) || fallback;
 
+  // Load all services: hardcoded + API-fetched from packages
+  const loadServices = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const res = await fetch(`${apiUrl}/api/packages`);
+      
+      if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
+      
+      const data = await res.json();
+      
+      if (data.success && Array.isArray(data.data)) {
+        // Build: hardcoded + unique categories from API
+        const servicesMap = new Map(servicesData.map(s => [s.slug, { 
+          slug: s.slug, 
+          title: s.title, 
+          description: s.description, 
+          image: s.image 
+        }]));
+        
+        // Add API categories not in hardcoded
+        data.data.forEach((pkg: any) => {
+          const category = pkg.category?.toLowerCase();
+          if (category && !servicesMap.has(category)) {
+            servicesMap.set(category, {
+              slug: category,
+              title: category.charAt(0).toUpperCase() + category.slice(1),
+              description: 'Layanan fotografi',
+              image: '/photography.png'
+            });
+          }
+        });
+        
+        setAllServices(Array.from(servicesMap.values()));
+      } else {
+        setAllServices(servicesData);
+      }
+    } catch (err) {
+      console.error('[Home] Error loading services:', err);
+      setAllServices(servicesData);
+    }
+  };
+
   onMount(async () => {
     await Promise.all([
       contentStore.loadSection('hero'),
@@ -54,6 +97,8 @@ const Home: Component = () => {
       contentStore.loadSection('service'),
       contentStore.loadSection('portfolio'),
     ]);
+    // Load services after content store is ready
+    await loadServices();
   });
 
   
@@ -281,7 +326,7 @@ const Home: Component = () => {
                   ref={serviceScrollContainer!}
                   class="service-scroll-container flex gap-4 md:gap-6 overflow-x-auto pb-4 px-1"
                 >
-                  <For each={servicesData}>
+                  <For each={allServices()}>
                     {(service) => (
                       <div 
                         class="flex-shrink-0 w-[84%] sm:w-[68%] md:w-1/3 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"

@@ -4,7 +4,7 @@ import { authStore } from '../../stores/authStore';
 import { contentStore } from '../../stores/contentStore';
 import { EditableText } from '../../components/admin/EditableText';
 import { EditableImage } from '../../components/admin/EditableImage';
-import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
+import { getImagesByCategory } from '../../data/portfolio';
 import { FaSolidArrowLeftLong } from 'solid-icons/fa';
 import { AiFillCamera } from 'solid-icons/ai';
 import { FaSolidTrashAlt } from 'solid-icons/fa';
@@ -12,14 +12,59 @@ import { FaSolidLightbulb } from 'solid-icons/fa';
 
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
 
+interface PortfolioCategory {
+  id?: number;
+  name: string;
+  slug: string;
+  description: string;
+  tagExample?: string;
+  examplePhotoUrl?: string;
+}
+
 const AdminPortfolio: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
+  const [portfolioCategories, setPortfolioCategories] = createSignal<PortfolioCategory[]>([]);
   const [activeCategory, setActiveCategory] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
 
+  const fetchCategories = async () => {
+    try {
+      console.log('[AdminPortfolio] Fetching categories from API...');
+      const res = await fetch(`${API_BASE}/portfolio-categories`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          const sorted = [...data.data].sort((a, b) => (a.id || 0) - (b.id || 0));
+          console.log('[AdminPortfolio] RAW Response data:', data.data);
+          console.log('[AdminPortfolio] Categories after sort:', sorted);
+          sorted.forEach((cat: any) => {
+            console.log(`[AdminPortfolio] Category: ${cat.name}, slug: ${cat.slug}, tagExample: "${cat.tagExample}"`);
+          });
+          setPortfolioCategories(sorted);
+          // Set first category as active if available
+          if (sorted.length > 0 && !activeCategory()) {
+            setActiveCategory(sorted[0].slug);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[AdminPortfolio] Failed to fetch categories:', err);
+    }
+  };
+
   onMount(async () => {
     await contentStore.loadAll();
+    await fetchCategories();
+
+    // Re-fetch categories every 3 seconds to sync tag changes from AdminHome
+    const interval = setInterval(() => {
+      console.log('[AdminPortfolio] Auto-refreshing categories for tag sync...');
+      fetchCategories();
+    }, 3000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   });
 
   const handleLogout = () => {
@@ -37,7 +82,7 @@ const AdminPortfolio: Component = () => {
   };
 
   const currentCategory = () => 
-    portfolioCategories.find(c => c.slug === activeCategory());
+    portfolioCategories().find((c: PortfolioCategory) => c.slug === activeCategory());
 
   const currentImages = () => {
     // Always use stable portfolio IDs from portfolio.ts so field mapping stays consistent.
@@ -132,9 +177,9 @@ const AdminPortfolio: Component = () => {
 
         {/* Category Tabs */}
         <div class="mb-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 class="text-lg font-semibold text-gray-800 mb-4">Pilih Kategori:</h2>
-          <div class="flex gap-3 flex-wrap">
-            <For each={portfolioCategories}>
+          <h2 class="text-lg font-semibold text-gray-800 mb-4 text-center">Pilih Kategori:</h2>
+          <div class="flex gap-3 flex-wrap justify-center">
+            <For each={portfolioCategories()}>
               {(category) => (
                 <button
                   onClick={() => setActiveCategory(category.slug)}
@@ -161,10 +206,26 @@ const AdminPortfolio: Component = () => {
               {/* Portfolio Images Grid */}
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 <For each={currentImages()}>
-                  {(image, idx) => (
+                  {(image, idx) => {
+                    // Get label from tagExample or image.title: replace #X with actual index
+                    const getImageLabel = () => {
+                      const cat = currentCategory();
+                      console.log(`[AdminPortfolio] Label compute for image ${image.id}: cat=${cat?.name}, tagExample="${cat?.tagExample}"`);
+                      if (!cat?.tagExample) {
+                        const fallback = image.title || `Foto #${idx() + 1}`;
+                        console.log(`[AdminPortfolio]   -> No tagExample, using fallback: "${fallback}"`);
+                        return fallback;
+                      }
+                      // tagExample format: "Wedding #X" - replace X with index
+                      const label = cat.tagExample.replace(/#X$/i, `#${idx() + 1}`);
+                      console.log(`[AdminPortfolio]   -> tagExample found: "${cat.tagExample}" -> "${label}"`);
+                      return label;
+                    };
+
+                    return (
                     <div class="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex flex-col h-full">
                       <EditableImage
-                        label={`Foto #${idx() + 1}`}
+                        label={getImageLabel()}
                         value={contentStore.getField('portfolio', `${activeCategory()}_${image.id}`) || image.url}
                         section="portfolio"
                         field={`${activeCategory()}_${image.id}`}
@@ -177,7 +238,8 @@ const AdminPortfolio: Component = () => {
                         onError={handleError}
                       />
                     </div>
-                  )}
+                    );
+                  }}
                 </For>
 
                 {/* Add New Image Button */}

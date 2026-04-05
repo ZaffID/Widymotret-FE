@@ -5,16 +5,27 @@ import Footer from '../components/Footer';
 import ContactModal from '../components/ContactModal';
 import ScrollToTop from '../components/ScrollToTop';
 import { GalleryModal } from '../components/portfolio/GalleryModal';
-import { portfolioCategories, portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
+import { ScrollRevealImage } from '../components/portfolio/ScrollRevealImage';
+import { portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
 import { contentStore } from '../stores/contentStore';
 import { resolveMediaUrl } from '../utils/mediaUrl';
-import { useScrollRevealGroup } from '../hooks/useScrollReveal';
 import '../styles/scroll-reveal.css';
 import './Portfolio.css';
 
+interface PortfolioCategory {
+  id?: number;
+  name: string;
+  slug: string;
+  description: string;
+  tagExample?: string;
+  examplePhotoUrl?: string;
+}
+
 const Portfolio: Component = () => {
+  const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
   const [searchParams] = useSearchParams();
-  const [activeCategory, setActiveCategory] = createSignal<'portrait' | 'event' | 'editorial' | 'retouching'>('portrait');
+  const [portfolioCategories, setPortfolioCategories] = createSignal<PortfolioCategory[]>([]);
+  const [activeCategory, setActiveCategory] = createSignal<string>('portrait');
   const [selectedImageIndex, setSelectedImageIndex] = createSignal<number | null>(null);
   const [isModalOpen, setIsModalOpen] = createSignal(false);
   const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
@@ -22,18 +33,56 @@ const Portfolio: Component = () => {
   const [isLoading, setIsLoading] = createSignal(true);
 
   // Check BE health and load all portfolio data on mount
+  const fetchCategories = async () => {
+    try {
+      console.log('[Portfolio] Fetching categories from API...');
+      const catRes = await fetch(`${API_BASE}/portfolio-categories`);
+      if (!catRes.ok) throw new Error('Failed to fetch categories');
+      const catData = await catRes.json();
+      
+      if (catData.success && Array.isArray(catData.data)) {
+        console.log('[Portfolio] Categories fetched:', catData.data);
+        // Sort categories by createdAt ascending (oldest first, newest last)
+        const sortedCategories = [...catData.data].sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt).getTime();
+          const dateB = new Date(b.createdAt).getTime();
+          return dateA - dateB;
+        });
+        setPortfolioCategories(sortedCategories);
+        // Set first category as active if available
+        if (sortedCategories.length > 0 && !activeCategory()) {
+          setActiveCategory(sortedCategories[0].slug);
+        }
+      } else {
+        console.warn('[Portfolio] No categories found in response');
+      }
+      setLoadError(false);
+    } catch (err) {
+      console.error('[Portfolio] Failed to fetch categories:', err);
+      setLoadError(true);
+    }
+  };
+
   onMount(async () => {
     setIsLoading(true);
     try {
+      await fetchCategories();
+
       // Try fetch from BE - if fails, show warning
-      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
-      const res = await fetch(`${apiUrl}/api/packages`, { method: 'HEAD' });
+      const res = await fetch(`${API_BASE}/packages`, { method: 'HEAD' });
       if (!res.ok) throw new Error('BE unavailable');
 
       // Load portfolio section - gets ALL fields including new items added by admin
       await contentStore.loadSection('portfolio');
       console.log('[Portfolio] Loaded all portfolio fields from backend');
-      setLoadError(false);
+
+      // Re-fetch categories every 3 seconds to sync tag changes
+      const interval = setInterval(() => {
+        console.log('[Portfolio] Auto-refreshing categories...');
+        fetchCategories();
+      }, 3000);
+
+      return () => clearInterval(interval);
     } catch (err) {
       console.error('Backend unavailable:', err);
       setLoadError(true);
@@ -58,10 +107,8 @@ const Portfolio: Component = () => {
     }
   });
 
-  // Scroll reveal ref for image grid
-  const portfolioGridRef = useScrollRevealGroup({ threshold: 0.3, itemDelay: 80 });
 
-  // Read category from query parameter
+  // Category filter initialization
   createEffect(() => {
     const category = searchParams.category as 'portrait' | 'event' | 'editorial' | 'retouching' | undefined;
     if (category && ['portrait', 'event', 'editorial', 'retouching'].includes(category)) {
@@ -103,9 +150,21 @@ const Portfolio: Component = () => {
     return allImages.map((img) => {
       const fieldName = `${category}_${img.id}`;
       const savedValue = contentStore.getField('portfolio', fieldName);
+      
+      // Get label from DB tagExample, replace #X with actual index
+      const getImageLabel = () => {
+        const dbCategory = portfolioCategories().find(c => c.slug === category);
+        if (!dbCategory?.tagExample) return img.title;
+        // tagExample format: "Wedding #X" - replace X with index
+        const allCategoryImages = allImages;
+        const imageIndex = allCategoryImages.findIndex(i => i.id === img.id);
+        return dbCategory.tagExample.replace(/#X$/i, `#${imageIndex + 1}`);
+      };
+      
       return {
         ...img,
         url: resolveMediaUrl(savedValue || img.url),
+        title: getImageLabel(),
       } as PortfolioImage;
     });
   });
@@ -172,7 +231,7 @@ const Portfolio: Component = () => {
     let totalCount = 0;
     
     // Count all images for each category (ALL fields, not just defaults+new)
-    portfolioCategories.forEach(cat => {
+    portfolioCategories().forEach(cat => {
       const categorySlug = cat.slug;
       // Count ALL fields for this category that have values (portrait_p1, portrait_p2, portrait_new_1, etc)
       const categoryImages = allFields.filter(f => 
@@ -193,7 +252,7 @@ const Portfolio: Component = () => {
     const _refreshTrigger = contentStore.state().lastUpdated?.getTime() || 0;
     
     const fromStore = contentStore.getField('portfolio', 'categories');
-    const actualCount = portfolioCategories.length.toString();
+    const actualCount = portfolioCategories().length.toString();
     
     // If store has value, validate it's reasonable (not 0, not negative)
     if (fromStore && parseInt(fromStore) > 0) {
@@ -260,12 +319,12 @@ const Portfolio: Component = () => {
           </div>
 
           {/* Category Description */}
-          <div class="text-center mt-6">
-            <h2 class="text-xl font-bold text-gray-800 mb-2">
-              {portfolioCategories.find(c => c.slug === activeCategory())?.name}
+          <div class="w-full text-center mt-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-2 inline-block">
+              {portfolioCategories().find(c => c.slug === activeCategory())?.name}
             </h2>
-            <p class="text-gray-600">
-              {portfolioCategories.find(c => c.slug === activeCategory())?.description}
+            <p class="text-gray-600 inline-block w-full">
+              {portfolioCategories().find(c => c.slug === activeCategory())?.description}
             </p>
           </div>
         </div>
@@ -317,38 +376,16 @@ const Portfolio: Component = () => {
           </Show>
 
           <Show when={!loadError()}>
-            {/* Gallery with natural aspect ratios */}
-            <div class="columns-1 md:columns-2 lg:columns-3 gap-6 max-w-6xl mx-auto" ref={portfolioGridRef}>
+            {/* Instagram-style vertical feed */}
+            <div class="max-w-3xl mx-auto space-y-6">
               <For each={currentImages()}>
                 {(image, index) => (
-                  <div 
-                    class="group relative overflow-hidden rounded-lg cursor-pointer bg-gray-100 scroll-reveal-item mb-6 break-inside-avoid"
+                  <ScrollRevealImage
+                    src={image.url}
+                    alt={image.title}
+                    title={image.title}
                     onClick={() => handleImageClick(index())}
-                  >
-                    {/* Image - with natural aspect ratio */}
-                    <img
-                      src={image.url}
-                      alt={image.title}
-                      loading="lazy"
-                      class="w-full h-auto object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-
-                    {/* Overlay */}
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                      <div>
-                        <h3 class="text-white font-medium text-sm line-clamp-2">
-                          {image.title}
-                        </h3>
-                      </div>
-                    </div>
-
-                    {/* Zoom Icon */}
-                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <svg class="w-8 h-8 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 13H7" />
-                      </svg>
-                    </div>
-                  </div>
+                  />
                 )}
               </For>
             </div>

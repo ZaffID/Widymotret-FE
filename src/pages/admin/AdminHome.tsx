@@ -8,12 +8,36 @@ import Toast from '../../components/Toast';
 import ScrollToTop from '../../components/ScrollToTop';
 import { servicesData } from '../../data/services';
 import { aboutData } from '../../data/about';
-import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
+import { getImagesByCategory } from '../../data/portfolio';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
 import { updateContent } from '../../services/contentApi';
 
 // API Base URL - same as contentApi
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+
+interface ApiPackage {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  images: string[];
+  features: string[];
+  isPublished: boolean;
+  whatsappLinkType?: string;
+  customWhatsappUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PortfolioCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  tagExample: string;
+  examplePhotoUrl: string | null;
+}
 
 import { AiFillHome } from 'solid-icons/ai';
 import { AiFillDollarCircle } from 'solid-icons/ai';
@@ -32,21 +56,6 @@ import { FaRegularCalendarAlt } from 'solid-icons/fa';
 import { AiFillStar } from 'solid-icons/ai';
 import { FaSolidPhoneAlt } from 'solid-icons/fa';
 import { BsRocketTakeoffFill } from 'solid-icons/bs';
-
-interface ApiPackage {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  images: string[];
-  features: string[];
-  isPublished: boolean;
-  whatsappLinkType?: string;
-  customWhatsappUrl?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 const packageTemplateImages: Record<string, string[]> = {
   studio: [
@@ -105,7 +114,7 @@ const TestimoniCounter = () => {
 const AdminHome: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
-  const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio' | 'about' | 'footer'>('home');
+  const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio-categories' | 'portfolio' | 'about' | 'footer'>('home');
   const [activeServicePricelist, setActiveServicePricelist] = createSignal<string>('studio');
   const [activeServicePortfolio, setActiveServicePortfolio] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
@@ -142,6 +151,18 @@ const AdminHome: Component = () => {
   const [serviceImageUploaded, setServiceImageUploaded] = createSignal(false);
   const [allServices, setAllServices] = createSignal<any[]>([]);
 
+  // Portfolio Categories Management
+  const [portfolioCategoriesData, setPortfolioCategoriesData] = createSignal<PortfolioCategory[]>([]);
+  const [showAddCategoryModal, setShowAddCategoryModal] = createSignal(false);
+  const [isEditingCategory, setIsEditingCategory] = createSignal(false);
+  const [editingCategoryId, setEditingCategoryId] = createSignal<number | null>(null);
+  const [newCategoryName, setNewCategoryName] = createSignal('Kategori Baru');
+  const [newCategorySlug, setNewCategorySlug] = createSignal('kategori-baru');
+  const [newCategoryDescription, setNewCategoryDescription] = createSignal('Deskripsi kategori');
+  const [newCategoryTagExample, setNewCategoryTagExample] = createSignal('Category #1');
+  const [newCategoryExamplePhoto, setNewCategoryExamplePhoto] = createSignal('');
+  const [uploadingCategoryPhoto, setUploadingCategoryPhoto] = createSignal(false);
+
   onMount(async () => {
     // Load all content on component mount
     console.log('[AdminHome.onMount] Starting load...');
@@ -149,6 +170,8 @@ const AdminHome: Component = () => {
     console.log('[AdminHome.onMount] contentStore.loadAll() complete');
     await loadPackages();
     console.log('[AdminHome.onMount] loadPackages() complete');
+    await loadPortfolioCategories();
+    console.log('[AdminHome.onMount] loadPortfolioCategories() complete');
     // Load services after packages are loaded
     loadAllServices();
     console.log('[AdminHome.onMount] loadAllServices() complete');
@@ -209,6 +232,252 @@ const AdminHome: Component = () => {
     const category = activeServicePricelist().toLowerCase();
     return packages().filter((pkg) => pkg.category?.toLowerCase() === category);
   });
+
+  // Portfolio Categories Functions
+  const loadPortfolioCategories = async () => {
+    console.log('[loadPortfolioCategories] === START ===');
+    const startTime = Date.now();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    try {
+      const url = `${API_BASE}/portfolio-categories`;
+      console.log('[loadPortfolioCategories] API_BASE:', API_BASE);
+      console.log('[loadPortfolioCategories] Full URL:', url);
+      console.log('[loadPortfolioCategories] Starting fetch...');
+      
+      const res = await fetch(url, { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      
+      const duration = Date.now() - startTime;
+      console.log(`[loadPortfolioCategories] Response received in ${duration}ms`);
+      console.log('[loadPortfolioCategories] Response status:', res.status);
+      console.log('[loadPortfolioCategories] Response headers:', {
+        'content-type': res.headers.get('content-type'),
+        'content-length': res.headers.get('content-length'),
+      });
+      
+      if (!res.ok) {
+        console.warn(`[loadPortfolioCategories] HTTP ${res.status} - attempting to read body`);
+      }
+      
+      const text = await res.text();
+      console.log('[loadPortfolioCategories] Raw response text:', text.substring(0, 500));
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('[loadPortfolioCategories] JSON parse error:', e);
+        console.error('[loadPortfolioCategories] Response was:', text);
+        throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+      }
+      
+      console.log('[loadPortfolioCategories] Parsed data:', data);
+      console.log('[loadPortfolioCategories] data.success:', data?.success);
+      console.log('[loadPortfolioCategories] data.data:', data?.data);
+      
+      if (data?.success && Array.isArray(data.data)) {
+        console.log('[loadPortfolioCategories] Setting categories, count:', data.data.length);
+        // Sort by ID ascending so new categories appear at the end
+        const sorted = [...data.data].sort((a, b) => (a.id || 0) - (b.id || 0));
+        setPortfolioCategoriesData(sorted);
+        console.log('[loadPortfolioCategories] === SUCCESS === Categories loaded:', sorted.length);
+      } else if (data?.data && Array.isArray(data.data)) {
+        // Fallback: data might be in data.data directly
+        console.log('[loadPortfolioCategories] Fields present - success:', !!data.success, 'isArray:', Array.isArray(data.data));
+        const sorted = [...data.data].sort((a, b) => (a.id || 0) - (b.id || 0));
+        setPortfolioCategoriesData(sorted);
+        console.log('[loadPortfolioCategories] === SUCCESS (fallback) === Categories loaded:', sorted.length);
+      } else {
+        console.warn('[loadPortfolioCategories] Unexpected response structure');
+        console.warn('[loadPortfolioCategories] Full response:', JSON.stringify(data));
+        setPortfolioCategoriesData([]);
+      }
+    } catch (error) {
+      clearTimeout(timeoutId);
+      const duration = Date.now() - startTime;
+      console.error(`[loadPortfolioCategories] === ERROR === (after ${duration}ms)`);
+      console.error('[loadPortfolioCategories] Error name:', (error as any)?.name);
+      console.error('[loadPortfolioCategories] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[loadPortfolioCategories] Full error:', error);
+      
+      // Set empty array on error
+      setPortfolioCategoriesData([]);
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  const savePortfolioCategory = async () => {
+    const token = authStore.getToken();
+    if (!token) {
+      handleError('Token tidak ditemukan');
+      return;
+    }
+
+    // Validate slug: lowercase, hyphens, and alphanumeric only
+    const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    const newSlug = newCategorySlug().trim().toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+    if (!slugRegex.test(newSlug)) {
+      handleError('Slug hanya boleh huruf kecil, angka, dan tanda hubung (-). Spasi tidak diperbolehkan.');
+      return;
+    }
+    setNewCategorySlug(newSlug);
+
+    // Validate tag format: must be 'Name #X' where X is literal letter X (placeholder for number)
+    const tagRegex = /#X$/i;
+    const rawTag = newCategoryTagExample().trim();
+    if (!tagRegex.test(rawTag)) {
+      handleError('Format tag salah. Harus berakhir dengan #X (contoh: Wedding #X, Portrait #X)');
+      return;
+    }
+    // Normalize to uppercase X before saving
+    const normalizedTag = rawTag.replace(/#x$/i, '#X');
+    console.log(`[savePortfolioCategory] Tag normalized: "${rawTag}" -> "${normalizedTag}"`);
+
+    // Warn if changing slug and existing category has photos
+    if (isEditingCategory()) {
+      const category = portfolioCategoriesData().find(c => c.id === editingCategoryId());
+      if (category && category.slug !== newSlug) {
+        const allFields = contentStore.getSectionFields('portfolio');
+        const photosExist = allFields.some(f => f.field.startsWith(`${category.slug}_`) && f.field !== `${category.slug}_categories`);
+        if (photosExist) {
+          handleError('⚠️ Slug tidak boleh diubah karena sudah ada foto dengan slug lama. Ganti nama kategori saja, atau hapus semua foto terlebih dahulu.');
+          return;
+        }
+      }
+    }
+
+    try {
+      const payload = {
+        name: newCategoryName(),
+        slug: newSlug,
+        description: newCategoryDescription(),
+        tagExample: normalizedTag,
+        examplePhotoUrl: newCategoryExamplePhoto(),
+      };
+
+      const url = isEditingCategory()
+        ? `${API_BASE}/portfolio-categories/${editingCategoryId()}`
+        : `${API_BASE}/portfolio-categories`;
+
+      const method = isEditingCategory() ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        handleSave(isEditingCategory() ? 'Kategori berhasil diperbarui' : 'Kategori berhasil dibuat');
+        await loadPortfolioCategories();
+        
+        // Refresh contentStore portfolio section to update main portfolio page
+        await contentStore.loadSection('portfolio');
+        console.log('[savePortfolioCategory] Portfolio section reloaded');
+        
+        resetCategoryModal();
+      } else {
+        handleError(data.message || 'Gagal menyimpan kategori');
+      }
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Gagal menyimpan kategori');
+      console.error('[savePortfolioCategory] Error:', error);
+    }
+  };
+
+  const deletePortfolioCategory = async (id: number) => {
+    const token = authStore.getToken();
+    if (!token) {
+      handleError('Token tidak ditemukan');
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/portfolio-categories/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        handleSave('Kategori berhasil dihapus');
+        await loadPortfolioCategories();
+      } else {
+        handleError(data.message || 'Gagal menghapus kategori');
+      }
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Gagal menghapus kategori');
+      console.error('[deletePortfolioCategory] Error:', error);
+    }
+  };
+
+  const resetCategoryModal = () => {
+    setShowAddCategoryModal(false);
+    setIsEditingCategory(false);
+    setEditingCategoryId(null);
+    setNewCategoryName('Kategori Baru');
+    setNewCategorySlug('kategori-baru');
+    setNewCategoryDescription('Deskripsi kategori');
+    setNewCategoryTagExample('Category #1');
+    setNewCategoryExamplePhoto('');
+  };
+
+  const openEditCategoryModal = (category: PortfolioCategory) => {
+    setIsEditingCategory(true);
+    setEditingCategoryId(category.id);
+    setNewCategoryName(category.name);
+    setNewCategorySlug(category.slug);
+    setNewCategoryDescription(category.description);
+    setNewCategoryTagExample(category.tagExample);
+    setNewCategoryExamplePhoto(category.examplePhotoUrl || '');
+    setShowAddCategoryModal(true);
+  };
+
+  const uploadCategoryPhoto = async (file: File) => {
+    setUploadingCategoryPhoto(true);
+    try {
+      const token = authStore.getToken();
+      if (!token) {
+        handleError('Token tidak ditemukan - silakan login ulang');
+        setUploadingCategoryPhoto(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch(`${API_BASE}/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success && data.data?.url) {
+        setNewCategoryExamplePhoto(data.data.url);
+        handleSave('Foto berhasil diupload');
+      } else {
+        handleError(data.message ||'Upload gagal');
+      }
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Upload gagal');
+    } finally {
+      setUploadingCategoryPhoto(false);
+    }
+  };
 
   // Load all unique service categories
   const loadAllServices = () => {
@@ -840,7 +1109,7 @@ const AdminHome: Component = () => {
       
       // Auto-sync Categories: if stored value differs from actual category count, fix it
       const storedCategories = contentStore.getField('portfolio', 'categories');
-      const actualCategories = portfolioCategories.length.toString();
+      const actualCategories = portfolioCategoriesData().length.toString();
       if (storedCategories && storedCategories !== actualCategories) {
         console.log(`[AdminHome] Auto-syncing Categories: ${storedCategories} → ${actualCategories}`);
         await updateContent('portfolio', 'categories', actualCategories);
@@ -863,13 +1132,16 @@ const AdminHome: Component = () => {
 
   // Get appropriate title for new portfolio item
   const getNewItemTitle = (categorySlug: string, newIndex: number) => {
-    const categoryTitles: Record<string, string> = {
-      portrait: `Studio Portrait Session #${5 + newIndex}`,
-      event: `Wedding & Event Photo #${5 + newIndex}`,
-      editorial: `Editorial & Brand Photo #${5 + newIndex}`,
-      retouching: `Retouched Photo #${6 + newIndex}`,
-    };
-    return categoryTitles[categorySlug] || `Photo #${newIndex}`;
+    const category = portfolioCategoriesData().find(c => c.slug === categorySlug);
+    const defaultImages = getImagesByCategory(categorySlug as any);
+    const defaultCount = defaultImages.length;
+    
+    if (category) {
+      // tagExample format is now #X only (e.g., "#1")
+      // Display: "{category.name} #{index}"
+      return `${category.name} #${defaultCount + newIndex}`;
+    }
+    return `Photo #${newIndex}`;
   };
 
   // Get all images for category (default + from backend)
@@ -1051,7 +1323,7 @@ const AdminHome: Component = () => {
             <select
               value={currentPage()}
               onChange={(e) => {
-                const page = e.currentTarget.value as 'home' | 'services' | 'pricelist' | 'portfolio' | 'about' | 'footer';
+                const page = e.currentTarget.value as 'home' | 'services' | 'pricelist' | 'portfolio-categories' | 'portfolio' | 'about' | 'footer';
                 setCurrentPage(page);
                 
                 // Load data for about/footer if needed
@@ -1066,12 +1338,13 @@ const AdminHome: Component = () => {
               }}
               class="w-full px-4 py-2 border border-gray-300 rounded-lg font-medium bg-white cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#576250]"
             >
-              <option value="home">🏠 Halaman Utama</option>
-              <option value="services">📋 Kelola Services</option>
-              <option value="pricelist">💰 Pricelist</option>
-              <option value="portfolio">📷 Portfolio</option>
-              <option value="about">📖 Halaman About</option>
-              <option value="footer">🔗 Kelola Footer</option>
+              <option value="home">Halaman Utama</option>
+              <option value="services">Kelola Services</option>
+              <option value="pricelist">Pricelist</option>
+              <option value="portfolio-categories">Kategori Portfolio</option>
+              <option value="portfolio">Portfolio</option>
+              <option value="about">Halaman About</option>
+              <option value="footer">Kelola Footer</option>
             </select>
           </div>
 
@@ -1109,6 +1382,17 @@ const AdminHome: Component = () => {
             >
               <AiFillDollarCircle size={20} />
               Pricelist
+            </button>
+            <button
+              onClick={() => setCurrentPage('portfolio-categories')}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'portfolio-categories'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillFileImage size={20} />
+              Kategori Portfolio
             </button>
             <button
               onClick={() => setCurrentPage('portfolio')}
@@ -1151,7 +1435,7 @@ const AdminHome: Component = () => {
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              <AiFillFileImage size={20} />
+              <FaSolidPhoneAlt size={20} />
               Kelola Footer
             </button>
           </div>
@@ -2155,7 +2439,7 @@ const AdminHome: Component = () => {
 
               {/* Portfolio Images for selected category */}
               {(() => {
-                const cat = () => portfolioCategories.find(c => c.slug === activeServicePortfolio());
+                const cat = () => portfolioCategoriesData().find((c: PortfolioCategory) => c.slug === activeServicePortfolio());
                 return (
                   <Show when={cat()}>
                     {(category) => (
@@ -2209,11 +2493,19 @@ const AdminHome: Component = () => {
                                   // If explicitly deleted (hasBeenSaved but storedValue empty) → show empty. Otherwise fallback to default img.url
                                   const displayValue = hasBeenSaved ? storedValue : img.url;
                                   
-                                  console.log(`[AdminHome Portfolio] Rendering ${fieldName}: hasBeenSaved=${hasBeenSaved}, stored="${storedValue}", display="${displayValue}"`);
+                                  // Get label from DB tagExample, replace #X with actual index (matching Portfolio.tsx logic)
+                                  const getImageLabel = () => {
+                                    const dbCategory = category();
+                                    if (!dbCategory?.tagExample) return img.title;
+                                    // tagExample format: "Wedding #X" - replace X with index
+                                    return dbCategory.tagExample.replace(/#X$/i, `#${idx() + 1}`);
+                                  };
+                                  
+                                  console.log(`[AdminHome Portfolio] Rendering ${fieldName}: hasBeenSaved=${hasBeenSaved}, stored="${storedValue}", display="${displayValue}", label="${getImageLabel()}"`);
                                   
                                   return (
                                     <EditableImage
-                                      label={img.title}
+                                      label={getImageLabel()}
                                       value={displayValue}
                                       section="portfolio"
                                       field={fieldName}
@@ -2226,7 +2518,7 @@ const AdminHome: Component = () => {
                                           // No need to reload from backend - trust the save worked
                                           contentStore.updateFieldLocal('portfolio', fieldName, v);
                                           console.log(`[AdminHome] Portfolio local store updated with new value`);
-                                          handleSave(`${img.title} berhasil diupdate`);
+                                          handleSave(`${getImageLabel()} berhasil diupdate`);
                                         } catch (error) {
                                           console.error(`[AdminHome] Portfolio onSave ERROR:`, error);
                                           handleError(`Gagal menyimpan: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -2244,7 +2536,7 @@ const AdminHome: Component = () => {
                                           }
                                           
                                           contentStore.updateFieldLocal('portfolio', fieldName, '');
-                                          handleSave(`${img.title} berhasil dihapus`);
+                                          handleSave(`${getImageLabel()} berhasil dihapus`);
                                         } catch (error) {
                                           console.error(`[AdminHome] Portfolio delete ERROR:`, error);
                                           const errorMsg = error instanceof Error ? error.message : 'Unknown error';
@@ -2304,7 +2596,7 @@ const AdminHome: Component = () => {
                     <div class="relative">
                       <input
                         type="text"
-                        value={portfolioCategories.length.toString()}
+                        value={portfolioCategoriesData().length.toString()}
                         disabled
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed font-semibold text-lg"
                         title="Nilai ini otomatis dihitung dari jumlah kategori"
@@ -2419,6 +2711,157 @@ const AdminHome: Component = () => {
                         class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
                       >
                         Ya, Muat Ulang
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </Show>
+            </div>
+          </Show>
+
+          {/* PORTFOLIO CATEGORIES MANAGEMENT */}
+          <Show when={currentPage() === 'portfolio-categories'}>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillFileImage class="inline mr-2" size={24} />Manajemen Kategori Portfolio</h2>
+              <p class="text-gray-600 mb-6">Kelola jenis-jenis portfolio yang akan ditampilkan di halaman portofolio.</p>
+
+              <button
+                onClick={() => {
+                  resetCategoryModal();
+                  setShowAddCategoryModal(true);
+                }}
+                class="mb-8 px-5 py-2.5 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium text-sm"
+              >
+                + Tambah Kategori Baru
+              </button>
+
+              {/* Categories List */}
+              <div class="space-y-4">
+                <For each={portfolioCategoriesData()} fallback={
+                  <div class="p-5 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-500">
+                    Belum ada kategori. Buat kategori baru untuk memulai.
+                  </div>
+                }>
+                  {(category) => (
+                    <div class="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                      <div class="flex gap-4 items-start">
+                        <Show when={category.examplePhotoUrl}>
+                          <div class="w-24 h-24 flex-shrink-0">
+                            <img 
+                              src={resolveMediaUrl(category.examplePhotoUrl || '')} 
+                              alt={category.name}
+                              class="w-full h-full object-cover rounded"
+                            />
+                          </div>
+                        </Show>
+                        <div class="flex-grow">
+                          <h3 class="font-bold text-gray-800 mb-2">{category.name}</h3>
+                          <p class="text-sm text-gray-600 mb-2">{category.description}</p>
+                          <div class="flex gap-4 text-xs text-gray-500">
+                            <span>Tag: <code class="bg-gray-200 px-1 py-0.5 rounded">{category.tagExample}</code></span>
+                            <span>Slug: <code class="bg-gray-200 px-1 py-0.5 rounded">{category.slug}</code></span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => openEditCategoryModal(category)}
+                          class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-blue-200 hover:border-blue-300"
+                        >
+                          <FaSolidEdit size={16} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deletePortfolioCategory(category.id)}
+                          class="px-3 py-2 text-red-600 hover:bg-red-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-red-200 hover:border-red-300"
+                        >
+                          <FaSolidTrashAlt size={16} />
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </For>
+              </div>
+
+              {/* Add/Edit Category Modal */}
+              <Show when={showAddCategoryModal()}>
+                <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                  <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                      {isEditingCategory() ? 'Edit Kategori Portfolio' : 'Tambah Kategori Portfolio Baru'}
+                    </h3>
+
+                    <div class="space-y-4 mb-6">
+                      {/* Name Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Kategori</label>
+                        <input
+                          type="text"
+                          value={newCategoryName()}
+                          onInput={(e) => setNewCategoryName(e.currentTarget.value)}
+                          placeholder="Misal: Portrait Photography"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                        />
+                      </div>
+
+                      {/* Slug Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Slug</label>
+                        <input
+                          type="text"
+                          value={newCategorySlug()}
+                          onInput={(e) => {
+                            let val = e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+                            setNewCategorySlug(val);
+                          }}
+                          placeholder="Misal: portrait"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] font-mono text-sm"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">✓ Otomatis: huruf kecil, hanya alphanumeric dan tanda hubung (-)</p>
+                      </div>
+
+                      {/* Description Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi</label>
+                        <textarea
+                          value={newCategoryDescription()}
+                          onInput={(e) => setNewCategoryDescription(e.currentTarget.value)}
+                          placeholder="Deskripsi kategori portfolio ini..."
+                          rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] resize-none"
+                        />
+                      </div>
+
+                      {/* Tag Example Field */}
+                      <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Tag Contoh</label>
+                        <input
+                          type="text"
+                          value={newCategoryTagExample()}
+                          onInput={(e) => {
+                            // Normalize to uppercase X
+                            const val = e.currentTarget.value.replace(/#x$/i, '#X');
+                            setNewCategoryTagExample(val);
+                          }}
+                          placeholder="Misal: Wedding #X"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tag #X, X adalah placeholder (contoh: Wedding #X, Portrait #X)</p>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div class="flex gap-3">
+                      <button
+                        onClick={() => resetCategoryModal()}
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+                      >
+                        Batal
+                      </button>
+                      <button
+                        onClick={savePortfolioCategory}
+                        class="flex-1 px-4 py-2 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium"
+                      >
+                        {isEditingCategory() ? 'Perbarui Kategori' : 'Buat Kategori'}
                       </button>
                     </div>
                   </div>

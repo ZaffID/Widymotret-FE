@@ -283,13 +283,16 @@ const AdminHome: Component = () => {
       
       if (data?.success && Array.isArray(data.data)) {
         console.log('[loadPortfolioCategories] Setting categories, count:', data.data.length);
-        setPortfolioCategoriesData(data.data);
-        console.log('[loadPortfolioCategories] === SUCCESS === Categories loaded:', data.data.length);
+        // Sort by ID ascending so new categories appear at the end
+        const sorted = [...data.data].sort((a, b) => (a.id || 0) - (b.id || 0));
+        setPortfolioCategoriesData(sorted);
+        console.log('[loadPortfolioCategories] === SUCCESS === Categories loaded:', sorted.length);
       } else if (data?.data && Array.isArray(data.data)) {
         // Fallback: data might be in data.data directly
         console.log('[loadPortfolioCategories] Fields present - success:', !!data.success, 'isArray:', Array.isArray(data.data));
-        setPortfolioCategoriesData(data.data);
-        console.log('[loadPortfolioCategories] === SUCCESS (fallback) === Categories loaded:', data.data.length);
+        const sorted = [...data.data].sort((a, b) => (a.id || 0) - (b.id || 0));
+        setPortfolioCategoriesData(sorted);
+        console.log('[loadPortfolioCategories] === SUCCESS (fallback) === Categories loaded:', sorted.length);
       } else {
         console.warn('[loadPortfolioCategories] Unexpected response structure');
         console.warn('[loadPortfolioCategories] Full response:', JSON.stringify(data));

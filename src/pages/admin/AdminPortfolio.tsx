@@ -28,26 +28,39 @@ const AdminPortfolio: Component = () => {
   const [activeCategory, setActiveCategory] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
 
-  onMount(async () => {
-    await contentStore.loadAll();
-    // Fetch portfolio categories from API
+  const fetchCategories = async () => {
     try {
       console.log('[AdminPortfolio] Fetching categories from API...');
       const res = await fetch(`${API_BASE}/portfolio-categories`);
       if (res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
-          console.log('[AdminPortfolio] Categories fetched:', data.data);
-          setPortfolioCategories(data.data);
+          const sorted = [...data.data].sort((a, b) => (a.id || 0) - (b.id || 0));
+          console.log('[AdminPortfolio] Categories fetched:', sorted);
+          setPortfolioCategories(sorted);
           // Set first category as active if available
-          if (data.data.length > 0) {
-            setActiveCategory(data.data[0].slug);
+          if (sorted.length > 0 && !activeCategory()) {
+            setActiveCategory(sorted[0].slug);
           }
         }
       }
     } catch (err) {
       console.error('[AdminPortfolio] Failed to fetch categories:', err);
     }
+  };
+
+  onMount(async () => {
+    await contentStore.loadAll();
+    await fetchCategories();
+
+    // Re-fetch categories every 3 seconds to sync tag changes from AdminHome
+    const interval = setInterval(() => {
+      console.log('[AdminPortfolio] Auto-refreshing categories for tag sync...');
+      fetchCategories();
+    }, 3000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   });
 
   const handleLogout = () => {

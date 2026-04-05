@@ -2411,7 +2411,7 @@ const AdminHome: Component = () => {
                   value={activeServicePortfolio()}
                   onChange={(e) => setActiveServicePortfolio(e.target.value)}
                 >
-                  <For each={portfolioCategories}>
+                  <For each={portfolioCategoriesData()}>
                     {(cat) => (
                       <option value={cat.slug}>{cat.name}</option>
                     )}
@@ -2420,7 +2420,7 @@ const AdminHome: Component = () => {
 
                 {/* Desktop Button Tabs */}
                 <div class="hidden md:flex gap-2 overflow-x-auto pb-2 scroll-smooth">
-                  <For each={portfolioCategories}>
+                  <For each={portfolioCategoriesData()}>
                     {(cat) => (
                       <button
                         onClick={() => setActiveServicePortfolio(cat.slug)}

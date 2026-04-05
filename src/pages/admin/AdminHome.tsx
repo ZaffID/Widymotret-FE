@@ -105,7 +105,7 @@ const TestimoniCounter = () => {
 const AdminHome: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
-  const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio' | 'portfolio-categories' | 'about' | 'footer'>('home');
+  const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio-categories' | 'portfolio' | 'about' | 'footer'>('home');
   const [activeServicePricelist, setActiveServicePricelist] = createSignal<string>('studio');
   const [activeServicePortfolio, setActiveServicePortfolio] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
@@ -336,6 +336,11 @@ const AdminHome: Component = () => {
       if (data.success) {
         handleSave(isEditingCategory() ? 'Kategori berhasil diperbarui' : 'Kategori berhasil dibuat');
         await loadPortfolioCategories();
+        
+        // Refresh contentStore portfolio section to update main portfolio page
+        await contentStore.loadSection('portfolio');
+        console.log('[savePortfolioCategory] Portfolio section reloaded');
+        
         resetCategoryModal();
       } else {
         handleError(data.message || 'Gagal menyimpan kategori');
@@ -399,10 +404,20 @@ const AdminHome: Component = () => {
   const uploadCategoryPhoto = async (file: File) => {
     setUploadingCategoryPhoto(true);
     try {
+      const token = authStore.getToken();
+      if (!token) {
+        handleError('Token tidak ditemukan - silakan login ulang');
+        setUploadingCategoryPhoto(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('file', file);
       const res = await fetch(`${API_BASE}/upload`, {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
         body: formData,
       });
       const data = await res.json();
@@ -1260,7 +1275,7 @@ const AdminHome: Component = () => {
             <select
               value={currentPage()}
               onChange={(e) => {
-                const page = e.currentTarget.value as 'home' | 'services' | 'pricelist' | 'portfolio' | 'portfolio-categories' | 'about' | 'footer';
+                const page = e.currentTarget.value as 'home' | 'services' | 'pricelist' | 'portfolio-categories' | 'portfolio' | 'about' | 'footer';
                 setCurrentPage(page);
                 
                 // Load data for about/footer if needed
@@ -1278,8 +1293,8 @@ const AdminHome: Component = () => {
               <option value="home">Halaman Utama</option>
               <option value="services">Kelola Services</option>
               <option value="pricelist">Pricelist</option>
-              <option value="portfolio">Portfolio</option>
               <option value="portfolio-categories">Kategori Portfolio</option>
+              <option value="portfolio">Portfolio</option>
               <option value="about">Halaman About</option>
               <option value="footer">Kelola Footer</option>
             </select>
@@ -1321,17 +1336,6 @@ const AdminHome: Component = () => {
               Pricelist
             </button>
             <button
-              onClick={() => setCurrentPage('portfolio')}
-              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
-                currentPage() === 'portfolio'
-                  ? 'bg-[#576250] text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              <AiFillCamera size={20} />
-              Portfolio
-            </button>
-            <button
               onClick={() => setCurrentPage('portfolio-categories')}
               class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
                 currentPage() === 'portfolio-categories'
@@ -1341,6 +1345,17 @@ const AdminHome: Component = () => {
             >
               <AiFillFileImage size={20} />
               Kategori Portfolio
+            </button>
+            <button
+              onClick={() => setCurrentPage('portfolio')}
+              class={`px-6 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap flex-shrink-0 ${
+                currentPage() === 'portfolio'
+                  ? 'bg-[#576250] text-white'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              <AiFillCamera size={20} />
+              Portfolio
             </button>
             <button
               onClick={async () => {

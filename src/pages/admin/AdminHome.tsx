@@ -1941,63 +1941,61 @@ const AdminHome: Component = () => {
                 + Tambah Layanan Baru
               </button>
 
-              {/* Services List - Horizontal Scroll */}
-              <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                <div class="flex gap-4 pb-2 min-w-min">
-                  <Show when={allServices().length === 0} fallback={
-                    <For each={allServices()}>
-                      {(service) => (
-                        <div class="w-80 flex-shrink-0 p-5 bg-gray-50 rounded-lg border border-gray-200">
-                          <div class="flex flex-col gap-3 h-full">
-                            {/* Image */}
-                            <div class="w-full h-48 flex-shrink-0">
-                              <img 
-                                src={resolveMediaUrl(service.image)} 
-                                alt={service.title}
-                                class="w-full h-full object-cover rounded"
-                              />
-                            </div>
-                            {/* Content */}
-                            <div class="flex-grow min-w-0">
-                              <h3 class="font-bold text-gray-800 mb-2 truncate">{service.title}</h3>
-                              <p class="text-sm text-gray-600 mb-3 line-clamp-2">{service.description}</p>
-                              <p class="text-xs text-gray-500 truncate">Slug: <code class="bg-gray-200 px-1 py-0.5 rounded">{service.slug}</code></p>
-                            </div>
-                            {/* Buttons */}
-                            <div class="flex gap-2 flex-shrink-0">
-                              <button
-                                onClick={() => {
-                                  setIsEditingService(true);
-                                  setEditingServiceSlug(service.slug);
-                                  setNewServiceName(service.title);
-                                  setNewServiceSlug(service.slug);
-                                  setNewServiceDescription(service.description);
-                                  setNewServiceImage(service.image);
-                                  setShowAddServiceModal(true);
-                                }}
-                                class="flex-1 px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition text-xs flex items-center justify-center gap-2 border border-blue-200 hover:border-blue-300"
-                              >
-                                <FaSolidEdit size={14} />
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => deleteService(service.slug)}
-                                class="flex-1 px-3 py-2 text-red-600 hover:bg-red-50 rounded transition text-xs flex items-center justify-center gap-2 border border-red-200 hover:border-red-300"
-                              >
-                                <FaSolidTrashAlt size={14} />
-                                Hapus
-                              </button>
-                            </div>
+              {/* Services List - Vertical Stacking */}
+              <div class="space-y-4">
+                <Show when={allServices().length === 0} fallback={
+                  <For each={allServices()}>
+                    {(service) => (
+                      <div class="p-5 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex gap-4 items-start">
+                          {/* Image */}
+                          <div class="w-24 h-24 flex-shrink-0">
+                            <img 
+                              src={resolveMediaUrl(service.image)} 
+                              alt={service.title}
+                              class="w-full h-full object-cover rounded"
+                            />
+                          </div>
+                          {/* Content */}
+                          <div class="flex-grow">
+                            <h3 class="font-bold text-gray-800 mb-2">{service.title}</h3>
+                            <p class="text-sm text-gray-600 mb-3">{service.description}</p>
+                            <p class="text-xs text-gray-500">Slug: <code class="bg-gray-200 px-1 py-0.5 rounded">{service.slug}</code></p>
+                          </div>
+                          {/* Buttons */}
+                          <div class="flex gap-2 flex-shrink-0">
+                            <button
+                              onClick={() => {
+                                setIsEditingService(true);
+                                setEditingServiceSlug(service.slug);
+                                setNewServiceName(service.title);
+                                setNewServiceSlug(service.slug);
+                                setNewServiceDescription(service.description);
+                                setNewServiceImage(service.image);
+                                setShowAddServiceModal(true);
+                              }}
+                              class="px-3 py-2 text-blue-600 hover:bg-blue-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-blue-200 hover:border-blue-300"
+                            >
+                              <FaSolidEdit size={16} />
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deleteService(service.slug)}
+                              class="px-3 py-2 text-red-600 hover:bg-red-50 rounded transition text-sm flex items-center gap-2 flex-shrink-0 border border-red-200 hover:border-red-300"
+                            >
+                              <FaSolidTrashAlt size={16} />
+                              Hapus
+                            </button>
                           </div>
                         </div>
-                      )}
-                    </For>
-                  }>
-                    <div class="p-5 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-500 min-w-fit">
-                      Tidak ada layanan. Buat layanan baru untuk memulai.
-                    </div>
-                  </Show>
-                </div>
+                      </div>
+                    )}
+                  </For>
+                }>
+                  <div class="p-5 bg-gray-50 rounded-lg border border-gray-200 text-sm text-gray-500">
+                    Tidak ada layanan. Buat layanan baru untuk memulai.
+                  </div>
+                </Show>
               </div>
             </div>
           </Show>

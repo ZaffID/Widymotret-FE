@@ -203,13 +203,12 @@ const AdminPortfolio: Component = () => {
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-start">
                 <For each={currentImages()}>
                   {(image, idx) => {
-                    // Get label: categoryName + tagExample (which is now #X format only)
+                    // Get label from tagExample: replace #X with actual index
                     const getImageLabel = () => {
                       const cat = currentCategory();
                       if (!cat?.tagExample) return `Foto #${idx() + 1}`;
-                      // tagExample format: "#1", "#2", etc (just the number part)
-                      // Display: "{category.name} #{index}"
-                      return `${cat.name} #${idx() + 1}`;
+                      // tagExample format: "Wedding #X" - replace X with index
+                      return cat.tagExample.replace(/#X$/i, `#${idx() + 1}`);
                     };
 
                     return (

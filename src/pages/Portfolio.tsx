@@ -151,15 +151,14 @@ const Portfolio: Component = () => {
       const fieldName = `${category}_${img.id}`;
       const savedValue = contentStore.getField('portfolio', fieldName);
       
-      // Get label from DB tagExample, dynamically numbered
+      // Get label from DB tagExample, replace #X with actual index
       const getImageLabel = () => {
         const dbCategory = portfolioCategories().find(c => c.slug === category);
         if (!dbCategory?.tagExample) return img.title;
-        // tagExample format: "#1", "#2", etc (just the number part)
-        // Display: "{category.name} #{index}"
+        // tagExample format: "Wedding #X" - replace X with index
         const allCategoryImages = allImages;
         const imageIndex = allCategoryImages.findIndex(i => i.id === img.id);
-        return `${dbCategory.name} #${imageIndex + 1}`;
+        return dbCategory.tagExample.replace(/#X$/i, `#${imageIndex + 1}`);
       };
       
       return {

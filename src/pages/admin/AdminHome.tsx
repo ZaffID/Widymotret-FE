@@ -329,10 +329,10 @@ const AdminHome: Component = () => {
     }
     setNewCategorySlug(newSlug);
 
-    // Validate tag format: must ONLY be #X where X is number
-    const tagRegex = /^#\d+$/;
+    // Validate tag format: must be 'Name #X' where X is literal letter X (placeholder for number)
+    const tagRegex = /#X$/i;
     if (!tagRegex.test(newCategoryTagExample())) {
-      handleError('Format tag salah. Hanya terima format #X (contoh: #1, #2, #3)');
+      handleError('Format tag salah. Harus berakhir dengan #X (contoh: Wedding #X, Portrait #X)');
       return;
     }
 
@@ -2810,10 +2810,10 @@ const AdminHome: Component = () => {
                           type="text"
                           value={newCategoryTagExample()}
                           onInput={(e) => setNewCategoryTagExample(e.currentTarget.value)}
-                          placeholder="Misal: #1"
+                          placeholder="Misal: Wedding #X"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
                         />
-                        <p class="text-xs text-gray-500 mt-1">Hanya format #X (contoh: #1, #2, #3)</p>
+                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tag #X, X adalah placeholder (contoh: Wedding #X, Portrait #X)</p>
                       </div>
                     </div>
 

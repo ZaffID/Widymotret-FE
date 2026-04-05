@@ -292,7 +292,7 @@ const Portfolio: Component = () => {
               value={activeCategory()}
               onChange={(e) => setActiveCategory(e.target.value)}
             >
-              <For each={portfolioCategories}>
+              <For each={portfolioCategories()}>
                 {(category) => (
                   <option value={category.slug}>{category.name}</option>
                 )}
@@ -301,7 +301,7 @@ const Portfolio: Component = () => {
 
             {/* Desktop Horizontal Scroll */}
             <div class="hidden md:flex gap-3 pb-2 min-w-min">
-              <For each={portfolioCategories}>
+              <For each={portfolioCategories()}>
                 {(category) => (
                   <button
                     onClick={() => setActiveCategory(category.slug)}

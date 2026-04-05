@@ -299,7 +299,7 @@ const AdminHome: Component = () => {
       clearTimeout(timeoutId);
       const duration = Date.now() - startTime;
       console.error(`[loadPortfolioCategories] === ERROR === (after ${duration}ms)`);
-      console.error('[loadPortfolioCategories] Error name:', error?.name);
+      console.error('[loadPortfolioCategories] Error name:', (error as any)?.name);
       console.error('[loadPortfolioCategories] Error message:', error instanceof Error ? error.message : String(error));
       console.error('[loadPortfolioCategories] Full error:', error);
       

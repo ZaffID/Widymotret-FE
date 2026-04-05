@@ -36,7 +36,11 @@ const AdminPortfolio: Component = () => {
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           const sorted = [...data.data].sort((a, b) => (a.id || 0) - (b.id || 0));
-          console.log('[AdminPortfolio] Categories fetched:', sorted);
+          console.log('[AdminPortfolio] RAW Response data:', data.data);
+          console.log('[AdminPortfolio] Categories after sort:', sorted);
+          sorted.forEach((cat: any) => {
+            console.log(`[AdminPortfolio] Category: ${cat.name}, slug: ${cat.slug}, tagExample: "${cat.tagExample}"`);
+          });
           setPortfolioCategories(sorted);
           // Set first category as active if available
           if (sorted.length > 0 && !activeCategory()) {
@@ -206,9 +210,16 @@ const AdminPortfolio: Component = () => {
                     // Get label from tagExample or image.title: replace #X with actual index
                     const getImageLabel = () => {
                       const cat = currentCategory();
-                      if (!cat?.tagExample) return image.title || `Foto #${idx() + 1}`;
+                      console.log(`[AdminPortfolio] Label compute for image ${image.id}: cat=${cat?.name}, tagExample="${cat?.tagExample}"`);
+                      if (!cat?.tagExample) {
+                        const fallback = image.title || `Foto #${idx() + 1}`;
+                        console.log(`[AdminPortfolio]   -> No tagExample, using fallback: "${fallback}"`);
+                        return fallback;
+                      }
                       // tagExample format: "Wedding #X" - replace X with index
-                      return cat.tagExample.replace(/#X$/i, `#${idx() + 1}`);
+                      const label = cat.tagExample.replace(/#X$/i, `#${idx() + 1}`);
+                      console.log(`[AdminPortfolio]   -> tagExample found: "${cat.tagExample}" -> "${label}"`);
+                      return label;
                     };
 
                     return (

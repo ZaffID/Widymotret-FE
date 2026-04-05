@@ -226,21 +226,78 @@ const AdminHome: Component = () => {
 
   // Portfolio Categories Functions
   const loadPortfolioCategories = async () => {
+    console.log('[loadPortfolioCategories] === START ===');
+    const startTime = Date.now();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
     try {
       const url = `${API_BASE}/portfolio-categories`;
-      console.log('[loadPortfolioCategories] Fetching from URL:', url);
-      const res = await fetch(url);
+      console.log('[loadPortfolioCategories] API_BASE:', API_BASE);
+      console.log('[loadPortfolioCategories] Full URL:', url);
+      console.log('[loadPortfolioCategories] Starting fetch...');
+      
+      const res = await fetch(url, { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      
+      const duration = Date.now() - startTime;
+      console.log(`[loadPortfolioCategories] Response received in ${duration}ms`);
       console.log('[loadPortfolioCategories] Response status:', res.status);
-      const data = await res.json();
-      console.log('[loadPortfolioCategories] Response data:', data);
-      if (data.success) {
-        console.log('[loadPortfolioCategories] Setting categories:', data.data);
-        setPortfolioCategoriesData(data.data || []);
+      console.log('[loadPortfolioCategories] Response headers:', {
+        'content-type': res.headers.get('content-type'),
+        'content-length': res.headers.get('content-length'),
+      });
+      
+      if (!res.ok) {
+        console.warn(`[loadPortfolioCategories] HTTP ${res.status} - attempting to read body`);
+      }
+      
+      const text = await res.text();
+      console.log('[loadPortfolioCategories] Raw response text:', text.substring(0, 500));
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('[loadPortfolioCategories] JSON parse error:', e);
+        console.error('[loadPortfolioCategories] Response was:', text);
+        throw new Error(`Invalid JSON response: ${text.substring(0, 100)}`);
+      }
+      
+      console.log('[loadPortfolioCategories] Parsed data:', data);
+      console.log('[loadPortfolioCategories] data.success:', data?.success);
+      console.log('[loadPortfolioCategories] data.data:', data?.data);
+      
+      if (data?.success && Array.isArray(data.data)) {
+        console.log('[loadPortfolioCategories] Setting categories, count:', data.data.length);
+        setPortfolioCategoriesData(data.data);
+        console.log('[loadPortfolioCategories] === SUCCESS === Categories loaded:', data.data.length);
+      } else if (data?.data && Array.isArray(data.data)) {
+        // Fallback: data might be in data.data directly
+        console.log('[loadPortfolioCategories] Fields present - success:', !!data.success, 'isArray:', Array.isArray(data.data));
+        setPortfolioCategoriesData(data.data);
+        console.log('[loadPortfolioCategories] === SUCCESS (fallback) === Categories loaded:', data.data.length);
       } else {
-        console.error('[loadPortfolioCategories] API returned success=false');
+        console.warn('[loadPortfolioCategories] Unexpected response structure');
+        console.warn('[loadPortfolioCategories] Full response:', JSON.stringify(data));
+        setPortfolioCategoriesData([]);
       }
     } catch (error) {
-      console.error('[loadPortfolioCategories] Error:', error);
+      clearTimeout(timeoutId);
+      const duration = Date.now() - startTime;
+      console.error(`[loadPortfolioCategories] === ERROR === (after ${duration}ms)`);
+      console.error('[loadPortfolioCategories] Error name:', error?.name);
+      console.error('[loadPortfolioCategories] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[loadPortfolioCategories] Full error:', error);
+      
+      // Set empty array on error
+      setPortfolioCategoriesData([]);
+    } finally {
+      clearTimeout(timeoutId);
     }
   };
 

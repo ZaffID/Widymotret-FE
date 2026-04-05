@@ -1,4 +1,5 @@
 import { Component, onMount } from 'solid-js';
+import { FaSolidMagnifyingGlass } from 'solid-icons/fa';
 
 interface ScrollRevealImageProps {
   src: string;
@@ -76,9 +77,7 @@ export const ScrollRevealImage: Component<ScrollRevealImageProps> = (props) => {
 
       {/* Zoom Icon */}
       <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <svg class="w-10 h-10 text-white drop-shadow-lg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 13H7" />
-        </svg>
+        <FaSolidMagnifyingGlass class="w-10 h-10 text-white drop-shadow-lg" />
       </div>
     </div>
   );

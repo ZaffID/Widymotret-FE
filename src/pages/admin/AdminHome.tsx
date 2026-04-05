@@ -317,10 +317,39 @@ const AdminHome: Component = () => {
       return;
     }
 
+    // Validate slug: lowercase, hyphens, and alphanumeric only
+    const slugRegex = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+    const newSlug = newCategorySlug().trim().toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+    if (!slugRegex.test(newSlug)) {
+      handleError('Slug hanya boleh huruf kecil, angka, dan tanda hubung (-). Spasi tidak diperbolehkan.');
+      return;
+    }
+    setNewCategorySlug(newSlug);
+
+    // Validate tag format: must contain #X where X is number
+    const tagRegex = /#\d+$/;
+    if (!tagRegex.test(newCategoryTagExample())) {
+      handleError('Format tag salah. Harus berakhir dengan #X (contoh: Portrait Photography #1)');
+      return;
+    }
+
+    // Warn if changing slug and existing category has photos
+    if (isEditingCategory()) {
+      const category = portfolioCategoriesData().find(c => c.id === editingCategoryId());
+      if (category && category.slug !== newSlug) {
+        const allFields = contentStore.getSectionFields('portfolio');
+        const photosExist = allFields.some(f => f.field.startsWith(`${category.slug}_`) && f.field !== `${category.slug}_categories`);
+        if (photosExist) {
+          handleError('⚠️ Slug tidak boleh diubah karena sudah ada foto dengan slug lama. Ganti nama kategori saja, atau hapus semua foto terlebih dahulu.');
+          return;
+        }
+      }
+    }
+
     try {
       const payload = {
         name: newCategoryName(),
-        slug: newCategorySlug(),
+        slug: newSlug,
         description: newCategoryDescription(),
         tagExample: newCategoryTagExample(),
         examplePhotoUrl: newCategoryExamplePhoto(),
@@ -1094,15 +1123,20 @@ const AdminHome: Component = () => {
     }
   };
 
-  // Get appropriate title for new portfolio item
+  // Get appropriate title for new portfolio item (from database tagExample)
   const getNewItemTitle = (categorySlug: string, newIndex: number) => {
-    const categoryTitles: Record<string, string> = {
-      portrait: `Studio Portrait Session #${5 + newIndex}`,
-      event: `Wedding & Event Photo #${5 + newIndex}`,
-      editorial: `Editorial & Brand Photo #${5 + newIndex}`,
-      retouching: `Retouched Photo #${6 + newIndex}`,
-    };
-    return categoryTitles[categorySlug] || `Photo #${newIndex}`;
+    const category = portfolioCategoriesData().find(c => c.slug === categorySlug);
+    if (category && category.tagExample) {
+      // Extract base text and replace/increment the number
+      // E.g., "Portrait Photography #1" → "Portrait Photography #6"
+      const match = category.tagExample.match(/^(.+?)\s*#\d+$/);
+      if (match) {
+        const baseText = match[1];
+        return `${baseText} #${5 + newIndex}`;
+      }
+      return category.tagExample;
+    }
+    return `Photo #${newIndex}`;
   };
 
   // Get all images for category (default + from backend)
@@ -2746,11 +2780,14 @@ const AdminHome: Component = () => {
                         <input
                           type="text"
                           value={newCategorySlug()}
-                          onInput={(e) => setNewCategorySlug(e.currentTarget.value)}
+                          onInput={(e) => {
+                            let val = e.currentTarget.value.toLowerCase().replace(/[^a-z0-9-]/g, '').replace(/-+/g, '-');
+                            setNewCategorySlug(val);
+                          }}
                           placeholder="Misal: portrait"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] font-mono text-sm"
                         />
-                        <p class="text-xs text-gray-500 mt-1">URL-friendly identifier, gunakan huruf kecil dan tanda hubung</p>
+                        <p class="text-xs text-gray-500 mt-1">✓ Otomatis: huruf kecil, hanya alphanumeric dan tanda hubung (-)</p>
                       </div>
 
                       {/* Description Field */}
@@ -2772,10 +2809,10 @@ const AdminHome: Component = () => {
                           type="text"
                           value={newCategoryTagExample()}
                           onInput={(e) => setNewCategoryTagExample(e.currentTarget.value)}
-                          placeholder="Misal: Portrait #1"
+                          placeholder="Misal: Portrait Photography #1"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
                         />
-                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tipe #Nomor</p>
+                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tag #X, X adalah nomor (contoh: Portrait Photography #1, Event Coverage #2)</p>
                       </div>
                     </div>
 

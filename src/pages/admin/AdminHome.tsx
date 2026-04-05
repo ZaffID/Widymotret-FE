@@ -2477,11 +2477,19 @@ const AdminHome: Component = () => {
                                   // If explicitly deleted (hasBeenSaved but storedValue empty) → show empty. Otherwise fallback to default img.url
                                   const displayValue = hasBeenSaved ? storedValue : img.url;
                                   
-                                  console.log(`[AdminHome Portfolio] Rendering ${fieldName}: hasBeenSaved=${hasBeenSaved}, stored="${storedValue}", display="${displayValue}"`);
+                                  // Get label from DB tagExample, replace #X with actual index (matching Portfolio.tsx logic)
+                                  const getImageLabel = () => {
+                                    const dbCategory = category();
+                                    if (!dbCategory?.tagExample) return img.title;
+                                    // tagExample format: "Wedding #X" - replace X with index
+                                    return dbCategory.tagExample.replace(/#X$/i, `#${idx() + 1}`);
+                                  };
+                                  
+                                  console.log(`[AdminHome Portfolio] Rendering ${fieldName}: hasBeenSaved=${hasBeenSaved}, stored="${storedValue}", display="${displayValue}", label="${getImageLabel()}"`);
                                   
                                   return (
                                     <EditableImage
-                                      label={img.title}
+                                      label={getImageLabel()}
                                       value={displayValue}
                                       section="portfolio"
                                       field={fieldName}
@@ -2494,7 +2502,7 @@ const AdminHome: Component = () => {
                                           // No need to reload from backend - trust the save worked
                                           contentStore.updateFieldLocal('portfolio', fieldName, v);
                                           console.log(`[AdminHome] Portfolio local store updated with new value`);
-                                          handleSave(`${img.title} berhasil diupdate`);
+                                          handleSave(`${getImageLabel()} berhasil diupdate`);
                                         } catch (error) {
                                           console.error(`[AdminHome] Portfolio onSave ERROR:`, error);
                                           handleError(`Gagal menyimpan: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -2512,7 +2520,7 @@ const AdminHome: Component = () => {
                                           }
                                           
                                           contentStore.updateFieldLocal('portfolio', fieldName, '');
-                                          handleSave(`${img.title} berhasil dihapus`);
+                                          handleSave(`${getImageLabel()} berhasil dihapus`);
                                         } catch (error) {
                                           console.error(`[AdminHome] Portfolio delete ERROR:`, error);
                                           const errorMsg = error instanceof Error ? error.message : 'Unknown error';

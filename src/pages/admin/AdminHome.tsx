@@ -331,10 +331,14 @@ const AdminHome: Component = () => {
 
     // Validate tag format: must be 'Name #X' where X is literal letter X (placeholder for number)
     const tagRegex = /#X$/i;
-    if (!tagRegex.test(newCategoryTagExample())) {
+    const rawTag = newCategoryTagExample().trim();
+    if (!tagRegex.test(rawTag)) {
       handleError('Format tag salah. Harus berakhir dengan #X (contoh: Wedding #X, Portrait #X)');
       return;
     }
+    // Normalize to uppercase X before saving
+    const normalizedTag = rawTag.replace(/#x$/i, '#X');
+    console.log(`[savePortfolioCategory] Tag normalized: "${rawTag}" -> "${normalizedTag}"`);
 
     // Warn if changing slug and existing category has photos
     if (isEditingCategory()) {
@@ -354,7 +358,7 @@ const AdminHome: Component = () => {
         name: newCategoryName(),
         slug: newSlug,
         description: newCategoryDescription(),
-        tagExample: newCategoryTagExample(),
+        tagExample: normalizedTag,
         examplePhotoUrl: newCategoryExamplePhoto(),
       };
 
@@ -2809,7 +2813,11 @@ const AdminHome: Component = () => {
                         <input
                           type="text"
                           value={newCategoryTagExample()}
-                          onInput={(e) => setNewCategoryTagExample(e.currentTarget.value)}
+                          onInput={(e) => {
+                            // Normalize to uppercase X
+                            const val = e.currentTarget.value.replace(/#x$/i, '#X');
+                            setNewCategoryTagExample(val);
+                          }}
                           placeholder="Misal: Wedding #X"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
                         />

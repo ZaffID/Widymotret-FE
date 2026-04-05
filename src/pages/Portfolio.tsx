@@ -227,7 +227,21 @@ const Portfolio: Component = () => {
       <section class="py-8 px-6 bg-white shadow-sm">
         <div class="container mx-auto max-w-6xl">
           <div class="portfolio-category-tabs -mx-6 px-6">
-            <div class="flex gap-3 pb-2 min-w-min">
+            {/* Mobile Select Dropdown */}
+            <select 
+              class="block md:hidden w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 focus:outline-none focus:border-[#576250] mb-4"
+              value={activeCategory()}
+              onChange={(e) => setActiveCategory(e.target.value)}
+            >
+              <For each={portfolioCategories}>
+                {(category) => (
+                  <option value={category.slug}>{category.name}</option>
+                )}
+              </For>
+            </select>
+
+            {/* Desktop Horizontal Scroll */}
+            <div class="hidden md:flex gap-3 pb-2 min-w-min">
               <For each={portfolioCategories}>
                 {(category) => (
                   <button

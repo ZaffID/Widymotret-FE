@@ -1287,11 +1287,11 @@ const AdminHome: Component = () => {
                   onError={handleError}
                 />
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
-                  <For each={servicesData}>
+                  <For each={allServices()}>
                     {(s) => (
                       <div class="text-center">
                         <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                          <img src={getServicePreviewImage(s.slug, s.image)} alt={s.title} class="w-full h-full object-cover" />
+                          <img src={s.image || '/photography.png'} alt={s.title} class="w-full h-full object-cover" />
                         </div>
                         <p class="text-xs text-gray-500 mt-1">{s.title}</p>
                       </div>
@@ -2120,21 +2120,37 @@ const AdminHome: Component = () => {
               </div>
 
               {/* Tabs Kategori */}
-              <div class="bg-gray-50 rounded-xl p-1 mb-8 flex gap-2 flex-wrap">
-                <For each={portfolioCategories}>
-                  {(cat) => (
-                    <button
-                      onClick={() => setActiveServicePortfolio(cat.slug)}
-                      class={`px-6 py-2 rounded-lg font-medium transition-all ${
-                        activeServicePortfolio() === cat.slug
-                          ? 'bg-[#576250] text-white'
-                          : 'text-gray-600 hover:bg-gray-100'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  )}
-                </For>
+              <div class="bg-gray-50 rounded-xl p-4 mb-8">
+                {/* Mobile Select Dropdown */}
+                <select 
+                  class="block md:hidden w-full px-4 py-2 border-2 border-gray-300 rounded-lg font-medium text-gray-700 focus:outline-none focus:border-[#576250] mb-4"
+                  value={activeServicePortfolio()}
+                  onChange={(e) => setActiveServicePortfolio(e.target.value)}
+                >
+                  <For each={portfolioCategories}>
+                    {(cat) => (
+                      <option value={cat.slug}>{cat.name}</option>
+                    )}
+                  </For>
+                </select>
+
+                {/* Desktop Button Tabs */}
+                <div class="hidden md:flex gap-2 overflow-x-auto pb-2 scroll-smooth">
+                  <For each={portfolioCategories}>
+                    {(cat) => (
+                      <button
+                        onClick={() => setActiveServicePortfolio(cat.slug)}
+                        class={`px-6 py-2 rounded-lg font-medium transition-all flex-shrink-0 whitespace-nowrap ${
+                          activeServicePortfolio() === cat.slug
+                            ? 'bg-[#576250] text-white'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    )}
+                  </For>
+                </div>
               </div>
 
               {/* Portfolio Images for selected category */}

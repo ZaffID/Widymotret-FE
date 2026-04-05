@@ -332,7 +332,7 @@ const AdminHome: Component = () => {
     // Validate tag format: must contain #X where X is number
     const tagRegex = /#\d+$/;
     if (!tagRegex.test(newCategoryTagExample())) {
-      handleError('Format tag salah. Harus berakhir dengan #X (contoh: Portrait Photography #1)');
+      handleError('Format tag salah. Harus berakhir dengan #X, X adalah angka (contoh: Portrait Photography #1)');
       return;
     }
 
@@ -1129,13 +1129,17 @@ const AdminHome: Component = () => {
   // Get appropriate title for new portfolio item (from database tagExample)
   const getNewItemTitle = (categorySlug: string, newIndex: number) => {
     const category = portfolioCategoriesData().find(c => c.slug === categorySlug);
+    const defaultImages = getImagesByCategory(categorySlug as any);
+    const defaultCount = defaultImages.length;
+    
     if (category && category.tagExample) {
-      // Extract base text and replace/increment the number
-      // E.g., "Portrait Photography #1" → "Portrait Photography #6"
+      // Extract base text from tag (e.g., "Portrait Photography #1" -> "Portrait Photography")
       const match = category.tagExample.match(/^(.+?)\s*#\d+$/);
       if (match) {
         const baseText = match[1];
-        return `${baseText} #${5 + newIndex}`;
+        // Numbering: default photos (1-5), then new photos start after (6+)
+        // If no default photos, new photos start at 1
+        return `${baseText} #${defaultCount + newIndex}`;
       }
       return category.tagExample;
     }
@@ -2815,7 +2819,7 @@ const AdminHome: Component = () => {
                           placeholder="Misal: Portrait Photography #1"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
                         />
-                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tag #X, X adalah nomor (contoh: Portrait Photography #1, Event Coverage #2)</p>
+                        <p class="text-xs text-gray-500 mt-1">Harus berakhir dengan #X, X adalah angka (contoh: Portrait Photography #1, Event Coverage #2)</p>
                       </div>
                     </div>
 

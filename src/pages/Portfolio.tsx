@@ -134,9 +134,24 @@ const Portfolio: Component = () => {
     return allImages.map((img) => {
       const fieldName = `${category}_${img.id}`;
       const savedValue = contentStore.getField('portfolio', fieldName);
+      
+      // Get label from DB tagExample, dynamically numbered
+      const getImageLabel = () => {
+        const dbCategory = portfolioCategories().find(c => c.slug === category);
+        if (!dbCategory?.tagExample) return img.title;
+        // Extract base text from tag (e.g., "Portrait Photography #1" -> "Portrait Photography")
+        const match = dbCategory.tagExample.match(/^(.+?)\s*#\d+$/);
+        const baseText = match ? match[1] : dbCategory.tagExample;
+        // Calculate index (1-based) for numbering
+        const allCategoryImages = allImages;
+        const imageIndex = allCategoryImages.findIndex(i => i.id === img.id);
+        return `${baseText} #${imageIndex + 1}`;
+      };
+      
       return {
         ...img,
         url: resolveMediaUrl(savedValue || img.url),
+        title: getImageLabel(),
       } as PortfolioImage;
     });
   });

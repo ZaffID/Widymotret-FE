@@ -4,7 +4,7 @@ import { authStore } from '../../stores/authStore';
 import { contentStore } from '../../stores/contentStore';
 import { EditableText } from '../../components/admin/EditableText';
 import { EditableImage } from '../../components/admin/EditableImage';
-import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
+import { getImagesByCategory } from '../../data/portfolio';
 import { FaSolidArrowLeftLong } from 'solid-icons/fa';
 import { AiFillCamera } from 'solid-icons/ai';
 import { FaSolidTrashAlt } from 'solid-icons/fa';
@@ -12,14 +12,42 @@ import { FaSolidLightbulb } from 'solid-icons/fa';
 
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
 
+interface PortfolioCategory {
+  id?: number;
+  name: string;
+  slug: string;
+  description: string;
+  tagExample?: string;
+  examplePhotoUrl?: string;
+}
+
 const AdminPortfolio: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
+  const [portfolioCategories, setPortfolioCategories] = createSignal<PortfolioCategory[]>([]);
   const [activeCategory, setActiveCategory] = createSignal<string>('portrait');
   const [saveMessage, setSaveMessage] = createSignal<{type: 'success' | 'error'; text: string} | null>(null);
 
   onMount(async () => {
     await contentStore.loadAll();
+    // Fetch portfolio categories from API
+    try {
+      console.log('[AdminPortfolio] Fetching categories from API...');
+      const res = await fetch(`${API_BASE}/portfolio-categories`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          console.log('[AdminPortfolio] Categories fetched:', data.data);
+          setPortfolioCategories(data.data);
+          // Set first category as active if available
+          if (data.data.length > 0) {
+            setActiveCategory(data.data[0].slug);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[AdminPortfolio] Failed to fetch categories:', err);
+    }
   });
 
   const handleLogout = () => {

@@ -6,15 +6,26 @@ import ContactModal from '../components/ContactModal';
 import ScrollToTop from '../components/ScrollToTop';
 import { GalleryModal } from '../components/portfolio/GalleryModal';
 import { ScrollRevealImage } from '../components/portfolio/ScrollRevealImage';
-import { portfolioCategories, portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
+import { portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
 import { contentStore } from '../stores/contentStore';
 import { resolveMediaUrl } from '../utils/mediaUrl';
 import '../styles/scroll-reveal.css';
 import './Portfolio.css';
 
+interface PortfolioCategory {
+  id?: number;
+  name: string;
+  slug: string;
+  description: string;
+  tagExample?: string;
+  examplePhotoUrl?: string;
+}
+
 const Portfolio: Component = () => {
+  const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
   const [searchParams] = useSearchParams();
-  const [activeCategory, setActiveCategory] = createSignal<'portrait' | 'event' | 'editorial' | 'retouching'>('portrait');
+  const [portfolioCategories, setPortfolioCategories] = createSignal<PortfolioCategory[]>([]);
+  const [activeCategory, setActiveCategory] = createSignal<string>('portrait');
   const [selectedImageIndex, setSelectedImageIndex] = createSignal<number | null>(null);
   const [isModalOpen, setIsModalOpen] = createSignal(false);
   const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
@@ -25,9 +36,25 @@ const Portfolio: Component = () => {
   onMount(async () => {
     setIsLoading(true);
     try {
+      // Fetch portfolio categories from API
+      console.log('[Portfolio] Fetching categories from API...');
+      const catRes = await fetch(`${API_BASE}/portfolio-categories`);
+      if (!catRes.ok) throw new Error('Failed to fetch categories');
+      const catData = await catRes.json();
+      
+      if (catData.success && Array.isArray(catData.data)) {
+        console.log('[Portfolio] Categories fetched:', catData.data);
+        setPortfolioCategories(catData.data);
+        // Set first category as active if available
+        if (catData.data.length > 0) {
+          setActiveCategory(catData.data[0].slug);
+        }
+      } else {
+        console.warn('[Portfolio] No categories found in response');
+      }
+
       // Try fetch from BE - if fails, show warning
-      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
-      const res = await fetch(`${apiUrl}/api/packages`, { method: 'HEAD' });
+      const res = await fetch(`${API_BASE}/packages`, { method: 'HEAD' });
       if (!res.ok) throw new Error('BE unavailable');
 
       // Load portfolio section - gets ALL fields including new items added by admin
@@ -170,7 +197,7 @@ const Portfolio: Component = () => {
     let totalCount = 0;
     
     // Count all images for each category (ALL fields, not just defaults+new)
-    portfolioCategories.forEach(cat => {
+    portfolioCategories().forEach(cat => {
       const categorySlug = cat.slug;
       // Count ALL fields for this category that have values (portrait_p1, portrait_p2, portrait_new_1, etc)
       const categoryImages = allFields.filter(f => 
@@ -191,7 +218,7 @@ const Portfolio: Component = () => {
     const _refreshTrigger = contentStore.state().lastUpdated?.getTime() || 0;
     
     const fromStore = contentStore.getField('portfolio', 'categories');
-    const actualCount = portfolioCategories.length.toString();
+    const actualCount = portfolioCategories().length.toString();
     
     // If store has value, validate it's reasonable (not 0, not negative)
     if (fromStore && parseInt(fromStore) > 0) {
@@ -226,7 +253,7 @@ const Portfolio: Component = () => {
         <div class="container mx-auto max-w-6xl">
           <div class="portfolio-category-tabs -mx-6 px-6">
             <div class="flex gap-3 pb-2 min-w-min">
-              <For each={portfolioCategories}>
+              <For each={portfolioCategories()}>
                 {(category) => (
                   <button
                     onClick={() => setActiveCategory(category.slug)}
@@ -246,10 +273,10 @@ const Portfolio: Component = () => {
           {/* Category Description */}
           <div class="text-center mt-6">
             <h2 class="text-xl font-bold text-gray-800 mb-2">
-              {portfolioCategories.find(c => c.slug === activeCategory())?.name}
+              {portfolioCategories().find(c => c.slug === activeCategory())?.name}
             </h2>
             <p class="text-gray-600">
-              {portfolioCategories.find(c => c.slug === activeCategory())?.description}
+              {portfolioCategories().find(c => c.slug === activeCategory())?.description}
             </p>
           </div>
         </div>

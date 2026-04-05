@@ -8,12 +8,36 @@ import Toast from '../../components/Toast';
 import ScrollToTop from '../../components/ScrollToTop';
 import { servicesData } from '../../data/services';
 import { aboutData } from '../../data/about';
-import { portfolioCategories, getImagesByCategory } from '../../data/portfolio';
+import { getImagesByCategory } from '../../data/portfolio';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
 import { updateContent } from '../../services/contentApi';
 
 // API Base URL - same as contentApi
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+
+interface ApiPackage {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  images: string[];
+  features: string[];
+  isPublished: boolean;
+  whatsappLinkType?: string;
+  customWhatsappUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface PortfolioCategory {
+  id?: number;
+  name: string;
+  slug: string;
+  description: string;
+  tagExample?: string;
+  examplePhotoUrl?: string;
+}
 
 import { AiFillHome } from 'solid-icons/ai';
 import { AiFillDollarCircle } from 'solid-icons/ai';
@@ -32,21 +56,6 @@ import { FaRegularCalendarAlt } from 'solid-icons/fa';
 import { AiFillStar } from 'solid-icons/ai';
 import { FaSolidPhoneAlt } from 'solid-icons/fa';
 import { BsRocketTakeoffFill } from 'solid-icons/bs';
-
-interface ApiPackage {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  images: string[];
-  features: string[];
-  isPublished: boolean;
-  whatsappLinkType?: string;
-  customWhatsappUrl?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
 
 const packageTemplateImages: Record<string, string[]> = {
   studio: [
@@ -143,7 +152,7 @@ const AdminHome: Component = () => {
   const [allServices, setAllServices] = createSignal<any[]>([]);
 
   // Portfolio Categories Management
-  const [portfolioCategoriesData, setPortfolioCategoriesData] = createSignal<any[]>([]);
+  const [portfolioCategoriesData, setPortfolioCategoriesData] = createSignal<PortfolioCategory[]>([]);
   const [showAddCategoryModal, setShowAddCategoryModal] = createSignal(false);
   const [isEditingCategory, setIsEditingCategory] = createSignal(false);
   const [editingCategoryId, setEditingCategoryId] = createSignal<number | null>(null);

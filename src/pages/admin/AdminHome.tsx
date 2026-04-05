@@ -1570,17 +1570,23 @@ const AdminHome: Component = () => {
                   }}
                   onError={handleError}
                 />
-                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
-                  <For each={allServices()}>
-                    {(s) => (
-                      <div class="text-center">
-                        <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                          <img src={s.image || '/photography.png'} alt={s.title} class="w-full h-full object-cover" />
+                <div class="overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 -mx-4 px-4">
+                  <div class="flex gap-3 pb-2 min-w-min">
+                    <For each={allServices()}>
+                      {(s) => (
+                        <div class="text-center flex-shrink-0">
+                          <div class="w-32 h-32 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                            <img 
+                              src={resolveMediaUrl(contentStore.getField('service', `${s.slug}_image`) || s.image)} 
+                              alt={s.title} 
+                              class="w-full h-full object-cover" 
+                            />
+                          </div>
+                          <p class="text-xs text-gray-500 mt-1 max-w-32 truncate">{s.title}</p>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">{s.title}</p>
-                      </div>
-                    )}
-                  </For>
+                      )}
+                    </For>
+                  </div>
                 </div>
               </div>
 

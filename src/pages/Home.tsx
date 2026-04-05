@@ -42,7 +42,7 @@ const Home: Component = () => {
   const serviceTitle = (slug: string, fallback: string): string =>
     contentStore.getField('service', `${slug}_title`) || fallback;
 
-  // Load all services: hardcoded + API-fetched from packages
+  // Load all services: hardcoded + API-fetched from packages + custom from contentStore
   const loadServices = async () => {
     try {
       const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
@@ -51,33 +51,64 @@ const Home: Component = () => {
       if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
       
       const data = await res.json();
+      const servicesMap = new Map<string, any>();
       
-      if (data.success && Array.isArray(data.data)) {
-        // Build: hardcoded + unique categories from API
-        const servicesMap = new Map(servicesData.map(s => [s.slug, { 
-          slug: s.slug, 
-          title: s.title, 
-          description: s.description, 
-          image: s.image 
-        }]));
+      // 1. Add hardcoded services (with contentStore overrides)
+      servicesData.forEach(service => {
+        const storedTitle = contentStore.getField('service', `${service.slug}_title`);
+        const storedDesc = contentStore.getField('service', `${service.slug}_description`);
+        const storedImage = contentStore.getField('service', `${service.slug}_image`);
         
-        // Add API categories not in hardcoded
-        data.data.forEach((pkg: any) => {
-          const category = pkg.category?.toLowerCase();
-          if (category && !servicesMap.has(category)) {
+        servicesMap.set(service.slug, {
+          slug: service.slug,
+          title: storedTitle || service.title,
+          description: storedDesc || service.description,
+          image: storedImage || service.image,
+        });
+      });
+      
+      // 2. Add API categories that aren't in hardcoded list
+      if (data.success && Array.isArray(data.data)) {
+        const packageCategories = [...new Set(data.data.map((pkg: any) => pkg.category?.toLowerCase()).filter(Boolean))];
+        packageCategories.forEach((category: string) => {
+          if (!servicesMap.has(category)) {
+            const storedTitle = contentStore.getField('service', `${category}_title`);
+            const storedDesc = contentStore.getField('service', `${category}_description`);
+            const storedImage = contentStore.getField('service', `${category}_image`);
+            
+            // Skip if title is deleted (empty)
+            if (storedTitle?.trim() === '') return;
+            
             servicesMap.set(category, {
               slug: category,
-              title: category.charAt(0).toUpperCase() + category.slice(1),
-              description: 'Layanan fotografi',
-              image: '/photography.png'
+              title: storedTitle || (category.charAt(0).toUpperCase() + category.slice(1)),
+              description: storedDesc || 'Layanan fotografi',
+              image: storedImage || '/photography.png',
             });
           }
         });
-        
-        setAllServices(Array.from(servicesMap.values()));
-      } else {
-        setAllServices(servicesData);
       }
+      
+      // 3. Add custom services from contentStore (any service_*_title field)
+      const allServiceFields = contentStore.getSectionFields('service');
+      const titleFields = allServiceFields.filter(f => f.field.endsWith('_title') && f.value.trim() !== '');
+      
+      titleFields.forEach(titleField => {
+        const slug = titleField.field.replace('_title', '');
+        if (!servicesMap.has(slug)) {
+          const description = contentStore.getField('service', `${slug}_description`);
+          const image = contentStore.getField('service', `${slug}_image`);
+          
+          servicesMap.set(slug, {
+            slug,
+            title: titleField.value,
+            description: description || 'Layanan fotografi',
+            image: image || '/photography.png',
+          });
+        }
+      });
+      
+      setAllServices(Array.from(servicesMap.values()));
     } catch (err) {
       console.error('[Home] Error loading services:', err);
       setAllServices(servicesData);

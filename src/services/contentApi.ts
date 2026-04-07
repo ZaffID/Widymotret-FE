@@ -2,7 +2,7 @@ import { authStore } from '../stores/authStore';
 import { ApiResponse, EditableContent, BatchContentUpdate } from '../types/content';
 
 // Use full URL with env variable for both dev (via Vite proxy) and production (via Vercel)
-const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotretstudio-production.up.railway.app'}/api`;
 
 /**
  * Helper: build Authorization header when token exists

@@ -40,13 +40,22 @@ nav, button, footer, .navbar, .btn, .footer-text {
 .admin-home h4,
 .admin-home h5,
 .admin-home h6 {
-  font-family: var(--font-heading);
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-weight: 700;
 }
 
 .admin-home button,
 .admin-home nav {
   font-family: var(--font-ui);
+}
+
+.admin-home p,
+.admin-home span,
+.admin-home label,
+.admin-home input,
+.admin-home textarea,
+.admin-home select {
+  font-family: var(--font-body);
 }
 
 /* Carousel fade-in animation */

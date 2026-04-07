@@ -2089,7 +2089,7 @@ const AdminHome: Component = () => {
                           <For each={unsavedPackageDetails()}>
                             {(item) => (
                               <li>
-                                Halaman: Admin Home | Bagian: Pricelist - {item.serviceTitle} | Paket: {item.packageName}
+                                Layanan: {item.serviceTitle} | Paket: {item.packageName}
                               </li>
                             )}
                           </For>

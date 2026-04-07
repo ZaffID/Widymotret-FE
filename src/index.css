@@ -1,53 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@400;500;700&family=Poppins:wght@400;700&display=swap');
 @import 'tailwindcss';
 
-/* Font Imports */
-@font-face {
-  font-family: 'Boska';
-  src: url('/fonts/PlayfairDisplay-Regular.ttf') format('truetype');
-  font-weight: 400;
-}
-
-@font-face {
-  font-family: 'Boska';
-  src: url('/fonts/PlayfairDisplay-Bold.ttf') format('truetype');
-  font-weight: 700;
-}
-
-@font-face {
-  font-family: 'Switzer';
-  src: url('/fonts/Switzer-Regular.otf') format('opentype');
-  font-weight: 400;
-}
-
-@font-face {
-  font-family: 'Switzer';
-  src: url('/fonts/Switzer-Bold.otf') format('opentype');
-  font-weight: 700;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins-Regular.ttf') format('truetype');
-  font-weight: 400;
-}
-
-@font-face {
-  font-family: 'Poppins';
-  src: url('/fonts/Poppins-Bold.ttf') format('truetype');
-  font-weight: 700;
-}
+/* Font Families from Google Fonts */
+/* Crimson Text - for headings (elegant serif, luxury/sophisticated feel) */
+/* Inter - for body text (modern, clean) */
+/* Poppins - for navigation, buttons, footer */
 
 /* Font Family Application */
 html {
-  font-family: 'Switzer', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 h1, h2, h3, .hero-title, .section-title {
-  font-family: 'Boska', serif;
+  font-family: 'Crimson Text', serif;
 }
 
 p, span, body, .body-text {
-  font-family: 'Switzer', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 nav, button, footer, .navbar, .btn, .footer-text {
@@ -99,4 +68,20 @@ nav, button, footer, .navbar, .btn, .footer-text {
 
 .testi-item.animate {
   animation: fadeInOut 0.5s ease-in-out;
+}
+
+/* Toast notification animation */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(400px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out forwards;
 }

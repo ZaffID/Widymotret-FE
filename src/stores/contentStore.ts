@@ -23,6 +23,24 @@ const createContentStore = () => {
     return state().content.get(key)?.value || '';
   };
 
+  // Get all fields for a section from store
+  const getSectionFields = (section: string): Array<{field: string; value: string}> => {
+    const prefix = `${section}.`;
+    const fields: Array<{field: string; value: string}> = [];
+    
+    state().content.forEach((item, key) => {
+      if (key.startsWith(prefix)) {
+        const fieldName = key.slice(prefix.length);
+        fields.push({
+          field: fieldName,
+          value: item.value || '',
+        });
+      }
+    });
+    
+    return fields.sort((a, b) => a.field.localeCompare(b.field));
+  };
+
   // Load single content field
   const loadField = async (section: string, field: string) => {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
@@ -196,6 +214,7 @@ const createContentStore = () => {
     },
     // Methods
     getField,
+    getSectionFields,
     loadField,
     loadSection,
     loadAll,

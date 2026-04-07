@@ -4,22 +4,116 @@ import Navbar from '../components/Navbar';
 import PriceList from '../components/PriceList';
 import ImageCarousel from '../components/ImageCarousel';
 import Footer from '../components/Footer';
+import ContactModal from '../components/ContactModal';
+import ScrollToTop from '../components/ScrollToTop';
 import { servicesData } from '../data/services';
 import { contentStore } from '../stores/contentStore';
+import { useScrollReveal, useScrollRevealGroup } from '../hooks/useScrollReveal';
+import '../styles/scroll-reveal.css';
 import { AiTwotonePhone, AiTwotoneMail, AiTwotoneCheckCircle } from 'solid-icons/ai';
 import { IoLocationOutline } from 'solid-icons/io';
 import { BsInstagram } from 'solid-icons/bs';
+import { resolveMediaUrl } from '../utils/mediaUrl';
 
 const Home: Component = () => {
   const navigate = useNavigate();
   const [currentPortraitIndex, setCurrentPortraitIndex] = createSignal(0);
   const [isPriceListOpen, setIsPriceListOpen] = createSignal(false);
-  const [serviceCarouselIndex, setServiceCarouselIndex] = createSignal(0);
   const [isBookingModalOpen, setIsBookingModalOpen] = createSignal(false);
+  const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
+  const [allServices, setAllServices] = createSignal<Array<{ slug: string; title: string; description: string; image: string }>>(servicesData);
+
+  // Scroll reveal refs for each section
+  const introRef = useScrollReveal({ threshold: 0.5 });
+  const servicesRef = useScrollReveal({ threshold: 0.5 });
+  const bookingTitleRef = useScrollReveal({ threshold: 0.5 });
+  const bookingItemsRef = useScrollRevealGroup({ threshold: 0.5, itemDelay: 100 });
+  const portfolioGridRef = useScrollRevealGroup({ threshold: 0.5, itemDelay: 80 });
+  const contactRef = useScrollReveal({ threshold: 0.5 });
+  const ctaRef = useScrollReveal({ threshold: 0.5 });
 
   // Helper: fetch dari contentStore, fallback ke mock data
   const t = (section: string, field: string, fallback: string): string =>
     contentStore.getField(section, field) || fallback;
+
+  const serviceImage = (slug: string, fallback: string): string =>
+    resolveMediaUrl(contentStore.getField('service', `${slug}_image`) || fallback);
+
+  const serviceTitle = (slug: string, fallback: string): string =>
+    contentStore.getField('service', `${slug}_title`) || fallback;
+
+  // Load all services: hardcoded + API-fetched from packages + custom from contentStore
+  const loadServices = async () => {
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const res = await fetch(`${apiUrl}/api/packages`);
+      
+      if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
+      
+      const data = await res.json();
+      const servicesMap = new Map<string, any>();
+      
+      // 1. Add hardcoded services (with contentStore overrides)
+      servicesData.forEach(service => {
+        const storedTitle = contentStore.getField('service', `${service.slug}_title`);
+        const storedDesc = contentStore.getField('service', `${service.slug}_description`);
+        const storedImage = contentStore.getField('service', `${service.slug}_image`);
+        
+        servicesMap.set(service.slug, {
+          slug: service.slug,
+          title: storedTitle || service.title,
+          description: storedDesc || service.description,
+          image: storedImage || service.image,
+        });
+      });
+      
+      // 2. Add API categories that aren't in hardcoded list
+      if (data.success && Array.isArray(data.data)) {
+        const packageCategories = [...new Set(data.data.map((pkg: any) => pkg.category?.toLowerCase()).filter(Boolean))];
+        packageCategories.forEach((category: string) => {
+          if (!servicesMap.has(category)) {
+            const storedTitle = contentStore.getField('service', `${category}_title`);
+            const storedDesc = contentStore.getField('service', `${category}_description`);
+            const storedImage = contentStore.getField('service', `${category}_image`);
+            
+            // Skip if title is deleted (empty)
+            if (storedTitle?.trim() === '') return;
+            
+            servicesMap.set(category, {
+              slug: category,
+              title: storedTitle || (category.charAt(0).toUpperCase() + category.slice(1)),
+              description: storedDesc || 'Layanan fotografi',
+              image: storedImage || '/photography.png',
+            });
+          }
+        });
+      }
+      
+      // 3. Add custom services from contentStore (any service_*_title field)
+      const allServiceFields = contentStore.getSectionFields('service');
+      const titleFields = allServiceFields.filter(f => f.field.endsWith('_title') && f.value.trim() !== '');
+      
+      titleFields.forEach(titleField => {
+        const slug = titleField.field.replace('_title', '');
+        if (!servicesMap.has(slug)) {
+          const description = contentStore.getField('service', `${slug}_description`);
+          const image = contentStore.getField('service', `${slug}_image`);
+          
+          servicesMap.set(slug, {
+            slug,
+            title: titleField.value,
+            description: description || 'Layanan fotografi',
+            image: image || '/photography.png',
+          });
+        }
+      });
+      
+      setAllServices(Array.from(servicesMap.values()));
+    } catch (err) {
+      console.error('[Home] Error loading services:', err);
+      setAllServices(servicesData);
+    }
+  };
 
   onMount(async () => {
     await Promise.all([
@@ -31,47 +125,29 @@ const Home: Component = () => {
       contentStore.loadSection('settings'),
       contentStore.loadSection('home'),
       contentStore.loadSection('featured'),
+      contentStore.loadSection('service'),
+      contentStore.loadSection('portfolio'),
     ]);
+    // Load services after content store is ready
+    await loadServices();
   });
+
   
-  const landscapeImages = [
-    '/landscape/landscape (1).png',
-    '/landscape/landscape (2).png',
-    '/landscape/landscape (3).png',
-    '/landscape/landscape (4).png',
-  ];
-
-  // Function untuk get random landscape image
-  const getRandomLandscapeImage = () => {
-    return landscapeImages[Math.floor(Math.random() * landscapeImages.length)];
-  };
-
-  // Service carousel navigation
-  const nextService = () => {
-    setServiceCarouselIndex((prev) => (prev + 1) % servicesData.length);
-  };
-
-  const prevService = () => {
-    setServiceCarouselIndex((prev) => (prev - 1 + servicesData.length) % servicesData.length);
-  };
-
-  // Get visible services (3 per view on desktop, 1 on mobile)
-  const getVisibleServices = createMemo(() => {
-    const itemsPerPage = 3;
-    const startIdx = serviceCarouselIndex();
-    return Array.from({ length: itemsPerPage }).map((_, i) => 
-      servicesData[(startIdx + i) % servicesData.length]
-    );
-  });
-  
-  const homeCarouselImages = [
+  const defaultCarouselImages = [
     '/home (1).png',
     '/home (2).jpg',
     '/home (3).jpg',
     '/home (4).jpg',
   ];
+
+  const homeCarouselImages = createMemo(() => [
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_0') || defaultCarouselImages[0]),
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_1') || defaultCarouselImages[1]),
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_2') || defaultCarouselImages[2]),
+    resolveMediaUrl(contentStore.getField('hero', 'carousel_3') || defaultCarouselImages[3]),
+  ]);
   
-  const portraitImages = [
+  const defaultPortraitImages = [
     '/portrait/portrait (1).png',
     '/portrait/portrait (2).png',
     '/portrait/portrait (3).png',
@@ -79,37 +155,89 @@ const Home: Component = () => {
     '/portrait/portrait (5).png',
   ];
 
-  const portfolioImages = [
-    { image: '/landscape/landscape (1).png', category: 'Wedding', name: 'Person #1 - Person #2' },
-    { image: '/landscape/landscape (2).png', category: 'Couple Session', name: 'Person #3 - Person #4' },
-    { image: '/landscape/landscape (3).png', category: 'Wedding', name: 'Person #5 - Person #6' },
-    { image: '/landscape/landscape (4).png', category: 'Engagement', name: 'Person #7' },
+  const portraitImages = createMemo(() => [
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_0') || defaultPortraitImages[0]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_1') || defaultPortraitImages[1]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_2') || defaultPortraitImages[2]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_3') || defaultPortraitImages[3]),
+    resolveMediaUrl(contentStore.getField('featured', 'portrait_4') || defaultPortraitImages[4]),
+  ]);
+
+  const defaultPortfolioImages = [
+    { image: '/portrait/portrait (1).png', category: 'Portrait Photography', slug: 'portrait', name: 'Studio Portrait Session #1' },
+    { image: '/landscape/landscape (1).png', category: 'Event and Wedding Coverage', slug: 'event', name: 'Wedding Ceremony Moments' },
+    { image: '/landscape/landscape (2).png', category: 'Editorial and Brand Shots', slug: 'editorial', name: 'Brand Campaign #1' },
+    { image: '/portrait/portrait (2).png', category: 'Image Retouching and Editing', slug: 'retouching', name: 'Professional Editing Results' },
   ];
 
-  const testimonials = [
-    {
-      quote: 'Cara kalian menangkap momen hari kami sungguh luar biasa. Setiap foto adalah harta karun.',
-      author: 'Racheal and Tim',
-      avatar: '/portrait/portrait (1).png',
-    },
-    {
-      quote: 'Profesional, sabar, dan sangat berbakat.',
-      author: 'Agency Lead, Numa Studio',
-      avatar: '/portrait/portrait (2).png',
-    },
-    {
-      quote: 'Portrait saya selalu terlihat menakjubkan ketika ditangani oleh kalian.',
-      author: 'Mary Jane',
-      avatar: '/portrait/portrait (3).png',
-    },
-  ];
+  const portfolioPrimaryFieldBySlug: Record<string, string> = {
+    portrait: 'portrait_p1',
+    event: 'event_e1',
+    editorial: 'editorial_ed1',
+    retouching: 'retouching_r1',
+  };
+
+  const portfolioImages = createMemo(() => 
+    defaultPortfolioImages.map((item, idx) => ({
+      ...item,
+      image: resolveMediaUrl(
+        contentStore.getField('portfolio', portfolioPrimaryFieldBySlug[item.slug]) ||
+        contentStore.getField('home', `portfolio_grid_${idx}`) ||
+        item.image
+      ),
+      category: contentStore.getField('home', `portfolio_grid_category_${idx}`) || item.category
+    }))
+  );
+
+  const testimonials = createMemo(() => {
+    const testi: Array<{ quote: string; author: string; avatar: string }> = [];
+    for (let i = 1; i <= 7; i++) {
+      const quote = contentStore.getField('testimonials', `quote${i}`);
+      const author = contentStore.getField('testimonials', `author${i}`);
+      if (quote && author) {
+        testi.push({
+          quote,
+          author,
+          avatar: `/portrait/portrait (${i}).png`,
+        });
+      }
+    }
+    return testi.length > 0 ? testi : [
+      {
+        quote: 'Cara kalian menangkap momen hari kami sungguh luar biasa. Setiap foto adalah harta karun.',
+        author: 'Racheal and Tim',
+        avatar: '/portrait/portrait (1).png',
+      },
+    ];
+  });
 
   // Single testimonial carousel state
   const [testiIndex, setTestiIndex] = createSignal(0);
   const [testiAnimate, setTestiAnimate] = createSignal(false);
+  const [showPortfolioInfo, setShowPortfolioInfo] = createSignal<string | null>(null);
+  const [isAnimatingPortrait, setIsAnimatingPortrait] = createSignal(false);
+  let serviceScrollContainer!: HTMLDivElement;
   
-  const nextTesti = () => setTestiIndex((p) => (p + 1) % testimonials.length);
-  const prevTesti = () => setTestiIndex((p) => (p - 1 + testimonials.length) % testimonials.length);
+  const nextTesti = () => setTestiIndex((p) => (p + 1) % testimonials().length);
+  const prevTesti = () => setTestiIndex((p) => (p - 1 + testimonials().length) % testimonials().length);
+
+  // Handle portfolio click - show info on first click (mobile), navigate on second click
+  const handlePortfolioClick = (slug: string) => {
+    if (window.innerWidth < 768) {
+      // Mobile: first click shows info
+      setShowPortfolioInfo(slug);
+      setTimeout(() => {
+        // Auto-hide after 1 second if not clicked
+        if (showPortfolioInfo() === slug) {
+          // Will be overridden on second click
+        }
+      }, 300);
+    }
+  };
+
+  const handlePortfolioNavigate = (slug: string) => {
+    navigate(`/portfolio?category=${slug}`);
+  };
 
   // Trigger animation on testimonial change
   createEffect(() => {
@@ -120,23 +248,54 @@ const Home: Component = () => {
   });
 
   const nextPortrait = () => {
-    setCurrentPortraitIndex((prev) => (prev + 1) % portraitImages.length);
+    if (isAnimatingPortrait()) return;
+    setIsAnimatingPortrait(true);
+    setCurrentPortraitIndex((prev) => (prev + 1) % portraitImages().length);
+    setTimeout(() => setIsAnimatingPortrait(false), 500);
   };
 
   const prevPortrait = () => {
-    setCurrentPortraitIndex((prev) => (prev - 1 + portraitImages.length) % portraitImages.length);
+    if (isAnimatingPortrait()) return;
+    setIsAnimatingPortrait(true);
+    setCurrentPortraitIndex((prev) => (prev - 1 + portraitImages().length) % portraitImages().length);
+    setTimeout(() => setIsAnimatingPortrait(false), 500);
   };
 
   const getPrevIndex = createMemo(() => {
-    return (currentPortraitIndex() - 1 + portraitImages.length) % portraitImages.length;
+    return (currentPortraitIndex() - 1 + portraitImages().length) % portraitImages().length;
   });
 
   const getNextIndex = createMemo(() => {
-    return (currentPortraitIndex() + 1) % portraitImages.length;
+    return (currentPortraitIndex() + 1) % portraitImages().length;
   });
 
   return (
     <div class="min-h-screen bg-white">
+      <style>{`
+        .service-scroll-container {
+          scroll-behavior: smooth;
+          scrollbar-width: thin;
+          scrollbar-color: #464C43 #f0f0f0;
+        }
+        
+        .service-scroll-container::-webkit-scrollbar {
+          height: 6px;
+        }
+        
+        .service-scroll-container::-webkit-scrollbar-track {
+          background: #f0f0f0;
+          border-radius: 3px;
+        }
+        
+        .service-scroll-container::-webkit-scrollbar-thumb {
+          background: #464C43;
+          border-radius: 3px;
+        }
+        
+        .service-scroll-container::-webkit-scrollbar-thumb:hover {
+          background: #576250;
+        }
+      `}</style>
       <Navbar />
       {/* PriceList modal masih ada tapi tidak diakses dari navbar */}
       <PriceList 
@@ -147,7 +306,7 @@ const Home: Component = () => {
       {/* Hero Section with Auto-Carousel */}
       <section class="relative h-screen flex items-center justify-center overflow-hidden">
         <div class="absolute inset-0 z-0">
-          <ImageCarousel images={homeCarouselImages} autoPlayInterval={5000} />
+          <ImageCarousel images={homeCarouselImages()} autoPlayInterval={5000} />
         </div>
         <div class="relative z-10 text-center px-6 max-w-4xl">
           <h1 class="text-5xl md:text-6xl text-white drop-shadow-lg mb-6">
@@ -161,7 +320,7 @@ const Home: Component = () => {
 
       {/* Hi, you've found us Section */}
       <section class="py-20 px-6 bg-white">
-        <div class="container mx-auto max-w-4xl text-center">
+        <div class="container mx-auto max-w-4xl text-center scroll-reveal" ref={introRef}>
           <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-8">
             {t('introduction', 'heading', 'Halo, Anda sudah menemukan kami!')}
           </h2>
@@ -179,9 +338,9 @@ const Home: Component = () => {
       {/* Services Section */}
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
-          <div class="flex flex-col md:flex-row gap-12 items-start">
+          <div class="flex flex-col md:flex-row gap-12 items-start" ref={servicesRef}>
             {/* Left Side - Text */}
-            <div class="w-full md:w-2/5">
+            <div class="w-full md:w-2/5 scroll-reveal">
               <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">
                 {t('services', 'title', 'Services')}
               </h2>
@@ -191,67 +350,29 @@ const Home: Component = () => {
             </div>
 
             {/* Right Side - Service Carousel */}
-            <div class="w-full md:w-3/5">
+            <div class="w-full md:w-3/5 scroll-reveal">
               <div class="relative">
-                {/* Cards Grid with Animation */}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <For each={getVisibleServices()}>
-                    {(service, idx) => (
+                {/* Cards Scroll Container */}
+                <div 
+                  ref={serviceScrollContainer!}
+                  class="service-scroll-container flex gap-4 md:gap-6 overflow-x-auto pb-4 px-1"
+                >
+                  <For each={allServices()}>
+                    {(service) => (
                       <div 
-                        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-500"
-                        style={{
-                          animation: `fadeInUp 0.5s ease-out ${idx() * 100}ms backwards`
-                        }}
+                        class="flex-shrink-0 w-[84%] sm:w-[68%] md:w-1/3 bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
                       >
                         <div class="aspect-square overflow-hidden">
                           <img
-                            src={getRandomLandscapeImage()}
-                            alt={service.title}
+                            src={serviceImage(service.slug, service.image)}
+                            alt={serviceTitle(service.slug, service.title)}
                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                           />
                         </div>
                         <div class="p-4 text-center">
-                          <p class="text-gray-800 font-medium">{service.title}</p>
+                          <p class="text-gray-800 font-medium">{serviceTitle(service.slug, service.title)}</p>
                         </div>
                       </div>
-                    )}
-                  </For>
-                </div>
-
-                {/* Navigation Arrows */}
-                <button
-                  onClick={prevService}
-                  class="absolute -left-12 top-1/2 transform -translate-y-1/2 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-[#464C43] text-white hover:bg-[#576250] transition"
-                  aria-label="Previous services"
-                >
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-
-                <button
-                  onClick={nextService}
-                  class="absolute -right-12 top-1/2 transform -translate-y-1/2 hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-[#464C43] text-white hover:bg-[#576250] transition"
-                  aria-label="Next services"
-                >
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-
-                {/* Dots Indicator */}
-                <div class="flex justify-center gap-2 mt-6">
-                  <For each={Array.from({ length: servicesData.length })}>
-                    {(_, index) => (
-                      <button
-                        onClick={() => setServiceCarouselIndex(index())}
-                        class={`transition-all duration-300 rounded-full ${
-                          Math.floor(serviceCarouselIndex()) === index()
-                            ? 'bg-[#464C43] w-3 h-3'
-                            : 'bg-gray-300 w-2 h-2 hover:bg-gray-400'
-                        }`}
-                        aria-label={`Go to service ${index() + 1}`}
-                      />
                     )}
                   </For>
                 </div>
@@ -264,12 +385,12 @@ const Home: Component = () => {
       {/* Alur Booking Section */}
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
-          <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">{t('booking', 'title', 'Alur Booking')}</h2>
+          <div class="text-center mb-12 scroll-reveal" ref={bookingTitleRef}>
+            <h2 class="text-3xl md:text-4xl text-gray-800 mb-4">{t('booking', 'title', 'Alur Booking')}</h2>
             <p class="text-lg text-gray-600">{t('booking', 'subtitle', 'Mulai dari konsultasi, pemilihan paket, hingga hari H — semua kami siapkan dengan profesional.')}</p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8" ref={bookingItemsRef}>
             <For each={Array.from({ length: 6 })}>
               {(_, idx) => {
                 const stepNum = idx() + 1;
@@ -284,7 +405,7 @@ const Home: Component = () => {
                   { title: 'Editing & Penyerahan Hasil', desc: 'Proses editing dilakukan sesuai standar kualitas studio, lalu hasil diserahkan sesuai paket yang dipilih.' },
                 ];
                 return (
-                  <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center">
+                  <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center scroll-reveal-item">
                     <h3 class="text-xl text-[#464C43] mb-2">
                       {t('booking', titleField, bookingSteps[idx()].title)}
                     </h3>
@@ -305,24 +426,50 @@ const Home: Component = () => {
       <section id="portfolio" class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl text-gray-800 mb-4">Our portofolios</h2>
+            <h2 class="text-3xl md:text-4xl text-gray-800 mb-4">Our portofolios</h2>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            <For each={portfolioImages}>
-              {(item) => (
-                <div class="group relative overflow-hidden rounded-lg cursor-pointer">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6" ref={portfolioGridRef}>
+            <For each={portfolioImages()}>
+              {(item, idx) => (
+                <div 
+                  class="group relative overflow-hidden rounded-lg cursor-pointer"
+                  classList={{
+                    'scroll-reveal-item': idx() >= 3
+                  }}
+                  onClick={() => {
+                    handlePortfolioClick(item.slug);
+                    // On desktop, also navigate on click
+                    if (window.innerWidth >= 768) {
+                      handlePortfolioNavigate(item.slug);
+                    } else if (showPortfolioInfo() === item.slug) {
+                      handlePortfolioNavigate(item.slug);
+                    }
+                  }}
+                >
                   <img
                     src={item.image}
                     alt={item.name}
                     class="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                  <div 
+                    class="absolute inset-0 bg-black/40 transition-opacity duration-300 flex flex-col justify-end p-6"
+                    classList={{
+                      'opacity-100 md:group-hover:opacity-100': showPortfolioInfo() === item.slug || window.innerWidth >= 768,
+                      'opacity-0 md:opacity-0': showPortfolioInfo() !== item.slug && window.innerWidth < 768
+                    }}
+                  >
                     <div class="text-white">
                       <p class="text-sm font-medium mb-1">{item.category}</p>
                       <p class="text-lg font-semibold">{item.name}</p>
                     </div>
                   </div>
-                  <div class="absolute top-4 right-4 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div 
+                    class="absolute top-4 right-4 text-white transition-opacity"
+                    classList={{
+                      'opacity-100 md:group-hover:opacity-100': showPortfolioInfo() === item.slug || window.innerWidth >= 768,
+                      'opacity-0 md:opacity-0': showPortfolioInfo() !== item.slug && window.innerWidth < 768
+                    }}
+                  >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
@@ -335,29 +482,30 @@ const Home: Component = () => {
       </section>
 
       {/* Featured Shots Section */}
-      <section class="py-20 px-6 bg-white">
+      <section class="py-20 md:py-28 px-4 md:px-6 bg-white">
         <div class="container mx-auto max-w-5xl">
-          <div class="text-center mb-12">
-            <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Potret Unggulan</h2>
-            <p class="text-lg text-gray-600">Sekilas pandang dari beberapa karya terbaik kami.</p>
+          <div class="text-center mb-12 md:mb-16">
+            <h2 class="text-2xl md:text-4xl font-bold text-gray-800 mb-4">{t('featured', 'title', 'Potret Unggulan')}</h2>
+            <p class="text-base md:text-lg text-gray-600">{t('featured', 'subtitle', 'Sekilas pandang dari beberapa karya terbaik kami.')}</p>
           </div>
-          <div class="relative">
-            <div class="flex items-center justify-center gap-4">
+          <div class="relative mt-2 md:mt-4">
+            <div class="flex items-center justify-center gap-2 md:gap-4">
               {/* Left Arrow */}
               <button
                 onClick={prevPortrait}
-                class="z-20 p-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
+                disabled={isAnimatingPortrait()}
+                class="z-20 p-2 md:p-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Previous image"
               >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
 
               {/* Image Container */}
               <div class="flex-1 flex justify-center items-center overflow-visible relative">
-                <div class="relative w-full max-w-5xl h-64">
-                  <For each={portraitImages}>
+                <div class="relative w-full h-64 sm:h-72 md:h-[30rem]">
+                  <For each={portraitImages()}>
                     {(image, index) => {
                       return (
                         <div
@@ -372,7 +520,7 @@ const Home: Component = () => {
                           <img
                             src={image}
                             alt={`Featured shot ${index() + 1}`}
-                            class="w-96 h-64 object-cover rounded-lg shadow-lg"
+                            class="w-44 h-64 sm:w-52 sm:h-72 md:w-72 md:h-96 object-cover rounded-lg shadow-lg"
                           />
                         </div>
                       );
@@ -384,17 +532,18 @@ const Home: Component = () => {
               {/* Right Arrow */}
               <button
                 onClick={nextPortrait}
-                class="z-20 p-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors flex-shrink-0"
+                disabled={isAnimatingPortrait()}
+                class="z-20 p-2 md:p-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Next image"
               >
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </div>
           </div>
-          <div class="text-center mt-8">
-            <button class="px-8 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium">
+          <div class="text-center mt-6 md:mt-8">
+            <button onClick={() => navigate('/portfolio')} class="px-6 md:px-8 py-2 md:py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm md:text-base">
               Lihat Portfolio Kami
             </button>
           </div>
@@ -405,8 +554,8 @@ const Home: Component = () => {
       <section class="py-32 px-6" style={{ 'background-color': '#464C43' }}>
         <div class="container mx-auto max-w-5xl">
           <div class="text-center mb-16 text-white">
-            <h2 class="text-4xl md:text-5xl font-bold mb-4">Testimoni</h2>
-            <p class="text-lg opacity-90 mb-8">dari pasangan bahagia dan puas</p>
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">{t('testimonials', 'title', 'Testimoni')}</h2>
+            <p class="text-lg opacity-90 mb-8">{t('testimonials', 'subtitle', 'dari pasangan bahagia dan puas')}</p>
           </div>
 
           <div class="relative px-8">
@@ -422,9 +571,9 @@ const Home: Component = () => {
 
             <div class="max-w-4xl mx-auto text-center text-white px-6">
               <div class="testi-item" classList={{ 'animate': testiAnimate() }}>
-                <p class="text-lg md:text-xl italic mb-6">"{t('testimonials', `quote${testiIndex() + 1}`, testimonials[testiIndex()].quote)}"
+                <p class="text-lg md:text-xl italic mb-6">"{t('testimonials', `quote${testiIndex() + 1}`, testimonials()[testiIndex()].quote)}"
                 </p>
-                <p class="font-semibold">- {t('testimonials', `author${testiIndex() + 1}`, testimonials[testiIndex()].author)}</p>
+                <p class="font-semibold">- {t('testimonials', `author${testiIndex() + 1}`, testimonials()[testiIndex()].author)}</p>
               </div>
             </div>
 
@@ -446,7 +595,7 @@ const Home: Component = () => {
         <div class="container mx-auto max-w-6xl">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Left - Contact Info */}
-            <div>
+            <div class="scroll-reveal" ref={contactRef}>
               <h2 class="text-4xl text-gray-800 mb-6">Hubungi Kami</h2>
               <p class="text-gray-600 mb-8">Siap mengabadikan momen spesial Anda? Hubungi kami melalui WhatsApp atau isi formulir, dan kami akan merespons dalam 24 jam.</p>
               
@@ -486,7 +635,7 @@ const Home: Component = () => {
             </div>
             
             {/* Right - Google Map */}
-            <div class="h-full min-h-96">
+            <div class="h-full min-h-96 scroll-reveal">
               <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15826.495597592279!2d109.1266704!3d-7.3959707!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6561af6175859b%3A0x29609b0d99d853cf!2sWidy%20Motret%20Studio!5e0!3m2!1sid!2sid!4v1770349406455!5m2!1sid!2sid" width="100%" height="100%" style={{ "border": "none", "border-radius": "0.5rem" }} allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
           </div>
@@ -495,8 +644,8 @@ const Home: Component = () => {
 
       {/* CTA Booking Section */}
       <section class="py-20 px-6 bg-gradient-to-r from-[#464C43] to-[#576250]">
-        <div class="container mx-auto max-w-4xl text-center">
-          <h2 class="text-4xl md:text-5xl text-white mb-4">{t('home', 'cta_heading', 'Siap Mengabadikan Momen Spesial Anda?')}</h2>
+        <div class="container mx-auto max-w-4xl text-center scroll-reveal" ref={ctaRef}>
+          <h2 class="text-3xl md:text-4xl text-white mb-4">{t('home', 'cta_heading', 'Siap Mengabadikan Momen Spesial Anda?')}</h2>
           <p class="text-white/90 text-lg mb-8">{t('home', 'cta_subheading', 'Hubungi kami sekarang dan jadwalkan sesi pemotretan Anda')}</p>
           <button
             onClick={() => setIsBookingModalOpen(true)}
@@ -548,24 +697,33 @@ const Home: Component = () => {
             </button>
 
             {/* Option 2: Booking Now */}
-            <a
-              href="https://wa.me/62895351115777?text=Halo,%20saya%20tertarik%20untuk%20booking%20layanan%20fotografi.%20Bisa%20bantu%20saya%20dengan%20paket%20dan%20jadwal%20yang%20tersedia?"
-              target="_blank" 
-              rel="noopener noreferrer"
-              onClick={() => setIsBookingModalOpen(false)}
+            <button
+              onClick={() => {
+                setIsBookingModalOpen(false);
+                setIsContactModalOpen(true);
+              }}
               class="w-full py-3 px-6 bg-[#464C43] hover:bg-[#576250] text-white rounded-lg transition-all duration-300 font-medium flex items-center justify-center gap-3"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
               </svg>
               Booking via WhatsApp Sekarang
-            </a>
+            </button>
           </div>
         </div>
       </Show>
 
+      {/* Contact Modal */}
+      <ContactModal 
+        isOpen={isContactModalOpen} 
+        onClose={() => setIsContactModalOpen(false)} 
+      />
+
       {/* Footer */}
       <Footer />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop showThreshold={500} />
     </div>
   );
 };

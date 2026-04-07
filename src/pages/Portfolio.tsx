@@ -9,7 +9,6 @@ import { ScrollRevealImage } from '../components/portfolio/ScrollRevealImage';
 import { portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
 import { contentStore } from '../stores/contentStore';
 import { resolveMediaUrl } from '../utils/mediaUrl';
-import '../styles/scroll-reveal.css';
 import './Portfolio.css';
 
 interface PortfolioCategory {
@@ -91,23 +90,6 @@ const Portfolio: Component = () => {
     }
   });
 
-  // Ensure images are visible when category changes or page loads
-  createEffect(() => {
-    const category = activeCategory();
-    const images = currentImages();
-    
-    if (images.length > 0) {
-      queueMicrotask(() => {
-        const items = document.querySelectorAll('.scroll-reveal-item');
-        items.forEach((item: any) => {
-          item.classList.remove('scroll-reveal-hidden');
-          item.classList.add('reveal-visible');
-        });
-      });
-    }
-  });
-
-
   // Category filter initialization
   createEffect(() => {
     const category = searchParams.category as 'portrait' | 'event' | 'editorial' | 'retouching' | undefined;
@@ -166,40 +148,6 @@ const Portfolio: Component = () => {
         url: resolveMediaUrl(savedValue || img.url),
         title: getImageLabel(),
       } as PortfolioImage;
-    });
-  });
-
-  // Reset animation when category changes
-  createEffect(() => {
-    currentImages(); // Dependency on images
-    
-    // Reset animation state untuk items baru
-    queueMicrotask(() => {
-      const items = document.querySelectorAll('.scroll-reveal-item');
-      items.forEach(item => {
-        item.classList.remove('reveal-visible');
-        item.classList.add('scroll-reveal-hidden');
-      });
-      console.log('[Portfolio] Animation reset for new category');
-      
-      // Manually trigger animation if container is visible
-      const container = document.querySelector('.grid[class*="gap-6"]');
-      if (container) {
-        const rect = container.getBoundingClientRect();
-        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
-        
-        if (isVisible) {
-          // Container visible - manually animate
-          console.log('[Portfolio] Container visible, trigger animation manually');
-          items.forEach((item: any, index: number) => {
-            const delay = index * 80;
-            item.style.setProperty('--reveal-delay', `${delay}ms`);
-            item.style.setProperty('--reveal-duration', '800ms');
-            item.classList.remove('scroll-reveal-hidden');
-            item.classList.add('reveal-visible');
-          });
-        }
-      }
     });
   });
 

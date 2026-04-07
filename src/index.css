@@ -1,26 +1,32 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&family=Inter:wght@400;500;700&family=Poppins:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant:wght@600;700&family=Inter:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap');
 @import 'tailwindcss';
 
 /* Font Families from Google Fonts */
-/* Crimson Text - for headings (elegant serif, luxury/sophisticated feel) */
-/* Inter - for body text (modern, clean) */
-/* Poppins - for navigation, buttons, footer */
+/* Cormorant - heading (elegant serif, readable for all ages) */
+/* Inter - body text (modern, clean) */
+/* Poppins - navigation, buttons, UI */
+
+:root {
+  --font-heading: 'Cormorant', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-ui: 'Poppins', sans-serif;
+}
 
 /* Font Family Application */
 html {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
-h1, h2, h3, .hero-title, .section-title {
-  font-family: 'Crimson Text', serif;
+h1, h2, h3, h4, h5, h6, .hero-title, .section-title {
+  font-family: var(--font-heading);
 }
 
 p, span, body, .body-text {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
 }
 
 nav, button, footer, .navbar, .btn, .footer-text {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-ui);
 }
 
 /* Carousel fade-in animation */

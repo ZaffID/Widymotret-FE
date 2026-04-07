@@ -1,4 +1,4 @@
-import { Component, onMount } from 'solid-js';
+import { Component } from 'solid-js';
 import { FaSolidMagnifyingGlass } from 'solid-icons/fa';
 
 interface ScrollRevealImageProps {
@@ -11,51 +11,12 @@ interface ScrollRevealImageProps {
 }
 
 /**
- * Single portfolio image with individual scroll reveal animation
- * Each image animates in as it enters the viewport
+ * Single portfolio image card without reveal animation.
  */
 export const ScrollRevealImage: Component<ScrollRevealImageProps> = (props) => {
-  let imageContainer: HTMLDivElement | undefined;
-
-  onMount(() => {
-    if (!imageContainer) return;
-
-    const threshold = props.threshold ?? 0.15;
-    const duration = props.duration ?? 550;
-
-    // Set initial state
-    imageContainer.classList.add('scroll-reveal-hidden');
-    imageContainer.style.setProperty('--reveal-duration', `${duration}ms`);
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            // Element is in viewport - reveal it with animation
-            entry.target.classList.remove('scroll-reveal-hidden');
-            entry.target.classList.add('reveal-visible');
-            // Stop observing to prevent re-animation
-            observer.unobserve(entry.target);
-          }
-        });
-      },
-      {
-        threshold,
-        rootMargin: '0px 0px -50px 0px',
-      }
-    );
-
-    observer.observe(imageContainer);
-
-    return () => {
-      observer.disconnect();
-    };
-  });
-
   return (
     <div 
-      ref={imageContainer}
-      class="group relative overflow-hidden rounded-lg cursor-pointer bg-gray-100 scroll-reveal-item w-full"
+      class="group relative overflow-hidden rounded-lg cursor-pointer bg-gray-100 w-full"
       onClick={props.onClick}
     >
       {/* Image - with natural aspect ratio, full width */}

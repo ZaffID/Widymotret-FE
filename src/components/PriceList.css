@@ -53,7 +53,7 @@
     font-size: 3rem; 
     margin-bottom: 10px; 
     font-style: italic; 
-    font-family: 'Playfair Display', serif; 
+    font-family: 'Cormorant', serif; 
     color: #464C43; 
 }
 .price-header p { 
@@ -81,7 +81,7 @@
 }
 .pkg-title { 
     font-size: 1.4rem; 
-    font-family: 'Playfair Display', serif; 
+    font-family: 'Cormorant', serif; 
     color: #464C43; 
 }
 .pkg-price { 

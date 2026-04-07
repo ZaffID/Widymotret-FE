@@ -285,9 +285,9 @@ const Portfolio: Component = () => {
       {/* Category Tabs - Horizontal Scroll */}
       <section class="py-8 px-6 bg-white shadow-sm">
         <div class="container mx-auto max-w-6xl">
-          <div class="portfolio-category-tabs overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 -mx-6 px-6">
+          <div class="portfolio-category-tabs overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {/* Horizontal Scroll Buttons - All Screen Sizes */}
-            <div class="flex gap-2 pb-2 min-w-min">
+            <div class="flex gap-2 pb-2 w-max min-w-full justify-center mx-auto">
               <For each={portfolioCategories()}>
                 {(category) => (
                   <button

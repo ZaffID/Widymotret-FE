@@ -29,6 +29,26 @@ nav, button, footer, .navbar, .btn, .footer-text {
   font-family: var(--font-ui);
 }
 
+/* Admin Home scoped typography */
+.admin-home {
+  font-family: var(--font-body);
+}
+
+.admin-home h1,
+.admin-home h2,
+.admin-home h3,
+.admin-home h4,
+.admin-home h5,
+.admin-home h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+.admin-home button,
+.admin-home nav {
+  font-family: var(--font-ui);
+}
+
 /* Carousel fade-in animation */
 @keyframes fadeInUp {
   from {

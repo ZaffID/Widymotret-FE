@@ -1299,7 +1299,7 @@ const AdminHome: Component = () => {
   };
 
   return (
-    <div class="min-h-screen bg-gray-100">
+    <div class="admin-home min-h-screen bg-gray-100">
       {/* Admin Navbar */}
       <nav class="bg-[#464C43] text-white shadow-lg">
         <div class="container mx-auto px-4 md:px-6 py-4">

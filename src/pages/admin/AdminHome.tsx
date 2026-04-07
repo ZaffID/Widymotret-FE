@@ -632,6 +632,24 @@ const AdminHome: Component = () => {
     return resolveMediaUrl(fromPackages || fallback);
   };
 
+  const unsavedPackageDetails = createMemo(() => {
+    const pendingIds = unsavedPackageIds();
+    const allPkgs = packages();
+    const serviceTitleMap = new Map(allServices().map((s) => [s.slug.toLowerCase(), s.title]));
+
+    return allPkgs
+      .filter((pkg) => pendingIds.has(pkg.id))
+      .map((pkg) => {
+        const slug = (pkg.category || '').toLowerCase();
+        const serviceTitle = serviceTitleMap.get(slug) || (slug ? `${slug.charAt(0).toUpperCase()}${slug.slice(1)}` : 'Tidak diketahui');
+        return {
+          id: pkg.id,
+          packageName: pkg.name || `Paket #${pkg.id}`,
+          serviceTitle,
+        };
+      });
+  });
+
   const updatePackageLocal = (id: number, updater: (pkg: ApiPackage) => ApiPackage) => {
     setPackages((prev) => prev.map((pkg) => (pkg.id === id ? updater(pkg) : pkg)));
     // Track this package as unsaved
@@ -2057,14 +2075,26 @@ const AdminHome: Component = () => {
 
               {/* Warning Banner - Unsaved Packages */}
               <Show when={unsavedPackageIds().size > 0}>
-                <div class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-lg flex items-center justify-between">
-                  <div class="flex items-center gap-3">
+                <div class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-lg">
+                  <div class="flex items-start gap-3">
                     <svg class="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.981-1.742 2.981H4.42c-1.53 0-2.492-1.647-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd" />
                     </svg>
-                    <div>
+                    <div class="flex-1">
                       <p class="font-semibold text-amber-800">Ada {unsavedPackageIds().size} paket foto yang belum disimpan</p>
                       <p class="text-sm text-amber-700">Klik tombol "SIMPAN PAKET" untuk setiap paket yang diubah sebelum keluar halaman ini</p>
+                      <div class="mt-3 rounded border border-amber-200 bg-amber-100/60 p-3">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-amber-800 mb-2">Detail perubahan belum disimpan</p>
+                        <ul class="space-y-1 text-sm text-amber-900">
+                          <For each={unsavedPackageDetails()}>
+                            {(item) => (
+                              <li>
+                                Halaman: Admin Home | Bagian: Pricelist - {item.serviceTitle} | Paket: {item.packageName}
+                              </li>
+                            )}
+                          </For>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>

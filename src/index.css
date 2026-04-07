@@ -1,8 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Inter:wght@400;500;700&family=Poppins:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500;700&family=Poppins:wght@400;700&display=swap');
 @import 'tailwindcss';
 
 /* Font Families from Google Fonts */
-/* Lora - for headings (elegant serif, normal ampersand) */
+/* Playfair Display - for headings (elegant serif, luxury feel) */
 /* Inter - for body text (modern, clean) */
 /* Poppins - for navigation, buttons, footer */
 
@@ -12,7 +12,7 @@ html {
 }
 
 h1, h2, h3, .hero-title, .section-title {
-  font-family: 'Lora', serif;
+  font-family: 'Playfair Display', serif;
 }
 
 p, span, body, .body-text {

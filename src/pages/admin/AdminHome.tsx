@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, Show, For, createMemo } from 'solid-js';
+import { Component, createSignal, onMount, onCleanup, Show, For, createMemo } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { authStore } from '../../stores/authStore';
 import { contentStore } from '../../stores/contentStore';
@@ -127,6 +127,7 @@ const AdminHome: Component = () => {
   const [showRefreshConfirmModal, setShowRefreshConfirmModal] = createSignal(false);
   const [packages, setPackages] = createSignal<ApiPackage[]>([]);
   const [packagesLoading, setPackagesLoading] = createSignal(false);
+  const [unsavedPackageIds, setUnsavedPackageIds] = createSignal<Set<number>>(new Set());
   const [addingPackage, setAddingPackage] = createSignal(false);
   const [editingFields, setEditingFields] = createSignal<Record<string, boolean>>({});
   const [fieldDrafts, setFieldDrafts] = createSignal<Record<string, string>>({});
@@ -179,6 +180,23 @@ const AdminHome: Component = () => {
     // Reset to home tab and scroll to top on page load/refresh
     setCurrentPage('home');
     window.scrollTo(0, 0);
+  });
+  
+  // Add beforeunload listener to warn about unsaved packages
+  onMount(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (unsavedPackageIds().size > 0) {
+        e.preventDefault();
+        e.returnValue = 'Ada paket foto yang belum disimpan. Klik SIMPAN PAKET terlebih dahulu.';
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Cleanup listener on unmount
+    onCleanup(() => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    });
   });
 
   const getTemplateImagesByCategory = (category: string, seed = 0): string[] => {
@@ -616,6 +634,12 @@ const AdminHome: Component = () => {
 
   const updatePackageLocal = (id: number, updater: (pkg: ApiPackage) => ApiPackage) => {
     setPackages((prev) => prev.map((pkg) => (pkg.id === id ? updater(pkg) : pkg)));
+    // Track this package as unsaved
+    setUnsavedPackageIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      return newSet;
+    });
   };
 
   const fieldKey = (pkgId: number, field: string) => `${pkgId}:${field}`;
@@ -711,6 +735,12 @@ const AdminHome: Component = () => {
           [fieldKey(payloadPkg.id, 'description')]: payloadPkg.description,
           [fieldKey(payloadPkg.id, 'features')]: (payloadPkg.features || []).join('\n'),
         }));
+        // Clear unsaved state for this package
+        setUnsavedPackageIds((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(payloadPkg.id);
+          return newSet;
+        });
         if (!silent) handleSave(`Package ${payloadPkg.name} berhasil disimpan`);
       } else {
         handleError(data.message || 'Gagal menyimpan package');
@@ -2024,6 +2054,21 @@ const AdminHome: Component = () => {
             <div>
               <h2 class="text-2xl font-bold text-gray-800 mb-8"><AiFillDollarCircle class="inline mr-2" size={24} />Kelola Pricelist</h2>
               <p class="text-gray-600 mb-6">Edit paket dan harga untuk setiap jenis layanan fotografi.</p>
+
+              {/* Warning Banner - Unsaved Packages */}
+              <Show when={unsavedPackageIds().size > 0}>
+                <div class="mb-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-lg flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <svg class="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.981-1.742 2.981H4.42c-1.53 0-2.492-1.647-1.743-2.98l5.58-9.92zM11 13a1 1 0 10-2 0 1 1 0 002 0zm-1-7a1 1 0 00-1 1v4a1 1 0 102 0V7a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <div>
+                      <p class="font-semibold text-amber-800">Ada {unsavedPackageIds().size} paket foto yang belum disimpan</p>
+                      <p class="text-sm text-amber-700">Klik tombol "SIMPAN PAKET" untuk setiap paket yang diubah sebelum keluar halaman ini</p>
+                    </div>
+                  </div>
+                </div>
+              </Show>
 
               {/* Service Type Tabs - Horizontal Scrollable */}
               <div class="mb-8">

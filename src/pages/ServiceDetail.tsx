@@ -1,4 +1,4 @@
-import { Component, For, Show, createSignal, createEffect, onMount } from 'solid-js';
+﻿import { Component, For, Show, createSignal, createEffect, onMount } from 'solid-js';
 import { useParams, useNavigate } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -38,7 +38,7 @@ const ServiceDetail: Component = () => {
 
   const loadServices = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
       const res = await fetch(`${apiUrl}/api/packages`);
       
       if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
@@ -163,7 +163,7 @@ const ServiceDetail: Component = () => {
     setIsLoading(true);
     setLoadError(false);
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
       const res = await fetch(`${apiUrl}/api/packages`);
       if (!res.ok) throw new Error('API request failed');
 
@@ -569,3 +569,4 @@ const ServiceDetail: Component = () => {
 };
 
 export default ServiceDetail;
+

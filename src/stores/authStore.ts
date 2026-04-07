@@ -1,4 +1,4 @@
-import { createSignal, createRoot } from 'solid-js';
+﻿import { createSignal, createRoot } from 'solid-js';
 
 interface Admin {
   id: number;
@@ -21,7 +21,7 @@ interface LoginResponse {
 }
 
 function createAuthStore() {
-  const apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+  const apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
 
   // Initialize from localStorage
   const storedToken = localStorage.getItem('adminToken');
@@ -111,3 +111,4 @@ function createAuthStore() {
 
 // Create singleton store
 export const authStore = createRoot(createAuthStore);
+

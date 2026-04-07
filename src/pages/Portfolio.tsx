@@ -1,4 +1,4 @@
-import { Component, createSignal, createMemo, For, Show, createEffect, onMount } from 'solid-js';
+﻿import { Component, createSignal, createMemo, For, Show, createEffect, onMount } from 'solid-js';
 import { useSearchParams } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -22,7 +22,7 @@ interface PortfolioCategory {
 }
 
 const Portfolio: Component = () => {
-  const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+  const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app'}/api`;
   const [searchParams] = useSearchParams();
   const [portfolioCategories, setPortfolioCategories] = createSignal<PortfolioCategory[]>([]);
   const [activeCategory, setActiveCategory] = createSignal<string>('portrait');
@@ -456,3 +456,4 @@ const Portfolio: Component = () => {
 };
 
 export default Portfolio;
+

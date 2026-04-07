@@ -1,4 +1,4 @@
-const RAW_API_ORIGIN = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+﻿const RAW_API_ORIGIN = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
 
 // Some environments are configured with a trailing /api.
 // Media files are served from /uploads on the root origin, not /api/uploads.
@@ -29,3 +29,4 @@ export const resolveMediaUrl = (value: string): string => {
   console.log(`[DEBUG resolveMediaUrl] Public asset (relative): ${value}`);
   return value;
 };
+

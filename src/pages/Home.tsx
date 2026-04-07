@@ -1,4 +1,4 @@
-import { Component, createSignal, For, createMemo, createEffect, Show, onMount } from 'solid-js';
+﻿import { Component, createSignal, For, createMemo, createEffect, Show, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import Navbar from '../components/Navbar';
 import PriceList from '../components/PriceList';
@@ -45,7 +45,7 @@ const Home: Component = () => {
   // Load all services: hardcoded + API-fetched from packages + custom from contentStore
   const loadServices = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
       const res = await fetch(`${apiUrl}/api/packages`);
       
       if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
@@ -387,7 +387,7 @@ const Home: Component = () => {
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12 scroll-reveal" ref={bookingTitleRef}>
             <h2 class="text-3xl md:text-4xl text-gray-800 mb-4">{t('booking', 'title', 'Alur Booking')}</h2>
-            <p class="text-lg text-gray-600">{t('booking', 'subtitle', 'Mulai dari konsultasi, pemilihan paket, hingga hari H — semua kami siapkan dengan profesional.')}</p>
+            <p class="text-lg text-gray-600">{t('booking', 'subtitle', 'Mulai dari konsultasi, pemilihan paket, hingga hari H â€” semua kami siapkan dengan profesional.')}</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8" ref={bookingItemsRef}>
@@ -729,3 +729,4 @@ const Home: Component = () => {
 };
 
 export default Home;
+

@@ -1,4 +1,4 @@
-import { Component, createSignal, For, onMount, Show } from 'solid-js';
+﻿import { Component, createSignal, For, onMount, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { authStore } from '../../stores/authStore';
 import { contentStore } from '../../stores/contentStore';
@@ -10,7 +10,7 @@ import { AiFillCamera } from 'solid-icons/ai';
 import { FaSolidTrashAlt } from 'solid-icons/fa';
 import { FaSolidLightbulb } from 'solid-icons/fa';
 
-const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app'}/api`;
 
 interface PortfolioCategory {
   id?: number;
@@ -263,10 +263,11 @@ const AdminPortfolio: Component = () => {
 
       {/* Footer */}
       <footer class="bg-[#464C43] text-white text-center py-4 mt-16">
-        <p class="text-sm">© 2025 WIDYMOTRET Portfolio Admin</p>
+        <p class="text-sm">Â© 2025 WIDYMOTRET Portfolio Admin</p>
       </footer>
     </div>
   );
 };
 
 export default AdminPortfolio;
+

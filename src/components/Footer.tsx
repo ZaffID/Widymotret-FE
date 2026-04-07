@@ -1,4 +1,4 @@
-import { Component, createMemo, createSignal, onMount, For } from 'solid-js';
+﻿import { Component, createMemo, createSignal, onMount, For } from 'solid-js';
 import { BsInstagram, BsFacebook, BsWhatsapp } from 'solid-icons/bs';
 import { contentStore } from '../stores/contentStore';
 
@@ -20,16 +20,16 @@ const Footer: Component = () => {
   // Load footer content from backend on mount
   onMount(async () => {
     try {
-      console.log('📥 Loading footer content from contentStore...');
+      console.log('ðŸ“¥ Loading footer content from contentStore...');
       await contentStore.loadSection('footer');
-      console.log('✅ Footer section loaded');
+      console.log('âœ… Footer section loaded');
     } catch (error) {
-      console.error('❌ Failed to load footer section:', error);
+      console.error('âŒ Failed to load footer section:', error);
     }
 
     // Fetch services from API
     try {
-      const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
       const response = await fetch(`${API_BASE}/api/packages`, {
         headers: { 'Content-Type': 'application/json' },
       });
@@ -58,7 +58,7 @@ const Footer: Component = () => {
         const newServices = Array.from(uniqueCategories.values()).slice(0, 5);
         if (newServices.length > 0) {
           setServices(newServices);
-          console.log('✅ Services loaded from API:', newServices.length, 'categories');
+          console.log('âœ… Services loaded from API:', newServices.length, 'categories');
         }
       }
     } catch (error) {
@@ -81,15 +81,15 @@ const Footer: Component = () => {
   );
   
   const contactAddress = createMemo(() => 
-    contentStore.getField('footer', 'address') || 'Jl. Raya Pernasidi No.3, Cilongok, Banyumas – Jawa Tengah'
+    contentStore.getField('footer', 'address') || 'Jl. Raya Pernasidi No.3, Cilongok, Banyumas â€“ Jawa Tengah'
   );
   
   const copyrightText = createMemo(() => 
-    contentStore.getField('footer', 'copyright_text') || '© 2026 Studio Photography. All rights reserved.'
+    contentStore.getField('footer', 'copyright_text') || 'Â© 2026 Studio Photography. All rights reserved.'
   );
   
   const tagline = createMemo(() => 
-    contentStore.getField('footer', 'tagline') || 'Made with ♥ for capturing love'
+    contentStore.getField('footer', 'tagline') || 'Made with â™¥ for capturing love'
   );
 
   // Social media links from contentStore
@@ -195,3 +195,4 @@ const Footer: Component = () => {
 };
 
 export default Footer;
+

@@ -1,4 +1,4 @@
-import { Component, For, Show, createMemo, createSignal, onMount } from 'solid-js';
+﻿import { Component, For, Show, createMemo, createSignal, onMount } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { authStore } from '../../stores/authStore';
 import { EditableImage } from '../../components/admin/EditableImage';
@@ -20,7 +20,7 @@ interface Package {
   updatedAt: string;
 }
 
-const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app'}/api`;
+const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app'}/api`;
 
 const categoryOptions: Array<{ value: Category; label: string }> = [
   { value: 'studio', label: 'Studio Photoshoot' },
@@ -204,7 +204,7 @@ const AdminPricelist: Component = () => {
                 onClick={() => navigate('/admin/home')}
                 class="mr-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded transition text-sm"
               >
-                ← Back
+                â† Back
               </button>
               <span class="text-xl font-bold">WIDYMOTRET</span>
               <span class="text-sm text-white/70 border-l border-white/30 pl-3">Pricelist Admin</span>
@@ -439,3 +439,4 @@ const AdminPricelist: Component = () => {
 };
 
 export default AdminPricelist;
+

@@ -1,4 +1,4 @@
-import { Component, createSignal, onMount, onCleanup, createMemo, For } from 'solid-js';
+﻿import { Component, createSignal, onMount, onCleanup, createMemo, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { servicesData } from '../data/services';
 import { AiOutlineMenu } from 'solid-icons/ai';
@@ -58,7 +58,7 @@ const Navbar: Component<NavbarProps> = (props) => {
   // Load services from API
   const loadServices = async () => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production.up.railway.app';
+      const apiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
       const res = await fetch(`${apiUrl}/api/packages`);
       
       if (!res.ok) throw new Error(`Failed to fetch packages: ${res.status}`);
@@ -263,3 +263,4 @@ const Navbar: Component<NavbarProps> = (props) => {
 };
 
 export default Navbar;
+

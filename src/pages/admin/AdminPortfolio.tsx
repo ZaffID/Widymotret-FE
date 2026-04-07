@@ -263,7 +263,7 @@ const AdminPortfolio: Component = () => {
 
       {/* Footer */}
       <footer class="bg-[#464C43] text-white text-center py-4 mt-16">
-        <p class="text-sm">Â© 2025 WIDYMOTRET Portfolio Admin</p>
+        <p class="text-sm">(c) 2025 WIDYMOTRET Portfolio Admin</p>
       </footer>
     </div>
   );

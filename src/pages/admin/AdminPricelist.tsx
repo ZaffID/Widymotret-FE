@@ -204,7 +204,7 @@ const AdminPricelist: Component = () => {
                 onClick={() => navigate('/admin/home')}
                 class="mr-4 px-3 py-2 bg-white/20 hover:bg-white/30 rounded transition text-sm"
               >
-                â† Back
+                <- Back
               </button>
               <span class="text-xl font-bold">WIDYMOTRET</span>
               <span class="text-sm text-white/70 border-l border-white/30 pl-3">Pricelist Admin</span>

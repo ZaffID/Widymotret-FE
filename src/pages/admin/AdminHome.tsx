@@ -105,7 +105,7 @@ const TestimoniCounter = () => {
     <p class="text-sm text-gray-600">
       <span class="font-semibold">{getCount()}</span> dari 7 testimoni
       <Show when={isFull()}>
-        <span class="text-orange-600 ml-2">âš ï¸ Max approached</span>
+        <span class="text-orange-600 ml-2">Warning: Max approached</span>
       </Show>
     </p>
   );
@@ -384,7 +384,7 @@ const AdminHome: Component = () => {
         const allFields = contentStore.getSectionFields('portfolio');
         const photosExist = allFields.some(f => f.field.startsWith(`${category.slug}_`) && f.field !== `${category.slug}_categories`);
         if (photosExist) {
-          handleError('âš ï¸ Slug tidak boleh diubah karena sudah ada foto dengan slug lama. Ganti nama kategori saja, atau hapus semua foto terlebih dahulu.');
+          handleError('Slug tidak boleh diubah karena sudah ada foto dengan slug lama. Ganti nama kategori saja, atau hapus semua foto terlebih dahulu.');
           return;
         }
       }
@@ -847,7 +847,7 @@ const AdminHome: Component = () => {
       contentStore.updateFieldLocal('service', `${slug}_title`, name);
       contentStore.updateFieldLocal('service', `${slug}_description`, desc);
       contentStore.updateFieldLocal('service', `${slug}_image`, image);
-      console.log(`[addNewService] âœ“ contentStore updated`);
+      console.log(`[addNewService] [OK] contentStore updated`);
 
       console.log(`[addNewService] Persisting to backend...`);
       // Persist to backend
@@ -863,7 +863,7 @@ const AdminHome: Component = () => {
       console.log(`[addNewService] Backend response 3 (image):`, r3);
       if (!r3.success) throw new Error(`Image save failed: ${r3.message}`);
 
-      console.log(`[addNewService] âœ“ Backend persist OK`);
+      console.log(`[addNewService] [OK] Backend persist OK`);
 
       // Reset form and close modal
       setNewServiceName('Layanan Baru');
@@ -920,7 +920,7 @@ const AdminHome: Component = () => {
             console.error(`[deleteService] Field ${field.name} failed: ${response.message}`);
             results.push({ field: field.name, success: false, message: response.message });
           } else {
-            console.log(`[deleteService] âœ“ ${field.name} deleted successfully`);
+            console.log(`[deleteService] [OK] ${field.name} deleted successfully`);
             results.push({ field: field.name, success: true });
           }
         } catch (fieldError) {
@@ -942,13 +942,13 @@ const AdminHome: Component = () => {
         throw new Error(`Gagal menghapus fields: ${failedFieldsStr}`);
       }
 
-      console.log(`[deleteService] âœ“ All backend deletions OK`);
+      console.log(`[deleteService] [OK] All backend deletions OK`);
 
       // Remove from local contentStore
       for (const field of fieldsToDelete) {
         contentStore.updateFieldLocal('service', field.key, '');
       }
-      console.log(`[deleteService] âœ“ contentStore cleared`);
+      console.log(`[deleteService] [OK] contentStore cleared`);
 
       console.log(`[deleteService] Reloading service section from backend...`);
       // Reload entire service section from backend
@@ -1160,7 +1160,7 @@ const AdminHome: Component = () => {
       const storedCategories = contentStore.getField('portfolio', 'categories');
       const actualCategories = portfolioCategoriesData().length.toString();
       if (storedCategories && storedCategories !== actualCategories) {
-        console.log(`[AdminHome] Auto-syncing Categories: ${storedCategories} â†’ ${actualCategories}`);
+        console.log(`[AdminHome] Auto-syncing Categories: ${storedCategories} -> ${actualCategories}`);
         await updateContent('portfolio', 'categories', actualCategories);
         contentStore.updateFieldLocal('portfolio', 'categories', actualCategories);
       }
@@ -2567,7 +2567,7 @@ const AdminHome: Component = () => {
                                     && !['no image', 'null', 'undefined'].includes(String(rawStoredValue).trim().toLowerCase())
                                     ? rawStoredValue 
                                     : '';
-                                  // If explicitly deleted (hasBeenSaved but storedValue empty) â†’ show empty. Otherwise fallback to default img.url
+                                  // If explicitly deleted (hasBeenSaved but storedValue empty) -> show empty. Otherwise fallback to default img.url
                                   const displayValue = hasBeenSaved ? storedValue : img.url;
                                   
                                   // Get label from DB tagExample, replace #X with actual index (matching Portfolio.tsx logic)
@@ -2663,7 +2663,7 @@ const AdminHome: Component = () => {
                         title="Nilai ini otomatis dihitung"
                       />
                     </div>
-                    <p class="text-xs text-gray-600 mt-2">ðŸ”„ Ter-update otomatis saat foto ditambah/dihapus</p>
+                    <p class="text-xs text-gray-600 mt-2">Ter-update otomatis saat foto ditambah/dihapus</p>
                   </div>
 
                   {/* Categories - Read-Only, Auto-Calculated */}
@@ -2679,7 +2679,7 @@ const AdminHome: Component = () => {
                         title="Nilai ini otomatis dihitung dari jumlah kategori"
                       />
                     </div>
-                    <p class="text-xs text-gray-600 mt-2">ðŸ”„ Ter-update otomatis berdasarkan kategori yang ada</p>
+                    <p class="text-xs text-gray-600 mt-2">Ter-update otomatis berdasarkan kategori yang ada</p>
                   </div>
 
                   {/* Happy Clients - Simple Editable */}
@@ -2696,7 +2696,7 @@ const AdminHome: Component = () => {
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Contoh: 500+"
                     />
-                    <p class="text-xs text-blue-700 mt-2">âœ“ Langsung tersimpan</p>
+                    <p class="text-xs text-blue-700 mt-2">Langsung tersimpan</p>
                   </div>
 
                   {/* Years Experience - Simple Editable */}
@@ -2713,7 +2713,7 @@ const AdminHome: Component = () => {
                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       placeholder="Contoh: 5+"
                     />
-                    <p class="text-xs text-blue-700 mt-2">âœ“ Langsung tersimpan</p>
+                    <p class="text-xs text-blue-700 mt-2">Langsung tersimpan</p>
                   </div>
                 </div>
               </div>
@@ -2722,7 +2722,7 @@ const AdminHome: Component = () => {
               <Show when={showConfirmStatModal()}>
                 <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                   <div class="bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">âš ï¸ Konfirmasi Perubahan</h3>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Konfirmasi Perubahan</h3>
                     <p class="text-gray-600 text-sm mb-6">
                       {pendingStatEdit()?.field === 'total_photos' 
                         ? 'Total Photos sudah terhubung dengan jumlah asli dari database. Yakin mau mengubahnya?' 
@@ -2772,7 +2772,7 @@ const AdminHome: Component = () => {
               <Show when={showRefreshConfirmModal()}>
                 <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                   <div class="bg-white rounded-lg shadow-lg max-w-sm w-full p-6">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">âš ï¸ Muat Ulang Data Portfolio</h3>
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">Muat Ulang Data Portfolio</h3>
                     <p class="text-gray-600 text-sm mb-6">
                       Jumlah data akan kembali sesuai isi database. Yakin ingin mengubah?
                     </p>
@@ -2893,7 +2893,7 @@ const AdminHome: Component = () => {
                           placeholder="Misal: portrait"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] font-mono text-sm"
                         />
-                        <p class="text-xs text-gray-500 mt-1">âœ“ Otomatis: huruf kecil, hanya alphanumeric dan tanda hubung (-)</p>
+                        <p class="text-xs text-gray-500 mt-1">Otomatis: huruf kecil, hanya alphanumeric dan tanda hubung (-)</p>
                       </div>
 
                       {/* Description Field */}
@@ -2922,7 +2922,7 @@ const AdminHome: Component = () => {
                           placeholder="Misal: Wedding #X"
                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
                         />
-                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tag #X, X adalah placeholder (contoh: Wedding #X, Portrait #X)</p>
+                        <p class="text-xs text-gray-500 mt-1">Format: Nama Tag #X, X adalah placeholder angka (contoh: Wedding #X, Portrait #X)</p>
                       </div>
                     </div>
 
@@ -3327,7 +3327,7 @@ const AdminHome: Component = () => {
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Konten Footer</h3>
                 <EditableText
                   label="Copyright Text"
-                  value={contentStore.getField('footer', 'copyright_text') || 'Â© 2026 Studio Photography. All rights reserved.'}
+                  value={contentStore.getField('footer', 'copyright_text') || '(c) 2026 Studio Photography. All rights reserved.'}
                   section="footer"
                   field="copyright_text"
                   multiline={false}
@@ -3339,7 +3339,7 @@ const AdminHome: Component = () => {
                 />
                 <EditableText
                   label="Tagline"
-                  value={contentStore.getField('footer', 'tagline') || 'Made with â™¥ for capturing love'}
+                  value={contentStore.getField('footer', 'tagline') || 'Made with love for capturing moments'}
                   section="footer"
                   field="tagline"
                   multiline={false}
@@ -3756,7 +3756,7 @@ const AdminHome: Component = () => {
       {/* Footer */}
       <footer class="bg-white border-t mt-auto py-4 px-6">
         <div class="container mx-auto text-center text-gray-500 text-sm">
-          <p>Â© 2026 Widymotret Studio Admin Panel</p>
+          <p>(c) 2026 Widymotret Studio Admin Panel</p>
         </div>
       </footer>
 

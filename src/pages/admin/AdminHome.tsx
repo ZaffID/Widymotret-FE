@@ -2129,17 +2129,7 @@ const AdminHome: Component = () => {
                             field={`${service().slug}_image`}
                             aspectClass="aspect-video"
                             onSave={(value) => {
-                              // Log for debugging
-                              console.log(`[AdminHome] Saving service image: slug="${service().slug}", field="${service().slug}_image", value="${value}"`);
-                              
-                              // Update local store
                               contentStore.updateFieldLocal('service', `${service().slug}_image`, value);
-                              
-                              // Also save to localStorage as fallback
-                              const fallbackKey = `service_${service().slug}_image`;
-                              localStorage.setItem(fallbackKey, value);
-                              console.log(`[AdminHome] Saved to localStorage: ${fallbackKey}`);
-                              
                               handleSave('Gambar layanan berhasil diupdate');
                             }}
                             onError={handleError}

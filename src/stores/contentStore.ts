@@ -20,19 +20,7 @@ const createContentStore = () => {
   // Get content field from store
   const getField = (section: string, field: string): string => {
     const key = `${section}.${field}`;
-    const value = state().content.get(key)?.value || '';
-    
-    // If empty and is service image field, check localStorage as fallback
-    if (!value && section === 'service' && field.endsWith('_image')) {
-      const fallbackKey = `service_${field.replace('_image', '')}_image`;
-      const cachedValue = localStorage.getItem(fallbackKey);
-      if (cachedValue) {
-        console.log(`[contentStore.getField] Fallback to localStorage: ${fallbackKey} => "${cachedValue}"`);
-        return cachedValue;
-      }
-    }
-    
-    return value;
+    return state().content.get(key)?.value || '';
   };
 
   // Get all fields for a section from store
@@ -141,30 +129,6 @@ const createContentStore = () => {
           newMap.set(key, item);
         });
 
-        // Restore service images from localStorage fallback
-        const serviceImageKeys = Array.from(localStorage.keys()).filter(k => k.startsWith('service_') && k.endsWith('_image'));
-        console.log(`[contentStore.loadAll] Found ${serviceImageKeys.length} service images in localStorage`);
-        
-        serviceImageKeys.forEach(fallbackKey => {
-          const value = localStorage.getItem(fallbackKey);
-          if (value) {
-            const field = `${fallbackKey.slice(8)}`; // Remove 'service_' prefix
-            const key = `service.${field}`;
-            
-            // Only restore if not already in backend data
-            if (!newMap.has(key)) {
-              console.log(`[contentStore.loadAll] Restoring from localStorage: ${key} => "${value.substring(0, 30)}..."`);
-              newMap.set(key, {
-                id: key,
-                section: 'service',
-                field,
-                value,
-                updated_at: new Date().toISOString(),
-              });
-            }
-          }
-        });
-
         setState(prev => ({
           ...prev,
           content: newMap,
@@ -218,13 +182,6 @@ const createContentStore = () => {
         lastUpdated: new Date(),
       };
     });
-    
-    // Also save to localStorage as fallback for service images
-    if (section === 'service' && field.endsWith('_image') && value) {
-      const fallbackKey = `service_${field.replace('_image', '')}_image`;
-      localStorage.setItem(fallbackKey, value);
-      console.log(`[contentStore.updateFieldLocal] Saved to localStorage: ${fallbackKey}`);
-    }
   };
 
   // Clear error

@@ -123,6 +123,7 @@ nav, button, footer, .navbar, .btn, .footer-text {
 .wm-brand-page input,
 .wm-brand-page textarea {
   font-family: 'Todes', 'Inter', sans-serif;
+  font-weight: 400;
 }
 
 .wm-brand-page button,

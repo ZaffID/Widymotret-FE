@@ -5,6 +5,7 @@ import Footer from '../components/Footer';
 import ContactModal from '../components/ContactModal';
 import ScrollToTop from '../components/ScrollToTop';
 import { GalleryModal } from '../components/portfolio/GalleryModal';
+import { ScrollRevealImage } from '../components/portfolio/ScrollRevealImage';
 import { portfolioImages, getImagesByCategory, PortfolioImage } from '../data/portfolio';
 import { contentStore } from '../stores/contentStore';
 import { resolveMediaUrl } from '../utils/mediaUrl';
@@ -314,21 +315,12 @@ const Portfolio: Component = () => {
             <div class="max-w-3xl mx-auto space-y-6">
               <For each={currentImages()}>
                 {(image, index) => (
-                  <button
-                    type="button"
-                    class="w-full overflow-hidden rounded-lg bg-gray-100 text-left"
+                  <ScrollRevealImage
+                    src={image.url}
+                    alt={image.title}
+                    title={image.title}
                     onClick={() => handleImageClick(index())}
-                  >
-                    <img
-                      src={image.url}
-                      alt={image.title}
-                      loading="lazy"
-                      class="w-full h-auto object-cover"
-                    />
-                    <div class="px-4 py-3 bg-white">
-                      <p class="text-sm md:text-base text-gray-800">{image.title}</p>
-                    </div>
-                  </button>
+                  />
                 )}
               </For>
             </div>

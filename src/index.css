@@ -18,6 +18,14 @@
 }
 
 @font-face {
+  font-family: 'Todes Normal';
+  src: url('/fonts/todes-normal.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
   font-family: 'Todes';
   src: url('/fonts/todes-medium.otf') format('opentype');
   font-weight: 500;
@@ -122,6 +130,11 @@ nav, button, footer, .navbar, .btn, .footer-text {
 .wm-brand-page .btn {
   font-family: 'Todes', 'Poppins', sans-serif;
   font-weight: 500;
+}
+
+.wm-todes-normal {
+  font-family: 'Todes Normal', 'Todes', 'Inter', sans-serif;
+  font-weight: 400;
 }
 
 /* Carousel fade-in animation */

@@ -426,7 +426,7 @@ const Home: Component = () => {
       <section id="portfolio" class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl text-gray-800 mb-4">Our portofolios</h2>
+            <h2 class="text-3xl md:text-4xl text-gray-800 mb-4 wm-todes-normal">Our portofolios</h2>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6" ref={portfolioGridRef}>
             <For each={portfolioImages()}>
@@ -459,8 +459,8 @@ const Home: Component = () => {
                     }}
                   >
                     <div class="text-white">
-                      <p class="text-sm font-medium mb-1">{item.category}</p>
-                      <p class="text-lg font-semibold">{item.name}</p>
+                      <p class="text-sm mb-1 wm-todes-normal">{item.category}</p>
+                      <p class="text-lg wm-todes-normal">{item.name}</p>
                     </div>
                   </div>
                   <div 

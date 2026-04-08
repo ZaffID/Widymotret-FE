@@ -309,10 +309,10 @@ const Home: Component = () => {
           <ImageCarousel images={homeCarouselImages()} autoPlayInterval={5000} />
         </div>
         <div class="relative z-10 text-center px-6 max-w-4xl">
-          <h1 class="text-5xl md:text-6xl text-white drop-shadow-lg mb-6">
+          <h1 class="text-4xl sm:text-5xl md:text-6xl leading-tight text-white drop-shadow-lg mb-6">
             {t('hero', 'title', 'Setiap Momen Punya Cerita')}
           </h1>
-          <p class="text-lg md:text-xl text-white drop-shadow-md leading-relaxed">
+          <p class="text-base sm:text-lg md:text-xl text-white drop-shadow-md leading-relaxed max-w-3xl mx-auto">
             {t('hero', 'subtitle', 'Kami mengabadikan momen melalui foto dan video dengan pendekatan yang sederhana, rapi, dan penuh perhatian pada detail.')}
           </p>
         </div>
@@ -321,7 +321,7 @@ const Home: Component = () => {
       {/* Hi, you've found us Section */}
       <section class="py-20 px-6 bg-white">
         <div class="container mx-auto max-w-4xl text-center scroll-reveal" ref={introRef}>
-          <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-8">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl leading-tight font-bold text-gray-800 mb-8">
             {t('introduction', 'heading', 'Halo, Anda sudah menemukan kami!')}
           </h2>
           <p class="text-lg text-gray-700 leading-relaxed mb-6">

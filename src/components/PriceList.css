@@ -53,12 +53,13 @@
     font-size: 3rem; 
     margin-bottom: 10px; 
     font-style: italic; 
-    font-family: 'Cormorant', serif; 
+    font-family: 'Gulia', serif; 
     color: #464C43; 
 }
 .price-header p { 
     color: #8D8D8D; 
     font-size: 0.9rem; 
+    font-family: 'Todes', sans-serif;
     letter-spacing: 1px; 
     text-transform: uppercase; 
     margin-bottom: 40px; 
@@ -81,21 +82,24 @@
 }
 .pkg-title { 
     font-size: 1.4rem; 
-    font-family: 'Cormorant', serif; 
+    font-family: 'Gulia', serif; 
     color: #464C43; 
 }
 .pkg-price { 
     font-size: 1.2rem; 
     font-weight: bold; 
+    font-family: 'Todes', sans-serif;
     color: #576250; 
 } /* Warna dari Primary palette */
 .pkg-desc { 
     font-size: 0.9rem; 
+    font-family: 'Todes', sans-serif;
     color: #424242; 
     margin-bottom: 15px; 
 }
 .pkg-features li { 
     font-size: 0.85rem; 
+    font-family: 'Todes', sans-serif;
     color: #8D8D8D; 
     margin-bottom: 5px; 
     list-style: circle inside; 
@@ -111,6 +115,8 @@
     text-transform: uppercase; 
     letter-spacing: 2px; 
     font-size: 0.8rem;
+    font-family: 'Todes', sans-serif;
+    font-weight: 500;
     margin-top: 30px; 
     transition: 0.3s;
     text-decoration: none;

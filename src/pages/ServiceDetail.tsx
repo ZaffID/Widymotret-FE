@@ -229,7 +229,7 @@ const ServiceDetail: Component = () => {
   };
 
   return (
-    <div class="min-h-screen bg-white">
+    <div class="wm-brand-page min-h-screen bg-white">
       <Navbar />
       
       <Show when={!isLoading()} fallback={

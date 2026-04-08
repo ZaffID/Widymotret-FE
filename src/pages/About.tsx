@@ -58,7 +58,7 @@ const About: Component = () => {
   );
 
   return (
-    <div class="min-h-screen bg-white">
+    <div class="wm-brand-page min-h-screen bg-white">
       <Navbar hasWhiteBackground={true} />
 
       {/* Hero Section */}

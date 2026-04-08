@@ -212,7 +212,7 @@ const Portfolio: Component = () => {
   });
 
   return (
-    <div class="min-h-screen bg-white">
+    <div class="wm-brand-page min-h-screen bg-white">
       <Navbar />
 
       {/* Hero Section - Similar to ServiceDetail */}

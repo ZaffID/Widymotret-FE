@@ -270,7 +270,7 @@ const Home: Component = () => {
   });
 
   return (
-    <div class="min-h-screen bg-white">
+    <div class="wm-brand-page min-h-screen bg-white">
       <style>{`
         .service-scroll-container {
           scroll-behavior: smooth;

@@ -1,6 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Cormorant:wght@600;700&family=Inter:wght@400;500;700&family=Poppins:wght@400;500;700&display=swap');
 @import 'tailwindcss';
 
+@font-face {
+  font-family: 'Gulia';
+  src: url('/fonts/gulia.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Todes';
+  src: url('/fonts/todes-regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Todes';
+  src: url('/fonts/todes-medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Todes';
+  src: url('/fonts/todes-bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Font Families from Google Fonts */
 /* Cormorant - heading (elegant serif, readable for all ages) */
 /* Inter - body text (modern, clean) */
@@ -56,6 +88,40 @@ nav, button, footer, .navbar, .btn, .footer-text {
 .admin-home textarea,
 .admin-home select {
   font-family: var(--font-body);
+}
+
+/* Client-requested brand fonts for public pages */
+.wm-brand-page {
+  font-family: 'Todes', 'Inter', sans-serif;
+}
+
+.wm-brand-page h1,
+.wm-brand-page h2,
+.wm-brand-page .hero-title,
+.wm-brand-page .section-title {
+  font-family: 'Gulia', 'Cormorant', serif;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+}
+
+.wm-brand-page h3,
+.wm-brand-page h4,
+.wm-brand-page h5,
+.wm-brand-page h6,
+.wm-brand-page p,
+.wm-brand-page span,
+.wm-brand-page li,
+.wm-brand-page label,
+.wm-brand-page input,
+.wm-brand-page textarea {
+  font-family: 'Todes', 'Inter', sans-serif;
+}
+
+.wm-brand-page button,
+.wm-brand-page nav,
+.wm-brand-page .btn {
+  font-family: 'Todes', 'Poppins', sans-serif;
+  font-weight: 500;
 }
 
 /* Carousel fade-in animation */

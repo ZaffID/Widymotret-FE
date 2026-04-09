@@ -3,6 +3,9 @@ import { BiRegularPencil } from 'solid-icons/bi';
 import { updateContent } from '../../services/contentApi';
 import './EditableText.css';
 
+// Editor teks reusable untuk admin.
+// Mengubah 1 key konten (section + field) lalu menyimpan perubahan ke backend.
+
 interface EditableTextProps {
   label: string;
   value: string;

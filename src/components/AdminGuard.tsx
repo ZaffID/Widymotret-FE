@@ -6,6 +6,9 @@ interface AdminGuardProps {
   children: JSX.Element;
 }
 
+// Guard untuk halaman admin.
+// Jika belum login, user otomatis diarahkan ke halaman /admin (login).
+
 const AdminGuard: Component<AdminGuardProps> = (props) => {
   // Check authentication status
   const isAuthenticated = () => authStore.isAuthenticated();

@@ -2,6 +2,9 @@
 import { BsInstagram, BsFacebook, BsWhatsapp } from 'solid-icons/bs';
 import { contentStore } from '../stores/contentStore';
 
+// Footer mengambil data dinamis dari contentStore (CMS) dan daftar layanan dari data paket.
+// Hasilnya: kontak, tautan cepat, dan link layanan bisa diupdate tanpa ubah layout komponen.
+
 interface ServiceCategory {
   name: string;
   category: string;

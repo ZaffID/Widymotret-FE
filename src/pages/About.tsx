@@ -12,6 +12,9 @@ import { useScrollReveal } from '../hooks/useScrollReveal';
 import '../styles/scroll-reveal.css';
 import './About.css';
 
+// Halaman Tentang: layout visual tetap, tetapi teks dan media diisi dari content section `about_page` dan `about`.
+// Tujuannya agar admin bisa update narasi profil/tim tanpa perlu ubah struktur desain halaman.
+
 const About: Component = () => {
   const navigate = useNavigate();
   const [isContactModalOpen, setIsContactModalOpen] = createSignal(false);
@@ -62,22 +65,22 @@ const About: Component = () => {
       <Navbar hasWhiteBackground={true} />
 
       {/* Hero Section */}
-      <section class="relative pt-32 pb-16 px-6 bg-white overflow-hidden">
+      <section class="relative pt-28 md:pt-32 pb-12 md:pb-16 px-4 md:px-6 bg-white overflow-hidden">
         <div class="container mx-auto max-w-6xl">
           {/* Title and Tagline */}
-          <div class="mb-12 text-center">
-            <h1 class="text-5xl md:text-6xl font-bold mb-4 text-gray-900">
+          <div class="mb-10 md:mb-12 text-center">
+            <h1 class="text-3xl sm:text-4xl md:text-6xl leading-tight font-bold mb-4 text-gray-900">
               <span class="opacity-70">I'M</span> <span>WIDYMOTRET</span>
             </h1>
-            <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
+            <p class="text-base md:text-xl text-gray-600 max-w-3xl mx-auto">
               {t('tagline', aboutData.tagline)}
             </p>
           </div>
 
           {/* Hero Gallery - 1 square left + 2 landscape right */}
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-8">
             {/* Square image on left - tall */}
-            <div class="rounded-2xl overflow-hidden shadow-lg h-[480px]">
+            <div class="rounded-2xl overflow-hidden shadow-lg h-[360px] sm:h-[420px] md:h-[480px]">
               <AboutImage
                 src={aboutImage('hero_main', aboutData.heroImage)}
                 alt="Photographer"
@@ -87,14 +90,14 @@ const About: Component = () => {
 
             {/* Right side - 2 landscape stacked vertically */}
             <div class="flex flex-col gap-4">
-              <div class="rounded-2xl overflow-hidden shadow-lg h-[232px]">
+              <div class="rounded-2xl overflow-hidden shadow-lg h-[170px] sm:h-[200px] md:h-[232px]">
                 <AboutImage
                   src={aboutImage('hero_right_top', aboutData.heroGallery[0])}
                   alt="Gallery"
                   class="w-full h-full object-cover hover:scale-105 transition duration-300"
                 />
               </div>
-              <div class="rounded-2xl overflow-hidden shadow-lg h-[232px]">
+              <div class="rounded-2xl overflow-hidden shadow-lg h-[170px] sm:h-[200px] md:h-[232px]">
                 <AboutImage
                   src={aboutImage('hero_right_bottom', aboutData.heroGallery[1])}
                   alt="Gallery"
@@ -107,23 +110,23 @@ const About: Component = () => {
       </section>
 
       {/* My Story Section */}
-      <section class="py-20 px-6 bg-white">
+      <section class="py-14 md:py-20 px-4 md:px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center scroll-reveal" ref={storyRef}>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center scroll-reveal" ref={storyRef}>
             {/* Left: Text */}
             <div>
-              <h2 class="text-3xl font-bold text-gray-900 mb-8">{t('story_heading', 'Our Story')}</h2>
-              <div class="space-y-6">
-                <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph0', 'Cinta saya pada fotografi dimulai dengan kamera pinjaman dan matahari terbenam.')}</p>
-                <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph1', 'Sejak saat itu, saya mengejar cahaya, tawa, dan momen-momen di antara yang membuat hidup terasa nyata.')}</p>
-                <p class="text-gray-700 text-lg leading-relaxed">{t('story_paragraph2', 'Saya memotret untuk melestarikan cerita—cerita yang sedang Anda jalani sekarang.')}</p>
+              <h2 class="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">{t('story_heading', 'Our Story')}</h2>
+              <div class="space-y-5 md:space-y-6">
+                <p class="text-gray-700 text-base md:text-lg leading-relaxed">{t('story_paragraph0', 'Cinta saya pada fotografi dimulai dengan kamera pinjaman dan matahari terbenam.')}</p>
+                <p class="text-gray-700 text-base md:text-lg leading-relaxed">{t('story_paragraph1', 'Sejak saat itu, saya mengejar cahaya, tawa, dan momen-momen di antara yang membuat hidup terasa nyata.')}</p>
+                <p class="text-gray-700 text-base md:text-lg leading-relaxed">{t('story_paragraph2', 'Saya memotret untuk melestarikan cerita—cerita yang sedang Anda jalani sekarang.')}</p>
               </div>
             </div>
 
             {/* Right: Stacked/Overlapping Images */}
-            <div class="relative h-[400px] flex items-center justify-center">
+            <div class="relative h-[300px] sm:h-[360px] md:h-[400px] flex items-center justify-center">
               {/* First image - slightly rotated, behind */}
-              <div class="absolute top-0 right-12 md:right-20 w-[220px] h-[280px] rounded-2xl overflow-hidden shadow-xl transform rotate-6 hover:rotate-3 transition-transform duration-300 z-10">
+              <div class="absolute top-0 right-4 sm:right-12 md:right-20 w-[160px] sm:w-[200px] md:w-[220px] h-[210px] sm:h-[255px] md:h-[280px] rounded-2xl overflow-hidden shadow-xl transform rotate-2 sm:rotate-6 hover:rotate-3 transition-transform duration-300 z-10">
                 <AboutImage
                   src={aboutImage('story_img1', aboutData.myStory.galleryImages[0])}
                   alt="Story 1"
@@ -131,7 +134,7 @@ const About: Component = () => {
                 />
               </div>
               {/* Second image - slightly rotated opposite, in front */}
-              <div class="absolute bottom-0 left-12 md:left-20 w-[220px] h-[280px] rounded-2xl overflow-hidden shadow-xl transform -rotate-6 hover:-rotate-3 transition-transform duration-300 z-20">
+              <div class="absolute bottom-0 left-4 sm:left-12 md:left-20 w-[160px] sm:w-[200px] md:w-[220px] h-[210px] sm:h-[255px] md:h-[280px] rounded-2xl overflow-hidden shadow-xl transform -rotate-2 sm:-rotate-6 hover:-rotate-3 transition-transform duration-300 z-20">
                 <AboutImage
                   src={aboutImage('story_img2', aboutData.myStory.galleryImages[1])}
                   alt="Story 2"
@@ -154,7 +157,7 @@ const About: Component = () => {
       </section>
 
       {/* Behind the Lens Gallery Section */}
-      <section class="py-20 px-6 bg-white">
+      <section class="py-14 md:py-20 px-4 md:px-6 bg-white">
         <div class="container mx-auto max-w-6xl">
           <div class="text-center mb-12 scroll-reveal" ref={behindTheLensRef}>
             <h2 class="text-3xl font-bold text-gray-900 mb-4">{t('behind_lens_heading', 'Behind the Lens')}</h2>
@@ -172,7 +175,7 @@ const About: Component = () => {
                 { field: 'btl_left3', fallback: aboutData.behindTheLens.leftImages[2] },
               ]}>
                 {(image) => (
-                  <div class="rounded-2xl overflow-hidden shadow-lg h-[200px]">
+                  <div class="rounded-2xl overflow-hidden shadow-lg h-[180px] sm:h-[200px]">
                     <AboutImage
                       src={aboutImage(image.field, image.fallback)}
                       alt="Behind the lens left"
@@ -184,7 +187,7 @@ const About: Component = () => {
             </div>
 
             {/* Center Column - 1 portrait photo (tall) */}
-            <div class="rounded-2xl overflow-hidden shadow-lg h-[616px]">
+            <div class="rounded-2xl overflow-hidden shadow-lg h-[420px] sm:h-[520px] md:h-[616px]">
               <AboutImage
                 src={aboutImage('btl_center', aboutData.behindTheLens.centerImage)}
                 alt="Behind the lens center"
@@ -200,7 +203,7 @@ const About: Component = () => {
                 { field: 'btl_right3', fallback: aboutData.behindTheLens.rightImages[2] },
               ]}>
                 {(image) => (
-                  <div class="rounded-2xl overflow-hidden shadow-lg h-[200px]">
+                  <div class="rounded-2xl overflow-hidden shadow-lg h-[180px] sm:h-[200px]">
                     <AboutImage
                       src={aboutImage(image.field, image.fallback)}
                       alt="Behind the lens right"

@@ -1,6 +1,9 @@
 import { Component, Show, createEffect, onCleanup } from 'solid-js';
 import './PriceList.css';
 
+// Komponen modal pricelist model lama (popup mandiri).
+// Saat modal aktif, scroll body dikunci agar fokus interaksi tetap di dalam popup.
+
 interface PriceListProps {
   isOpen: () => boolean;
   onClose: () => void;

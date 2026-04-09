@@ -1,5 +1,8 @@
 ﻿import { createSignal, createRoot } from 'solid-js';
 
+// Store autentikasi admin: mengelola login/logout dan penyimpanan token di localStorage.
+// Dipakai oleh route guard, halaman admin, dan request API yang butuh Bearer token.
+
 interface Admin {
   id: number;
   username: string; // ini sebenarnya email, tapi tetap username untuk backward compatibility

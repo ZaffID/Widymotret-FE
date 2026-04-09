@@ -1,6 +1,9 @@
 import { authStore } from '../stores/authStore';
 import { ApiResponse, EditableContent, BatchContentUpdate } from '../types/content';
 
+// Adapter API terpusat untuk alur konten dan upload media.
+// Semua komponen/store memanggil layer ini agar format request/response konsisten.
+
 // Use full URL with env variable for both dev (via Vite proxy) and production (via Vercel)
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app'}/api`;
 

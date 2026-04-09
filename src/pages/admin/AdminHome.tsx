@@ -12,6 +12,9 @@ import { getImagesByCategory } from '../../data/portfolio';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
 import { updateContent } from '../../services/contentApi';
 
+// Dashboard admin sebagai pusat manajemen konten website:
+// mengelola teks/gambar beranda-about-footer, paket layanan, kategori portfolio, dan aset media.
+
 // API Base URL - same as contentApi
 const API_BASE = `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app'}/api`;
 
@@ -114,6 +117,10 @@ const TestimoniCounter = () => {
 const AdminHome: Component = () => {
   const navigate = useNavigate();
   const admin = () => authStore.getAdmin();
+  // Peta state utama dashboard admin:
+  // - currentPage: menentukan tab/section manajemen yang sedang aktif
+  // - show*Modal: mengontrol modal tambah/edit/hapus/konfirmasi
+  // - draft state: menampung perubahan form sebelum dikirim ke API
   const [currentPage, setCurrentPage] = createSignal<'home' | 'services' | 'pricelist' | 'portfolio-categories' | 'portfolio' | 'about' | 'footer'>('home');
   const [activeServicePricelist, setActiveServicePricelist] = createSignal<string>('studio');
   const [activeServicePortfolio, setActiveServicePortfolio] = createSignal<string>('portrait');
@@ -213,6 +220,7 @@ const AdminHome: Component = () => {
     return rotated.slice(0, Math.min(4, rotated.length));
   };
 
+  // Ambil data paket dari backend, lalu gabungkan dengan override gambar dari konten editable.
   const loadPackages = async () => {
     setPackagesLoading(true);
     try {
@@ -270,7 +278,7 @@ const AdminHome: Component = () => {
     return packages().filter((pkg) => pkg.category?.toLowerCase() === category);
   });
 
-  // Portfolio Categories Functions
+  // Daftar kategori portfolio ini menjadi sumber tab galeri publik sekaligus tabel kelola admin.
   const loadPortfolioCategories = async () => {
     console.log('[loadPortfolioCategories] === START ===');
     const startTime = Date.now();
@@ -1846,10 +1854,11 @@ const AdminHome: Component = () => {
                                 <h4 class="font-bold text-gray-800 text-sm">Testimoni {idx}</h4>
                                 <button
                                   onClick={() => deleteTestimonial(idx)}
-                                  class="text-red-500 hover:text-red-700 text-lg leading-none px-2"
+                                  type="button"
+                                  class="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 rounded-md border border-red-200 hover:bg-red-100 hover:text-red-700 transition"
                                   title="Hapus testimoni"
                                 >
-                                  Ã—
+                                  Hapus
                                 </button>
                               </div>
                               <EditableText
@@ -3357,7 +3366,7 @@ const AdminHome: Component = () => {
                 <h3 class="text-lg font-bold text-gray-800 mb-4">Konten Footer</h3>
                 <EditableText
                   label="Copyright Text"
-                  value={contentStore.getField('footer', 'copyright_text') || '(c) 2026 Studio Photography. All rights reserved.'}
+                  value={contentStore.getField('footer', 'copyright_text') || '© 2026 Widymotret Studio Admin Panel'}
                   section="footer"
                   field="copyright_text"
                   multiline={false}
@@ -3524,7 +3533,7 @@ const AdminHome: Component = () => {
         </div>
       </main>
 
-      {/* Add Package Modal */}
+      {/* Modal tambah paket: membuat record paket baru sesuai kategori aktif saat ini. */}
       <Show when={showAddPackageModal()}>
         <div
           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50"
@@ -3618,7 +3627,7 @@ const AdminHome: Component = () => {
         </div>
       </Show>
 
-      {/* Delete Package Modal */}
+      {/* Modal hapus paket: konfirmasi akhir sebelum aksi hapus permanen dieksekusi. */}
       <Show when={showDeletePackageModal()}>
         <div
           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50"
@@ -3656,7 +3665,7 @@ const AdminHome: Component = () => {
         </div>
       </Show>
 
-      {/* Add Service Modal */}
+      {/* Modal tambah/edit layanan: mengatur metadata layanan dan upload gambar cover opsional. */}
       <Show when={showAddServiceModal()}>
         <div
           class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6 z-50"

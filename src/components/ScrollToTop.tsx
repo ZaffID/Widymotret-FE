@@ -1,6 +1,8 @@
 import { Component, createSignal, onMount } from 'solid-js';
 import { FaSolidArrowUp } from 'solid-icons/fa';
 
+// Tombol utilitas mengambang untuk kembali ke atas halaman saat user sudah scroll jauh.
+
 interface ScrollToTopProps {
   showThreshold?: number; // pixels scrolled before showing button
 }

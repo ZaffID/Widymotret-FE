@@ -3,6 +3,9 @@ import { BsChevronLeft, BsChevronRight, BsXLg } from 'solid-icons/bs';
 import { PortfolioImage } from '../../data/portfolio';
 import './GalleryModal.css';
 
+// Modal lightbox fullscreen untuk halaman portfolio.
+// Mendukung navigasi keyboard dan perpindahan cepat lewat thumbnail.
+
 interface GalleryModalProps {
   isOpen: boolean;
   images: PortfolioImage[];

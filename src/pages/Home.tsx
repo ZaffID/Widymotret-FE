@@ -15,6 +15,9 @@ import { IoLocationOutline } from 'solid-icons/io';
 import { BsInstagram } from 'solid-icons/bs';
 import { resolveMediaUrl } from '../utils/mediaUrl';
 
+// Halaman beranda publik yang menyatukan hero, layanan, testimoni, teaser portfolio, dan CTA.
+// Mayoritas teks/gambar ditarik dari contentStore agar perubahan admin bisa tampil tanpa redeploy.
+
 const Home: Component = () => {
   const navigate = useNavigate();
   const [currentPortraitIndex, setCurrentPortraitIndex] = createSignal(0);
@@ -69,7 +72,14 @@ const Home: Component = () => {
       
       // 2. Add API categories that aren't in hardcoded list
       if (data.success && Array.isArray(data.data)) {
-        const packageCategories = [...new Set(data.data.map((pkg: any) => pkg.category?.toLowerCase()).filter(Boolean))];
+        const packageRows = data.data as any[];
+        const packageCategories: string[] = [
+          ...new Set(
+            packageRows
+              .map((pkg: any) => pkg.category?.toLowerCase())
+              .filter((category: unknown): category is string => typeof category === 'string' && category.length > 0)
+          ),
+        ];
         packageCategories.forEach((category: string) => {
           if (!servicesMap.has(category)) {
             const storedTitle = contentStore.getField('service', `${category}_title`);
@@ -543,6 +553,7 @@ const Home: Component = () => {
             </div>
           </div>
           <div class="text-center mt-6 md:mt-8">
+            {/* CTA utama untuk mengarahkan pengunjung dari teaser beranda ke galeri portfolio penuh. */}
             <button onClick={() => navigate('/portfolio')} class="px-6 md:px-8 py-2 md:py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm md:text-base">
               Lihat Portfolio Kami
             </button>
@@ -684,7 +695,7 @@ const Home: Component = () => {
               <p class="text-gray-600">Ingin cek paket terlebih dahulu atau booking langsung?</p>
             </div>
 
-            {/* Option 1: Check Pricelist */}
+            {/* Opsi 1: arahkan user ke alur lihat paket dulu sebelum kontak langsung. */}
             <button
               onClick={() => {
                 setIsBookingModalOpen(false);
@@ -696,7 +707,7 @@ const Home: Component = () => {
               Cek Pricelist & Paket Dulu
             </button>
 
-            {/* Option 2: Booking Now */}
+            {/* Opsi 2: jalur konversi cepat lewat modal kontak WhatsApp. */}
             <button
               onClick={() => {
                 setIsBookingModalOpen(false);

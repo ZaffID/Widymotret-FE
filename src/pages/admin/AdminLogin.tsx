@@ -2,6 +2,8 @@ import { Component, createSignal, Show } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { authStore } from '../../stores/authStore';
 
+// Halaman login admin: validasi kredensial dan membuat token sesi untuk akses route terlindungi.
+
 const AdminLogin: Component = () => {
   const navigate = useNavigate();
   

@@ -2,6 +2,9 @@ import { createSignal, createRoot } from 'solid-js';
 import { EditableContent } from '../types/content';
 import { getContent, getSectionContent, getAllContent } from '../services/contentApi';
 
+// Cache konten global untuk halaman publik dan editor admin.
+// Key menggunakan format section.field agar satu store bisa melayani banyak section halaman.
+
 interface ContentState {
   content: Map<string, EditableContent>;
   isLoading: boolean;

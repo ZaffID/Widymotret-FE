@@ -3,6 +3,9 @@ import { useNavigate } from '@solidjs/router';
 import { servicesData } from '../data/services';
 import { AiOutlineMenu } from 'solid-icons/ai';
 
+// Navigasi utama website.
+// Menyediakan menu desktop/mobile dan dropdown pricelist yang mengikuti kategori layanan aktif.
+
 interface NavbarProps {
   onPricelistClick?: () => void;
   hasWhiteBackground?: boolean; // true jika halaman bg putih

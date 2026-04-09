@@ -5,6 +5,9 @@ import { FiImage } from 'solid-icons/fi';
 import { updateContent, uploadImage } from '../../services/contentApi';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
 
+// Editor gambar reusable untuk admin.
+// Alur fiturnya: upload file -> preview hasil -> simpan URL ke field konten/paket terkait.
+
 interface EditableImageProps {
   label: string;
   value: string;
@@ -15,7 +18,7 @@ interface EditableImageProps {
   onSave?: (newValue: string) => void | Promise<void>;
   onError?: (error: string) => void;
   onDelete?: () => void;
-  onUpload?: (file: File) => Promise<string | { success?: boolean; message?: string; data?: { url?: string } }>;
+  onUpload?: (file: File) => Promise<string | { success?: boolean; message?: string; data?: { url?: string }; url?: string; ['data/url']?: string }>;
 }
 
 export const EditableImage = (props: EditableImageProps) => {
@@ -131,18 +134,21 @@ export const EditableImage = (props: EditableImageProps) => {
 
     setIsUploading(true);
     try {
-      // Always upload to server first
+      // Two-step flow: upload media file first, then save resulting URL as content value.
       const uploadFn = props.onUpload || uploadImage;
       const response = await uploadFn(file);
+      const objectResponse = (typeof response === 'object' && response !== null)
+        ? response as { success?: boolean; message?: string; data?: { url?: string }; url?: string; ['data/url']?: string }
+        : null;
 
       console.log(`[DEBUG EditableImage] RAW Upload response:`, response);
       console.log(`[DEBUG EditableImage] Response type:`, typeof response);
       console.log(`[DEBUG EditableImage] Response keys:`, typeof response === 'object' ? Object.keys(response || {}) : 'N/A');
-      if (typeof response === 'object' && response !== null) {
-        console.log(`[DEBUG EditableImage] Response.data:`, (response as any).data);
-        console.log(`[DEBUG EditableImage] Response.url:`, (response as any).url);
-        console.log(`[DEBUG EditableImage] Response.message:`, (response as any).message);
-        console.log(`[DEBUG EditableImage] Response.success:`, (response as any).success);
+      if (objectResponse) {
+        console.log(`[DEBUG EditableImage] Response.data:`, objectResponse.data);
+        console.log(`[DEBUG EditableImage] Response.url:`, objectResponse.url);
+        console.log(`[DEBUG EditableImage] Response.message:`, objectResponse.message);
+        console.log(`[DEBUG EditableImage] Response.success:`, objectResponse.success);
       }
 
       // Extract URL from various response formats
@@ -150,14 +156,14 @@ export const EditableImage = (props: EditableImageProps) => {
       if (typeof response === 'string') {
         uploadedUrl = response;
         console.log(`[DEBUG EditableImage] Using string response as URL: "${uploadedUrl}"`);
-      } else if (response && typeof response === 'object') {
+      } else if (objectResponse) {
         // Try multiple possible response formats
-        uploadedUrl = response?.data?.url 
-          || response?.url 
-          || (response as any)?.['data/url']
+        uploadedUrl = objectResponse.data?.url 
+          || objectResponse.url 
+          || objectResponse['data/url']
           || '';
-        console.log(`[DEBUG EditableImage] Tried data?.url: "${response?.data?.url}"`);
-        console.log(`[DEBUG EditableImage] Tried url: "${response?.url}"`);
+        console.log(`[DEBUG EditableImage] Tried data?.url: "${objectResponse.data?.url}"`);
+        console.log(`[DEBUG EditableImage] Tried url: "${objectResponse.url}"`);
         console.log(`[DEBUG EditableImage] Final extracted URL: "${uploadedUrl}"`);
       }
 
@@ -188,7 +194,7 @@ export const EditableImage = (props: EditableImageProps) => {
         // Preview first: keep edit mode open and wait for manual "Simpan" click.
         console.log('[DEBUG EditableImage] Preview updated. Waiting for manual save.');
       } else {
-        const errorMsg = response?.message || 'Upload berhasil tapi URL tidak ditemukan';
+        const errorMsg = objectResponse?.message || 'Upload berhasil tapi URL tidak ditemukan';
         console.log(`[DEBUG EditableImage] ❌ Upload failed - missing URL: ${errorMsg}`);
         console.log(`[DEBUG EditableImage] Full response was:`, response);
         props.onError?.(errorMsg);

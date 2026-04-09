@@ -11,6 +11,9 @@ import { contentStore } from '../stores/contentStore';
 import { resolveMediaUrl } from '../utils/mediaUrl';
 import './Portfolio.css';
 
+// Halaman portfolio: tab kategori diambil dari backend, sedangkan nilai gambar dapat dioverride
+// lewat field konten editable, sehingga admin bisa update galeri tanpa ubah kode frontend.
+
 interface PortfolioCategory {
   id?: number;
   name: string;

@@ -9,6 +9,8 @@ interface ContactModalProps {
   subtitle?: string;
 }
 
+// Modal kontak untuk mengarahkan calon klien ke nomor WhatsApp yang sesuai jenis layanan.
+
 const ContactModal: Component<ContactModalProps> = (props) => {
   const WA_STUDIO = 'https://wa.me/62895351115777';
   const WA_WEDDING = 'https://wa.me/62895632522949';

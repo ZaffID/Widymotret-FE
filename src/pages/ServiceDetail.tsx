@@ -9,6 +9,9 @@ import { resolveMediaUrl } from '../utils/mediaUrl';
 import { useScrollReveal, useScrollRevealGroup } from '../hooks/useScrollReveal';
 import '../styles/scroll-reveal.css';
 
+// Halaman detail layanan: membaca slug layanan yang dipilih lalu memuat paket yang sesuai dari backend.
+// Ini adalah jembatan utama dari kartu layanan di beranda menuju opsi paket yang bisa dipilih user.
+
 interface ApiPackage {
   id: number;
   name: string;

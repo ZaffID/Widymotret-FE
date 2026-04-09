@@ -1,5 +1,8 @@
 import { Component, createSignal, createEffect, createMemo, onCleanup, For } from 'solid-js';
 
+// Komponen carousel untuk hero/galeri.
+// Mendukung autoplay, navigasi keyboard, serta gesture drag/touch untuk desktop dan mobile.
+
 interface ImageCarouselProps {
   images: string[];
   autoPlayInterval?: number;

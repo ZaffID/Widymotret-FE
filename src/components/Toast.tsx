@@ -1,5 +1,7 @@
 import { Component, Show } from 'solid-js';
 
+// Komponen notifikasi reusable untuk menampilkan feedback sukses/gagal saat aksi admin.
+
 interface ToastProps {
   message: string | null | undefined;
   type?: 'success' | 'error' | 'warning' | 'info';

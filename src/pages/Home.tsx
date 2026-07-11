@@ -55,9 +55,21 @@ const Home: Component = () => {
       
       const data = await res.json();
       const servicesMap = new Map<string, any>();
+      const publishedCategories = new Set<string>();
+
+      if (data.success && Array.isArray(data.data)) {
+        data.data
+          .filter((pkg: any) => pkg.isPublished)
+          .forEach((pkg: any) => {
+            const category = pkg.category?.toLowerCase();
+            if (category) publishedCategories.add(category);
+          });
+      }
       
       // 1. Add hardcoded services (with contentStore overrides)
       servicesData.forEach(service => {
+        if (!publishedCategories.has(service.slug)) return;
+
         const storedTitle = contentStore.getField('service', `${service.slug}_title`);
         const storedDesc = contentStore.getField('service', `${service.slug}_description`);
         const storedImage = contentStore.getField('service', `${service.slug}_image`);
@@ -76,6 +88,7 @@ const Home: Component = () => {
         const packageCategories: string[] = [
           ...new Set(
             packageRows
+              .filter((pkg: any) => pkg.isPublished)
               .map((pkg: any) => pkg.category?.toLowerCase())
               .filter((category: unknown): category is string => typeof category === 'string' && category.length > 0)
           ),
@@ -105,7 +118,7 @@ const Home: Component = () => {
       
       titleFields.forEach(titleField => {
         const slug = titleField.field.replace('_title', '');
-        if (!servicesMap.has(slug)) {
+        if (publishedCategories.has(slug) && !servicesMap.has(slug)) {
           const description = contentStore.getField('service', `${slug}_description`);
           const image = contentStore.getField('service', `${slug}_image`);
           

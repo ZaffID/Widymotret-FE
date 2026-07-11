@@ -74,21 +74,30 @@ const Navbar: Component<NavbarProps> = (props) => {
       const data = await res.json();
       
       if (data.success && Array.isArray(data.data)) {
-        // Build: hardcoded + unique categories from API, lalu judulnya disesuaikan dengan contentStore
+        const publishedCategories = new Set(
+          data.data
+            .filter((pkg: any) => pkg.isPublished)
+            .map((pkg: any) => pkg.category?.toLowerCase())
+            .filter((category: unknown): category is string => typeof category === 'string' && category.length > 0)
+        );
+
+        // Build: hardcoded + unique published categories from API, lalu judulnya disesuaikan dengan contentStore
         const servicesMap = new Map(
-          servicesData.map(s => [
-            s.slug,
-            {
-              slug: s.slug,
-              title: getServiceTitle(s.slug, s.title),
-            },
-          ])
+          servicesData
+            .filter(s => publishedCategories.has(s.slug))
+            .map(s => [
+              s.slug,
+              {
+                slug: s.slug,
+                title: getServiceTitle(s.slug, s.title),
+              },
+            ])
         );
         
-        // Add API categories not in hardcoded
+        // Add published API categories not in hardcoded
         data.data.forEach((pkg: any) => {
           const category = pkg.category?.toLowerCase();
-          if (category && !servicesMap.has(category)) {
+          if (pkg.isPublished && category && !servicesMap.has(category)) {
             servicesMap.set(category, {
               slug: category,
               title: getServiceTitle(category, category.charAt(0).toUpperCase() + category.slice(1)),
@@ -101,7 +110,7 @@ const Navbar: Component<NavbarProps> = (props) => {
 
         titleFields.forEach(titleField => {
           const slug = titleField.field.replace('_title', '');
-          if (!servicesMap.has(slug)) {
+          if (publishedCategories.has(slug) && !servicesMap.has(slug)) {
             servicesMap.set(slug, {
               slug,
               title: titleField.value,

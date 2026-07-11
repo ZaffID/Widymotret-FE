@@ -49,18 +49,29 @@ const ServiceDetail: Component = () => {
       const data = await res.json();
       
       if (data.success && Array.isArray(data.data)) {
-        // Build: hardcoded + unique categories from API
-        const servicesMap = new Map(servicesData.map(s => [s.slug, { 
-          slug: s.slug, 
-          title: s.title, 
-          description: s.description, 
-          image: s.image 
-        }]));
+        const publishedCategories = new Set(
+          data.data
+            .filter((pkg: any) => pkg.isPublished)
+            .map((pkg: any) => pkg.category?.toLowerCase())
+            .filter((category: unknown): category is string => typeof category === 'string' && category.length > 0)
+        );
+
+        // Build: hardcoded + unique published categories from API
+        const servicesMap = new Map(
+          servicesData
+            .filter(s => publishedCategories.has(s.slug))
+            .map(s => [s.slug, {
+              slug: s.slug,
+              title: s.title,
+              description: s.description,
+              image: s.image
+            }])
+        );
         
-        // Add API categories not in hardcoded
+        // Add published API categories not in hardcoded
         data.data.forEach((pkg: any) => {
           const category = pkg.category?.toLowerCase();
-          if (category && !servicesMap.has(category)) {
+          if (pkg.isPublished && category && !servicesMap.has(category)) {
             servicesMap.set(category, {
               slug: category,
               title: category.charAt(0).toUpperCase() + category.slice(1),

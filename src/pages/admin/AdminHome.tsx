@@ -2460,7 +2460,7 @@ const AdminHome: Component = () => {
                                     checked={pkg.isPublished}
                                     onChange={(e) => updatePackageLocal(pkg.id, (prev) => ({ ...prev, isPublished: e.currentTarget.checked }))}
                                   />
-                                  Published
+                                  Tampilkan di publik
                                 </label>
                                 <button
                                   onClick={() => savePackage(pkg)}
@@ -3604,7 +3604,7 @@ const AdminHome: Component = () => {
                   checked={newPackagePublished()}
                   onChange={(e) => setNewPackagePublished(e.currentTarget.checked)}
                 />
-                Published
+                Tampilkan di publik
               </label>
             </div>
 

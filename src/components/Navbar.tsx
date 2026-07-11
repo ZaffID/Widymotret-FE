@@ -182,22 +182,24 @@ const Navbar: Component<NavbarProps> = (props) => {
               
               {/* Dropdown Menu - Desktop */}
               <div 
-                class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg transition-all duration-200"
+                class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-lg transition-all duration-200 overflow-hidden"
                 classList={{
                   'opacity-100 visible translate-y-0': showDropdown(),
                   'opacity-0 invisible -translate-y-2': !showDropdown()
                 }}
               >
-                <For each={services()}>
-                  {(service) => (
-                    <button 
-                      onClick={() => navigate(`/pricelist/${service.slug}`)}
-                      class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm"
-                    >
-                      {service.title}
-                    </button>
-                  )}
-                </For>
+                <div class="max-h-72 overflow-y-auto overscroll-contain py-1">
+                  <For each={services()}>
+                    {(service) => (
+                      <button 
+                        onClick={() => navigate(`/pricelist/${service.slug}`)}
+                        class="w-full text-left px-4 py-3 text-gray-800 hover:bg-[#FAFAFA] hover:text-[#464C43] transition text-sm rounded-md mx-1 w-[calc(100%-0.5rem)]"
+                      >
+                        {service.title}
+                      </button>
+                    )}
+                  </For>
+                </div>
               </div>
             </div>
             

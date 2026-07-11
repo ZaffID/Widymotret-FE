@@ -1,6 +1,7 @@
 ﻿import { Component, createSignal, onMount, onCleanup, createMemo, For } from 'solid-js';
 import { useNavigate } from '@solidjs/router';
 import { servicesData } from '../data/services';
+import { contentStore } from '../stores/contentStore';
 import { AiOutlineMenu } from 'solid-icons/ai';
 
 // Navigasi utama website.
@@ -58,6 +59,10 @@ const Navbar: Component<NavbarProps> = (props) => {
     setShowMobileDropdown(false);
   };
 
+  const getServiceTitle = (slug: string, fallback: string) => {
+    return contentStore.getField('service', `${slug}_title`) || fallback;
+  };
+
   // Load services from API
   const loadServices = async () => {
     try {
@@ -69,34 +74,57 @@ const Navbar: Component<NavbarProps> = (props) => {
       const data = await res.json();
       
       if (data.success && Array.isArray(data.data)) {
-        // Build: hardcoded + unique categories from API
-        const hardcodedMap = new Map(servicesData.map(s => [s.slug, { slug: s.slug, title: s.title }]));
+        // Build: hardcoded + unique categories from API, lalu judulnya disesuaikan dengan contentStore
+        const servicesMap = new Map(
+          servicesData.map(s => [
+            s.slug,
+            {
+              slug: s.slug,
+              title: getServiceTitle(s.slug, s.title),
+            },
+          ])
+        );
         
         // Add API categories not in hardcoded
         data.data.forEach((pkg: any) => {
           const category = pkg.category?.toLowerCase();
-          if (category && !hardcodedMap.has(category)) {
-            hardcodedMap.set(category, {
+          if (category && !servicesMap.has(category)) {
+            servicesMap.set(category, {
               slug: category,
-              title: category.charAt(0).toUpperCase() + category.slice(1)
+              title: getServiceTitle(category, category.charAt(0).toUpperCase() + category.slice(1)),
             });
           }
         });
-        
-        setServices(Array.from(hardcodedMap.values()));
+
+        const allServiceFields = contentStore.getSectionFields('service');
+        const titleFields = allServiceFields.filter(field => field.field.endsWith('_title') && field.value.trim() !== '');
+
+        titleFields.forEach(titleField => {
+          const slug = titleField.field.replace('_title', '');
+          if (!servicesMap.has(slug)) {
+            servicesMap.set(slug, {
+              slug,
+              title: titleField.value,
+            });
+          }
+        });
+
+        setServices(Array.from(servicesMap.values()));
       } else {
-        setServices(servicesData.map(s => ({ slug: s.slug, title: s.title })));
+        setServices(servicesData.map(s => ({ slug: s.slug, title: getServiceTitle(s.slug, s.title) })));
       }
     } catch (err) {
       console.error('[Navbar] Error loading services:', err);
-      setServices(servicesData.map(s => ({ slug: s.slug, title: s.title })));
+      setServices(servicesData.map(s => ({ slug: s.slug, title: getServiceTitle(s.slug, s.title) })));
     }
   };
 
   onMount(() => {
     window.addEventListener('scroll', handleScroll);
     handleScroll();
-    loadServices();
+    contentStore.loadSection('service').finally(() => {
+      loadServices();
+    });
   });
 
   // No need for effect, For loop will handle reactivity

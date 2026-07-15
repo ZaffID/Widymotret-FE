@@ -3638,7 +3638,7 @@ const AdminHome: Component = () => {
                               onChange={(e) => contentStore.updateFieldLocal('footer', `footer_service_${idx}_label`, e.currentTarget.value)}
                               onBlur={(e) => {
                                 updateContent('footer', `footer_service_${idx}_label`, e.currentTarget.value);
-                                handleSave(`Label layanan footer "${defaultLabel}" berhasil disimpan`);
+                                handleSave(`Label Layanan ${idx + 1} berhasil disimpan`);
                               }}
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] text-sm"
                               placeholder="Misal: Wedding"
@@ -3653,7 +3653,7 @@ const AdminHome: Component = () => {
                               onChange={(e) => contentStore.updateFieldLocal('footer', `footer_service_${idx}_slug`, e.currentTarget.value)}
                               onBlur={(e) => {
                                 updateContent('footer', `footer_service_${idx}_slug`, e.currentTarget.value.toLowerCase().trim());
-                                handleSave(`Slug layanan footer "${defaultLabel}" berhasil disimpan`);
+                                handleSave(`Slug Layanan ${idx + 1} berhasil disimpan`);
                               }}
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] text-sm font-mono"
                               placeholder="studio"

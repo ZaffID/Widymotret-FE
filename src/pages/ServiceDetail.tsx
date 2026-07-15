@@ -517,7 +517,7 @@ const ServiceDetail: Component = () => {
                           {(img, idx) => (
                             <button
                               onClick={() => setGalleryIndex(idx())}
-                              class="w-16 h-12 rounded-lg overflow-hidden border-2 transition-all duration-300"
+                              class={`${getImageAspectClass(img)} w-16 rounded-lg overflow-hidden border-2 transition-all duration-300`}
                               classList={{
                                 'border-[#464C43] opacity-100': galleryIndex() === idx(),
                                 'border-transparent opacity-60 hover:opacity-100': galleryIndex() !== idx()

@@ -376,7 +376,7 @@ const ServiceDetail: Component = () => {
                         }}
                       >
                         {/* Card Image */}
-                        <div class={`${getImageAspectClass(getGalleryImages(pkg)[0])} overflow-hidden`}>
+                        <div class="aspect-[4/3] overflow-hidden">
                           <img
                             src={resolveMediaUrl(getGalleryImages(pkg)[0])}
                             alt={pkg.name}

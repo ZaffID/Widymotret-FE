@@ -3894,7 +3894,7 @@ const AdminHome: Component = () => {
                 <input
                   type="text"
                   value={newServiceSlug()}
-                  onInput={(e) => setNewServiceSlug(e.currentTarget.value)}
+                  readOnly
                   placeholder="Contoh: outdoor-photoshoot"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250]"
                 />

@@ -266,7 +266,8 @@ const Home: Component = () => {
       .map(([stepNumber, step]) => ({
         title: step.title || fallbackBookingSteps[stepNumber - 1]?.title || `Step ${stepNumber}`,
         desc: step.desc || fallbackBookingSteps[stepNumber - 1]?.desc || 'Deskripsi langkah booking.',
-      }));
+      }))
+      .filter((step) => step.title.trim() !== '' || step.desc.trim() !== '');
   });
 
   // Single testimonial carousel state

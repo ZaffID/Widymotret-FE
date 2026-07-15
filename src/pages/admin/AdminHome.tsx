@@ -11,7 +11,6 @@ import { aboutData } from '../../data/about';
 import { getImagesByCategory } from '../../data/portfolio';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
 import { updateContent } from '../../services/contentApi';
-import { deleteContent } from '../../services/contentApi';
 
 // Dashboard admin sebagai pusat manajemen konten website:
 // mengelola teks/gambar beranda-about-footer, paket layanan, kategori portfolio, dan aset media.
@@ -187,7 +186,8 @@ const AdminHome: Component = () => {
         number: stepNumber,
         title: step.title,
         desc: step.desc,
-      }));
+      }))
+      .filter((step) => step.title.trim() !== '' || step.desc.trim() !== '');
   });
 
   const addBookingStep = async () => {
@@ -220,8 +220,8 @@ const AdminHome: Component = () => {
 
     try {
       const [titleRes, descRes] = await Promise.all([
-        deleteContent('booking', `step${stepNumber}_title`),
-        deleteContent('booking', `step${stepNumber}_description`),
+        updateContent('booking', `step${stepNumber}_title`, ''),
+        updateContent('booking', `step${stepNumber}_description`, ''),
       ]);
 
       if (!titleRes.success || !descRes.success) {

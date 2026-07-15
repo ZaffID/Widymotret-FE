@@ -39,6 +39,7 @@ const ServiceDetail: Component = () => {
   // Dynamic services list (hardcoded + API-fetched)
   const [allServices, setAllServices] = createSignal<Array<{ slug: string; title: string; description: string; image: string }>>([]);
   const [imageOrientations, setImageOrientations] = createSignal<Record<string, ImageOrientation>>({});
+  const [touchStartX, setTouchStartX] = createSignal<number | null>(null);
   
   const service = () => allServices().find(s => s.slug === params.slug);
 
@@ -292,6 +293,33 @@ const ServiceDetail: Component = () => {
     setGalleryIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  const handleTouchStart = (event: TouchEvent) => {
+    setTouchStartX(event.touches[0]?.clientX ?? null);
+  };
+
+  const handleTouchEnd = (event: TouchEvent) => {
+    const startX = touchStartX();
+    const endX = event.changedTouches[0]?.clientX;
+
+    if (startX === null || endX === undefined) {
+      setTouchStartX(null);
+      return;
+    }
+
+    const deltaX = endX - startX;
+    const swipeThreshold = 40;
+
+    if (Math.abs(deltaX) >= swipeThreshold) {
+      if (deltaX < 0) {
+        nextImage();
+      } else {
+        prevImage();
+      }
+    }
+
+    setTouchStartX(null);
+  };
+
   return (
     <div class="wm-brand-page min-h-screen bg-white">
       <Navbar />
@@ -436,8 +464,12 @@ const ServiceDetail: Component = () => {
 
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 scroll-reveal" ref={detailSectionRef}>
                     {/* Left - Gallery Slider */}
-                    <div class="relative">
-                      <div class={`${getImageAspectClass(getGalleryImages(selectedPackage())[galleryIndex()])} rounded-2xl overflow-hidden shadow-xl`}>
+                    <div class="relative w-full max-w-[360px] lg:max-w-[420px] mx-auto lg:mx-0">
+                      <div
+                        class={`${getImageAspectClass(getGalleryImages(selectedPackage())[galleryIndex()])} rounded-2xl overflow-hidden shadow-xl touch-pan-y`}
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                      >
                         <img
                           src={resolveMediaUrl(getGalleryImages(selectedPackage())[galleryIndex()])}
                           alt={`Gallery ${galleryIndex() + 1}`}

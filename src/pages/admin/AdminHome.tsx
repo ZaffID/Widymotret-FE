@@ -11,6 +11,7 @@ import { aboutData } from '../../data/about';
 import { getImagesByCategory } from '../../data/portfolio';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
 import { updateContent } from '../../services/contentApi';
+import { deleteContent } from '../../services/contentApi';
 
 // Dashboard admin sebagai pusat manajemen konten website:
 // mengelola teks/gambar beranda-about-footer, paket layanan, kategori portfolio, dan aset media.
@@ -158,6 +159,81 @@ const AdminHome: Component = () => {
   const [uploadingServiceImage, setUploadingServiceImage] = createSignal(false);
   const [serviceImageUploaded, setServiceImageUploaded] = createSignal(false);
   const [allServices, setAllServices] = createSignal<any[]>([]);
+
+  const bookingSteps = createMemo(() => {
+    const fields = contentStore.getSectionFields('booking');
+    const steps = new Map<number, { title: string; desc: string }>();
+
+    fields.forEach((field) => {
+      const titleMatch = field.field.match(/^step(\d+)_title$/);
+      const descMatch = field.field.match(/^step(\d+)_description$/);
+
+      if (titleMatch) {
+        const stepNumber = Number(titleMatch[1]);
+        const current = steps.get(stepNumber) || { title: '', desc: '' };
+        steps.set(stepNumber, { ...current, title: field.value });
+      }
+
+      if (descMatch) {
+        const stepNumber = Number(descMatch[1]);
+        const current = steps.get(stepNumber) || { title: '', desc: '' };
+        steps.set(stepNumber, { ...current, desc: field.value });
+      }
+    });
+
+    return Array.from(steps.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([stepNumber, step]) => ({
+        number: stepNumber,
+        title: step.title,
+        desc: step.desc,
+      }));
+  });
+
+  const addBookingStep = async () => {
+    const existingSteps = bookingSteps();
+    const nextStep = existingSteps.length > 0 ? Math.max(...existingSteps.map((step) => step.number)) + 1 : 1;
+
+    try {
+      contentStore.updateFieldLocal('booking', `step${nextStep}_title`, `Step ${nextStep}`);
+      contentStore.updateFieldLocal('booking', `step${nextStep}_description`, 'Deskripsi langkah booking');
+
+      const [titleRes, descRes] = await Promise.all([
+        updateContent('booking', `step${nextStep}_title`, `Step ${nextStep}`),
+        updateContent('booking', `step${nextStep}_description`, 'Deskripsi langkah booking'),
+      ]);
+
+      if (!titleRes.success || !descRes.success) {
+        throw new Error(titleRes.message || descRes.message || 'Gagal menambah step booking');
+      }
+
+      await contentStore.loadSection('booking');
+      handleSave(`Step ${nextStep} berhasil ditambahkan`);
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Gagal menambah step booking');
+    }
+  };
+
+  const deleteBookingStep = async (stepNumber: number) => {
+    const confirmed = window.confirm(`Hapus Step ${stepNumber}?`);
+    if (!confirmed) return;
+
+    try {
+      const [titleRes, descRes] = await Promise.all([
+        deleteContent('booking', `step${stepNumber}_title`),
+        deleteContent('booking', `step${stepNumber}_description`),
+      ]);
+
+      if (!titleRes.success || !descRes.success) {
+        throw new Error(titleRes.message || descRes.message || 'Gagal menghapus step booking');
+      }
+
+      await contentStore.loadSection('booking');
+      handleSave(`Step ${stepNumber} berhasil dihapus`);
+    } catch (error) {
+      handleError(error instanceof Error ? error.message : 'Gagal menghapus step booking');
+    }
+  };
 
   // Portfolio Categories Management
   const [portfolioCategoriesData, setPortfolioCategoriesData] = createSignal<PortfolioCategory[]>([]);
@@ -1755,33 +1831,50 @@ const AdminHome: Component = () => {
                   }}
                   onError={handleError}
                 />
-                
+                <div class="mt-6 flex items-center justify-between gap-4">
+                  <p class="text-sm text-gray-600">Tambah, ubah, atau hapus kotak booking sesuai kebutuhan.</p>
+                  <button
+                    onClick={addBookingStep}
+                    class="px-4 py-2 bg-[#576250] text-white rounded-lg hover:bg-[#464C43] transition font-medium text-sm"
+                  >
+                    + Tambah Step
+                  </button>
+                </div>
+
                 <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <For each={[1, 2, 3, 4, 5, 6]}>
+                  <For each={bookingSteps()}>
                     {(step) => (
                       <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <h4 class="font-bold text-gray-800 mb-3 text-sm">Step {step}</h4>
+                        <div class="flex items-center justify-between gap-3 mb-3">
+                          <h4 class="font-bold text-gray-800 text-sm">Step {step.number}</h4>
+                          <button
+                            onClick={() => deleteBookingStep(step.number)}
+                            class="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 rounded-md border border-red-200 hover:bg-red-100 hover:text-red-700 transition"
+                          >
+                            Hapus
+                          </button>
+                        </div>
                         <EditableText
-                          label={`Step ${step} Title`}
-                          value={contentStore.getField('booking', `step${step}_title`)}
+                          label={`Step ${step.number} Title`}
+                          value={contentStore.getField('booking', `step${step.number}_title`)}
                           section="booking"
-                          field={`step${step}_title`}
+                          field={`step${step.number}_title`}
                           multiline={false}
                           onSave={(value) => {
-                            contentStore.updateFieldLocal('booking', `step${step}_title`, value);
-                            handleSave(`Step ${step} title berhasil disimpan`);
+                            contentStore.updateFieldLocal('booking', `step${step.number}_title`, value);
+                            handleSave(`Step ${step.number} title berhasil disimpan`);
                           }}
                           onError={handleError}
                         />
                         <EditableText
-                          label={`Step ${step} Description`}
-                          value={contentStore.getField('booking', `step${step}_description`)}
+                          label={`Step ${step.number} Description`}
+                          value={contentStore.getField('booking', `step${step.number}_description`)}
                           section="booking"
-                          field={`step${step}_description`}
+                          field={`step${step.number}_description`}
                           multiline={true}
                           onSave={(value) => {
-                            contentStore.updateFieldLocal('booking', `step${step}_description`, value);
-                            handleSave(`Step ${step} description berhasil disimpan`);
+                            contentStore.updateFieldLocal('booking', `step${step.number}_description`, value);
+                            handleSave(`Step ${step.number} description berhasil disimpan`);
                           }}
                           onError={handleError}
                         />

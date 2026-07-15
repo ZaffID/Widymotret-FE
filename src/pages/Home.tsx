@@ -234,6 +234,41 @@ const Home: Component = () => {
     ];
   });
 
+  const bookingSteps = createMemo(() => {
+    const fields = contentStore.getSectionFields('booking');
+    const steps = new Map<number, { title: string; desc: string }>();
+
+    fields.forEach((field) => {
+      const titleMatch = field.field.match(/^step(\d+)_title$/);
+      const descMatch = field.field.match(/^step(\d+)_description$/);
+
+      if (titleMatch) {
+        const stepNumber = Number(titleMatch[1]);
+        const current = steps.get(stepNumber) || { title: '', desc: '' };
+        steps.set(stepNumber, { ...current, title: field.value });
+      }
+
+      if (descMatch) {
+        const stepNumber = Number(descMatch[1]);
+        const current = steps.get(stepNumber) || { title: '', desc: '' };
+        steps.set(stepNumber, { ...current, desc: field.value });
+      }
+    });
+
+    const fallbackBookingSteps = [
+      { title: 'Konsultasi & Cek Tanggal', desc: 'Klien menghubungi kami melalui WhatsApp untuk konsultasi awal dan memastikan ketersediaan tanggal acara.' },
+      { title: 'Pilih Paket Fotografi', desc: 'Klien memilih paket yang sesuai kebutuhan, konsep, dan budget yang diinginkan.' },
+      { title: 'Konfirmasi & Pembayaran DP', desc: 'Setelah paket disepakati, klien melakukan pembayaran DP untuk mengamankan jadwal.' },
+    ];
+
+    return Array.from(steps.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([stepNumber, step]) => ({
+        title: step.title || fallbackBookingSteps[stepNumber - 1]?.title || `Step ${stepNumber}`,
+        desc: step.desc || fallbackBookingSteps[stepNumber - 1]?.desc || 'Deskripsi langkah booking.',
+      }));
+  });
+
   // Single testimonial carousel state
   const [testiIndex, setTestiIndex] = createSignal(0);
   const [testiAnimate, setTestiAnimate] = createSignal(false);
@@ -414,19 +449,11 @@ const Home: Component = () => {
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8" ref={bookingItemsRef}>
-            <For each={[
-              { titleField: 'step1_title', descField: 'step1_description', fallback: { title: 'Konsultasi & Cek Tanggal', desc: 'Klien menghubungi kami melalui WhatsApp untuk konsultasi awal dan memastikan ketersediaan tanggal acara.' } },
-              { titleField: 'step2_title', descField: 'step2_description', fallback: { title: 'Pilih Paket Fotografi', desc: 'Klien memilih paket yang sesuai kebutuhan, konsep, dan budget yang diinginkan.' } },
-              { titleField: 'step3_title', descField: 'step3_description', fallback: { title: 'Konfirmasi & Pembayaran DP', desc: 'Setelah paket disepakati, klien melakukan pembayaran DP untuk mengamankan jadwal.' } },
-            ]}>
+            <For each={bookingSteps()}>
               {(step) => (
                 <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center scroll-reveal-item">
-                  <h3 class="text-xl text-[#464C43] mb-2">
-                    {t('booking', step.titleField, step.fallback.title)}
-                  </h3>
-                  <p class="text-gray-600 text-sm">
-                    {t('booking', step.descField, step.fallback.desc)}
-                  </p>
+                  <h3 class="text-xl text-[#464C43] mb-2">{step.title}</h3>
+                  <p class="text-gray-600 text-sm">{step.desc}</p>
                 </div>
               )}
             </For>

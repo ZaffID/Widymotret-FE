@@ -3626,7 +3626,9 @@ const AdminHome: Component = () => {
                     const defaultLabel = contentStore.getField('service', `${service.slug}_title`) || service.title;
                     return (
                       <div class="p-4 bg-white border border-gray-200 rounded-lg">
-                        <h4 class="font-semibold text-gray-700 mb-3">{defaultLabel}</h4>
+                        <h4 class="font-semibold text-gray-700 mb-3">
+                          Layanan {idx + 1}
+                        </h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Label Tampil</label>

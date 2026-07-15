@@ -465,35 +465,39 @@ const ServiceDetail: Component = () => {
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 scroll-reveal" ref={detailSectionRef}>
                     {/* Left - Gallery Slider */}
                     <div class="relative w-full max-w-[360px] lg:max-w-[420px] mx-auto lg:mx-0">
-                      <div
-                        class={`${getImageAspectClass(getGalleryImages(selectedPackage())[galleryIndex()])} rounded-2xl overflow-hidden shadow-xl touch-pan-y`}
-                        onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
-                      >
-                        <img
-                          src={resolveMediaUrl(getGalleryImages(selectedPackage())[galleryIndex()])}
-                          alt={`Gallery ${galleryIndex() + 1}`}
-                          class="w-full h-full object-cover transition-opacity duration-300"
-                        />
+                      <div class="relative">
+                        <div
+                          class={`${getImageAspectClass(getGalleryImages(selectedPackage())[galleryIndex()])} rounded-2xl overflow-hidden shadow-xl touch-pan-y`}
+                          onTouchStart={handleTouchStart}
+                          onTouchEnd={handleTouchEnd}
+                        >
+                          <img
+                            src={resolveMediaUrl(getGalleryImages(selectedPackage())[galleryIndex()])}
+                            alt={`Gallery ${galleryIndex() + 1}`}
+                            class="w-full h-full object-cover transition-opacity duration-300"
+                          />
+                        </div>
+                        
+                        {/* Gallery Navigation */}
+                        <div class="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-4 pointer-events-none">
+                          <button
+                            onClick={prevImage}
+                            class="pointer-events-auto w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition"
+                          >
+                            <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={nextImage}
+                            class="pointer-events-auto w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition"
+                          >
+                            <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
-                      
-                      {/* Gallery Navigation */}
-                      <button
-                        onClick={prevImage}
-                        class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition"
-                      >
-                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center transition"
-                      >
-                        <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
 
                       {/* Gallery Dots */}
                       <div class="flex justify-center gap-2 mt-4">
@@ -517,7 +521,7 @@ const ServiceDetail: Component = () => {
                           {(img, idx) => (
                             <button
                               onClick={() => setGalleryIndex(idx())}
-                              class={`${getImageAspectClass(img)} w-16 rounded-lg overflow-hidden border-2 transition-all duration-300`}
+                              class="w-16 h-12 rounded-lg overflow-hidden border-2 transition-all duration-300"
                               classList={{
                                 'border-[#464C43] opacity-100': galleryIndex() === idx(),
                                 'border-transparent opacity-60 hover:opacity-100': galleryIndex() !== idx()

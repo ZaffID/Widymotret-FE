@@ -414,30 +414,21 @@ const Home: Component = () => {
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-8" ref={bookingItemsRef}>
-            <For each={Array.from({ length: 6 })}>
-              {(_, idx) => {
-                const stepNum = idx() + 1;
-                const titleField = `step${stepNum}_title`;
-                const descField = `step${stepNum}_description`;
-                const bookingSteps = [
-                  { title: 'Konsultasi & Cek Tanggal', desc: 'Klien menghubungi kami melalui WhatsApp untuk konsultasi awal dan memastikan ketersediaan tanggal acara.' },
-                  { title: 'Pilih Paket Fotografi', desc: 'Klien memilih paket yang sesuai kebutuhan, konsep, dan budget yang diinginkan.' },
-                  { title: 'Konfirmasi & Pembayaran DP', desc: 'Setelah paket disepakati, klien melakukan pembayaran DP untuk mengamankan jadwal.' },
-                  { title: 'Persiapan & Briefing', desc: 'Kami melakukan briefing detail terkait rundown acara, konsep foto, lokasi, dan kebutuhan teknis lainnya.' },
-                  { title: 'Hari Pernikahan (Shooting Day)', desc: 'Tim fotografer hadir tepat waktu dan mengabadikan setiap momen penting secara profesional.' },
-                  { title: 'Editing & Penyerahan Hasil', desc: 'Proses editing dilakukan sesuai standar kualitas studio, lalu hasil diserahkan sesuai paket yang dipilih.' },
-                ];
-                return (
-                  <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center scroll-reveal-item">
-                    <h3 class="text-xl text-[#464C43] mb-2">
-                      {t('booking', titleField, bookingSteps[idx()].title)}
-                    </h3>
-                    <p class="text-gray-600 text-sm">
-                      {t('booking', descField, bookingSteps[idx()].desc)}
-                    </p>
-                  </div>
-                );
-              }}
+            <For each={[
+              { titleField: 'step1_title', descField: 'step1_description', fallback: { title: 'Konsultasi & Cek Tanggal', desc: 'Klien menghubungi kami melalui WhatsApp untuk konsultasi awal dan memastikan ketersediaan tanggal acara.' } },
+              { titleField: 'step2_title', descField: 'step2_description', fallback: { title: 'Pilih Paket Fotografi', desc: 'Klien memilih paket yang sesuai kebutuhan, konsep, dan budget yang diinginkan.' } },
+              { titleField: 'step3_title', descField: 'step3_description', fallback: { title: 'Konfirmasi & Pembayaran DP', desc: 'Setelah paket disepakati, klien melakukan pembayaran DP untuk mengamankan jadwal.' } },
+            ]}>
+              {(step) => (
+                <div class="bg-[#FAFAFA] rounded-lg shadow-md p-6 text-center scroll-reveal-item">
+                  <h3 class="text-xl text-[#464C43] mb-2">
+                    {t('booking', step.titleField, step.fallback.title)}
+                  </h3>
+                  <p class="text-gray-600 text-sm">
+                    {t('booking', step.descField, step.fallback.desc)}
+                  </p>
+                </div>
+              )}
             </For>
           </div>
 

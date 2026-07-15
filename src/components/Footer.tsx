@@ -1,5 +1,6 @@
 ﻿import { Component, createMemo, createSignal, onMount, For } from 'solid-js';
 import { BsInstagram, BsFacebook, BsWhatsapp } from 'solid-icons/bs';
+import { servicesData } from '../data/services';
 import { contentStore } from '../stores/contentStore';
 
 // Footer mengambil data dinamis dari contentStore (CMS) dan daftar layanan dari data paket.
@@ -11,15 +12,6 @@ interface ServiceCategory {
 }
 
 const Footer: Component = () => {
-  // Initialize with fallback services
-  const [services, setServices] = createSignal<ServiceCategory[]>([
-    { name: 'Studio Photoshoot', category: 'studio' },
-    { name: 'Graduation', category: 'graduation' },
-    { name: 'Event Photography', category: 'event' },
-    { name: 'Product Photography', category: 'product' },
-    { name: 'Wedding Photography', category: 'wedding' },
-  ]);
-
   // Load footer content from backend on mount
   onMount(async () => {
     try {
@@ -28,45 +20,6 @@ const Footer: Component = () => {
       console.log('âœ… Footer section loaded');
     } catch (error) {
       console.error('âŒ Failed to load footer section:', error);
-    }
-
-    // Fetch services from API
-    try {
-      const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'https://widymotret-be-production-00a0.up.railway.app';
-      const response = await fetch(`${API_BASE}/api/packages`, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-      
-      const responseData = await response.json();
-      
-      // Handle response format: { success: true, data: [...] }
-      const packages = responseData.data || responseData;
-      
-      if (Array.isArray(packages) && packages.length > 0) {
-        // Get unique categories with first package name from each
-        const uniqueCategories = new Map<string, ServiceCategory>();
-        packages.forEach((pkg: any) => {
-          if (pkg.category && pkg.name && !uniqueCategories.has(pkg.category)) {
-            uniqueCategories.set(pkg.category, {
-              name: pkg.name,
-              category: pkg.category,
-            });
-          }
-        });
-        
-        const newServices = Array.from(uniqueCategories.values()).slice(0, 5);
-        if (newServices.length > 0) {
-          setServices(newServices);
-          console.log('âœ… Services loaded from API:', newServices.length, 'categories');
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to fetch services from API, using fallback:', error);
-      // Keep fallback services - already initialized above
     }
   });
 
@@ -123,6 +76,19 @@ const Footer: Component = () => {
       url: contentStore.getField('footer', `quick_link_${idx}_url`) || link.url,
     }));
   });
+
+  const footerServices = createMemo(() => {
+    return servicesData.slice(0, 5).map((service, idx) => {
+      const customLabel = contentStore.getField('footer', `footer_service_${idx}_label`);
+      const customSlug = contentStore.getField('footer', `footer_service_${idx}_slug`);
+      const serviceTitle = contentStore.getField('service', `${service.slug}_title`) || service.title;
+
+      return {
+        label: customLabel || serviceTitle,
+        slug: (customSlug || service.slug).trim() || service.slug,
+      };
+    });
+  });
   
   return (
     <footer class="bg-black text-white py-16 px-6">
@@ -152,9 +118,9 @@ const Footer: Component = () => {
           <div>
             <h4 class="text-sm tracking-widest mb-6 text-gray-300">LAYANAN</h4>
             <ul class="space-y-3 text-gray-400 text-sm">
-              <For each={services()}>
+              <For each={footerServices()}>
                 {(service) => (
-                  <li><a href={`/pricelist/${service.category}`} class="hover:text-white transition">{service.name}</a></li>
+                  <li><a href={`/pricelist/${service.slug}`} class="hover:text-white transition">{service.label}</a></li>
                 )}
               </For>
             </ul>

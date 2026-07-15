@@ -48,13 +48,13 @@
 
 :root {
   --font-heading: 'Cormorant', serif;
-  --font-body: 'Inter', sans-serif;
-  --font-ui: 'Poppins', sans-serif;
+  --font-body: Helvetica, Arial, sans-serif;
+  --font-ui: Helvetica, Arial, sans-serif;
 }
 
 /* Font Family Application */
 html {
-  font-family: var(--font-body);
+  font-family: Helvetica, Arial, sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6, .hero-title, .section-title {
@@ -100,7 +100,7 @@ nav, button, footer, .navbar, .btn, .footer-text {
 
 /* Client-requested brand fonts for public pages */
 .wm-brand-page {
-  font-family: 'Todes', 'Inter', sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
 }
 
 .wm-brand-page h1,
@@ -122,14 +122,14 @@ nav, button, footer, .navbar, .btn, .footer-text {
 .wm-brand-page label,
 .wm-brand-page input,
 .wm-brand-page textarea {
-  font-family: 'Todes', 'Inter', sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   font-weight: 400;
 }
 
 .wm-brand-page button,
 .wm-brand-page nav,
 .wm-brand-page .btn {
-  font-family: 'Todes', 'Poppins', sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   font-weight: 500;
 }
 

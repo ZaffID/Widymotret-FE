@@ -1730,7 +1730,7 @@ const AdminHome: Component = () => {
 
               {/* Alur Booking Section */}
               <div class="mb-10 pb-10 border-b-2 border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800 mb-4"><FaRegularCalendarAlt class="inline mr-2" size={20} />Alur Booking (6 Steps)</h3>
+                <h3 class="text-lg font-bold text-gray-800 mb-4"><FaRegularCalendarAlt class="inline mr-2" size={20} />Alur Booking (3 Steps)</h3>
                 <EditableText
                   label="Section Title"
                   value={contentStore.getField('booking', 'title')}
@@ -3052,9 +3052,9 @@ const AdminHome: Component = () => {
 
               {/* My Story */}
               <div class="mb-10 pb-10 border-b-2 border-gray-200">
-                <h3 class="text-lg font-bold text-gray-800 mb-4\">Cerita Saya</h3>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                  <div class="md:col-span-3">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Cerita Saya</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
                     <EditableText
                       label="Judul"
                       value={aboutTextValue('story_heading', aboutData.myStory.heading)}
@@ -3067,22 +3067,24 @@ const AdminHome: Component = () => {
                       }}
                       onError={handleError}
                     />
-                    <For each={[0, 1, 2]}>
-                      {(idx) => (
-                        <EditableText
-                          label={`Paragraf ${idx + 1}`}
-                          value={aboutTextValue(`story_paragraph${idx}`, aboutData.myStory.paragraphs[idx] || '')}
-                          section="about_page"
-                          field={`story_paragraph${idx}`}
-                          multiline={true}
-                          onSave={(value) => {
-                            contentStore.updateFieldLocal('about_page', `story_paragraph${idx}`, value);
-                            handleSave(`Paragraf ${idx + 1} berhasil disimpan`);
-                          }}
-                          onError={handleError}
-                        />
-                      )}
-                    </For>
+                    <div class="mt-4 space-y-4">
+                      <For each={[0, 1, 2]}>
+                        {(idx) => (
+                          <EditableText
+                            label={`Paragraf ${idx + 1}`}
+                            value={aboutTextValue(`story_paragraph${idx}`, aboutData.myStory.paragraphs[idx] || '')}
+                            section="about_page"
+                            field={`story_paragraph${idx}`}
+                            multiline={true}
+                            onSave={(value) => {
+                              contentStore.updateFieldLocal('about_page', `story_paragraph${idx}`, value);
+                              handleSave(`Paragraf ${idx + 1} berhasil disimpan`);
+                            }}
+                            onError={handleError}
+                          />
+                        )}
+                      </For>
+                    </div>
                   </div>
                   <div class="md:col-span-2">
                     <h4 class="text-sm font-semibold text-gray-600 mb-2">Galeri (2 Foto)</h4>
@@ -3513,6 +3515,55 @@ const AdminHome: Component = () => {
                               placeholder="Misal: / atau /#portfolio atau https://..."
                             />
                             <p class="text-xs text-gray-500 mt-1">Gunakan / untuk halaman lokal, /#section untuk anchor, atau https://... untuk link eksternal</p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Footer Services */}
+              <div class="mb-10 pb-10 border-b-2 border-gray-200">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Layanan Footer</h3>
+                <p class="text-sm text-gray-600 mb-6">Atur label dan slug layanan yang tampil di bagian LAYANAN footer.</p>
+
+                <div class="space-y-6">
+                  {servicesData.slice(0, 5).map((service, idx) => {
+                    const defaultLabel = contentStore.getField('service', `${service.slug}_title`) || service.title;
+                    return (
+                      <div class="p-4 bg-white border border-gray-200 rounded-lg">
+                        <h4 class="font-semibold text-gray-700 mb-3">{defaultLabel}</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Label Tampil</label>
+                            <input
+                              type="text"
+                              value={contentStore.getField('footer', `footer_service_${idx}_label`) || defaultLabel}
+                              onChange={(e) => contentStore.updateFieldLocal('footer', `footer_service_${idx}_label`, e.currentTarget.value)}
+                              onBlur={(e) => {
+                                updateContent('footer', `footer_service_${idx}_label`, e.currentTarget.value);
+                                handleSave(`Label layanan footer "${defaultLabel}" berhasil disimpan`);
+                              }}
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] text-sm"
+                              placeholder="Misal: Wedding"
+                            />
+                            <p class="text-xs text-gray-500 mt-1">Teks yang tampil di footer</p>
+                          </div>
+                          <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase">Slug / Kategori</label>
+                            <input
+                              type="text"
+                              value={contentStore.getField('footer', `footer_service_${idx}_slug`) || service.slug}
+                              onChange={(e) => contentStore.updateFieldLocal('footer', `footer_service_${idx}_slug`, e.currentTarget.value)}
+                              onBlur={(e) => {
+                                updateContent('footer', `footer_service_${idx}_slug`, e.currentTarget.value.toLowerCase().trim());
+                                handleSave(`Slug layanan footer "${defaultLabel}" berhasil disimpan`);
+                              }}
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#576250] text-sm font-mono"
+                              placeholder="studio"
+                            />
+                            <p class="text-xs text-gray-500 mt-1">Dipakai untuk link /pricelist/slug</p>
                           </div>
                         </div>
                       </div>

@@ -25,6 +25,8 @@ interface ApiPackage {
   customWhatsappUrl?: string | null;
 }
 
+type ImageOrientation = 'landscape' | 'portrait' | 'square';
+
 const ServiceDetail: Component = () => {
   const params = useParams();
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ const ServiceDetail: Component = () => {
   
   // Dynamic services list (hardcoded + API-fetched)
   const [allServices, setAllServices] = createSignal<Array<{ slug: string; title: string; description: string; image: string }>>([]);
+  const [imageOrientations, setImageOrientations] = createSignal<Record<string, ImageOrientation>>({});
   
   const service = () => allServices().find(s => s.slug === params.slug);
 
@@ -113,6 +116,53 @@ const ServiceDetail: Component = () => {
     if (!svc) return '';
     return contentStore.getField('service', `${svc.slug}_image`) || svc.image;
   };
+
+  const detectImageOrientation = (imageUrl: string) => {
+    const resolvedUrl = resolveMediaUrl(imageUrl);
+
+    if (!resolvedUrl || imageOrientations()[resolvedUrl]) {
+      return;
+    }
+
+    const image = new Image();
+
+    image.onload = () => {
+      const orientation: ImageOrientation =
+        image.naturalWidth === image.naturalHeight
+          ? 'square'
+          : image.naturalWidth > image.naturalHeight
+            ? 'landscape'
+            : 'portrait';
+
+      setImageOrientations((prev) => ({
+        ...prev,
+        [resolvedUrl]: orientation,
+      }));
+    };
+
+    image.onerror = () => {
+      setImageOrientations((prev) => ({
+        ...prev,
+        [resolvedUrl]: 'landscape',
+      }));
+    };
+
+    image.src = resolvedUrl;
+  };
+
+  const getImageAspectClass = (imageUrl: string) => {
+    const resolvedUrl = resolveMediaUrl(imageUrl);
+    const orientation = imageOrientations()[resolvedUrl];
+
+    if (orientation === 'portrait') return 'aspect-[2/3]';
+    if (orientation === 'square') return 'aspect-square';
+    return 'aspect-[3/2]';
+  };
+
+  createEffect(() => {
+    const urls = packages().flatMap((pkg) => getGalleryImages(pkg)).filter(Boolean);
+    urls.forEach((url) => detectImageOrientation(url));
+  });
 
   // Determine WhatsApp link based on package configuration
   const getWhatsAppLink = () => {
@@ -326,7 +376,7 @@ const ServiceDetail: Component = () => {
                         }}
                       >
                         {/* Card Image */}
-                        <div class="aspect-[4/3] overflow-hidden">
+                        <div class={`${getImageAspectClass(getGalleryImages(pkg)[0])} overflow-hidden`}>
                           <img
                             src={resolveMediaUrl(getGalleryImages(pkg)[0])}
                             alt={pkg.name}
@@ -387,7 +437,7 @@ const ServiceDetail: Component = () => {
                   <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 scroll-reveal" ref={detailSectionRef}>
                     {/* Left - Gallery Slider */}
                     <div class="relative">
-                      <div class="aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
+                      <div class={`${getImageAspectClass(getGalleryImages(selectedPackage())[galleryIndex()])} rounded-2xl overflow-hidden shadow-xl`}>
                         <img
                           src={resolveMediaUrl(getGalleryImages(selectedPackage())[galleryIndex()])}
                           alt={`Gallery ${galleryIndex() + 1}`}

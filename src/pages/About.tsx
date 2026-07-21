@@ -53,6 +53,8 @@ const About: Component = () => {
       }
     >
       <img
+        loading="lazy"
+        decoding="async"
         src={props.src}
         alt={props.alt}
         class={props.class || 'w-full h-full object-cover'}

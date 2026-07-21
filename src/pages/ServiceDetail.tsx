@@ -161,8 +161,13 @@ const ServiceDetail: Component = () => {
   };
 
   createEffect(() => {
-    const urls = packages().flatMap((pkg) => getGalleryImages(pkg)).filter(Boolean);
-    urls.forEach((url) => detectImageOrientation(url));
+    const pkg = selectedPackage();
+
+    if (!pkg) return;
+
+    getGalleryImages(pkg).forEach((url) => {
+      detectImageOrientation(url);
+    });
   });
 
   // Determine WhatsApp link based on package configuration
@@ -344,6 +349,8 @@ const ServiceDetail: Component = () => {
           {/* Hero Section - Compact */}
           <section class="relative h-[60vh] overflow-hidden">
             <img
+              loading="eager"
+              decoding="async"
               src={resolveMediaUrl(serviceImage())}
               alt={serviceTitle()}
               class="w-full h-full object-cover"
@@ -406,6 +413,8 @@ const ServiceDetail: Component = () => {
                         {/* Card Image */}
                         <div class="aspect-[4/3] overflow-hidden">
                           <img
+                            loading="lazy"
+                            decoding="async"
                             src={resolveMediaUrl(getGalleryImages(pkg)[0])}
                             alt={pkg.name}
                             class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -527,7 +536,10 @@ const ServiceDetail: Component = () => {
                                 'border-transparent opacity-60 hover:opacity-100': galleryIndex() !== idx()
                               }}
                             >
-                              <img src={resolveMediaUrl(img)} alt="" class="w-full h-full object-cover" />
+                              <img src={resolveMediaUrl(img)} alt="" class="w-full h-full object-cover"
+                                loading="lazy"
+                                decoding="async"
+                              />
                             </button>
                           )}
                         </For>
